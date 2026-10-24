@@ -1,0 +1,17 @@
+agent: Hi, this is an automated AI assistant calling for Quabbin Hills Family Medicine. I'm checking on a Cardiology referral we sent on October 6, 2026, reference R-102. Do you have a moment?
+user: Yes.
+agent: [happy] Thank you for confirming. I'm calling about referral R-102, Cardiology, for patient initials L. W., sent from our practice on October sixth. Could you tell me whether that referral was received?
+user: Yes, it was.
+agent: [happy] Great, thank you. So just to confirm, referral R-102 for Cardiology, patient initials L. W., was received. [slow] Could you tell me if anything is missing, like records, insurance authorization, or test results?
+user: Yeah, records.
+agent: [slow] Thank you. So records are still needed. [happy] Has the office already contacted the patient to schedule?
+user: No, not yet. No, not yet.
+agent: [slow] Understood, the patient hasn't been contacted yet. [happy] Could you give me the scheduling phone number and the office hours so the patient can call?
+user: 413-555-0142.
+agent: [happy] Thank you. And what are the office hours?
+user: And the office hours are Monday through Friday, 8:00 to 4:00.
+agent: [happy] Perfect, thank you so much. Let me read back what I have. Referral R-102 for Cardiology, patient initials L. W., was received, yes. Records are still missing. The patient has not been contacted to schedule yet. The scheduling phone number is four one three, five five five, zero one four two. And the office hours are Monday through Friday, eight in the morning to four in the afternoon. [happy] Thank you for your help, have a great day.
+user: Yep, you too.
+agent: [happy] Thank you, goodbye.
+user: Bye-bye.
+agent: [happy] Goodbye.
