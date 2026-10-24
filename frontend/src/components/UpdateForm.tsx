@@ -13,6 +13,7 @@ export type UpdatePrefill = {
   note?: string;
   phone?: string | null;
   fromAi?: boolean;
+  callId?: string; // an AI phone call result being edited; saving marks it used
 };
 
 const MISSING = ["records", "insurance_authorization", "test_results", "other"];
@@ -118,7 +119,7 @@ export function UpdateForm({ rid, actions, prefill, officePhone, onDone }: {
 
   const save = useMutation({
     mutationFn: async () => {
-      const d = await api.logUpdate(rid, { ...toBody(action, state), source });
+      const d = await api.logUpdate(rid, { ...toBody(action, state), source, ...(prefill?.callId ? { call_id: prefill.callId } : {}) });
       if (prefill?.phone && !officePhone) await api.setOfficePhone(rid, prefill.phone);
       return d;
     },

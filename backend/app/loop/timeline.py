@@ -46,7 +46,8 @@ def timeline(ref: Referral) -> list[dict]:
     """Events and sent communications merged in date order (stable: events first on ties)."""
     items = [
         {"kind": "event", "event_kind": ev.kind, "at": ev.at, "stage": ev.stage, "actor": ev.actor,
-         "note": ev.note, "source": ev.source, "by": ev.by}
+         "note": ev.note, "source": ev.source, "by": ev.by,
+         "call_duration": ev.call_duration}
         for ev in ref.events
     ]
     items += [

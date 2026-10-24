@@ -86,3 +86,16 @@
   CallAssistant.tsx). The 404 came from an API process started before the call router was added.
   Through the UI the session request now reaches the route; ElevenLabs answers 401 "API key is
   missing the permission convai_write", which Relay now passes on (502 with that reason, no key).
+- 2026-10-24 — Roles: coordinator and clinician rails differ (Dashboard / New referral vs Inbox /
+  Referrals read-only), the rail shows name and role, and the server returns 403 for clinician
+  logistics writes (test_clinicians_cannot_do_logistics covers every endpoint, call-office too).
+- 2026-10-24 — Background phone calls (E2): Call office places an outbound call to
+  OFFICE_TEST_NUMBER only; a server-side poller finishes it. Two outcomes found in testing are
+  handled. (1) An unanswered call ends "done" with only the agent's greeting: it becomes "No answer,
+  try again", not an empty suggestion. (2) The office said it never got the referral
+  (docs/sample_call_not_received.txt): extraction captures the resend method, the stage stays
+  Sent, and the row reads "Office says not received" until a resend. That transcript also exposed
+  two rule-extractor bugs: hours said as "our scheduling hours are …" kept the prefix, and the
+  agent's closing read-back ("the patient has not been contacted") followed by "Yep, you too" read
+  as "patient contacted: yes". Only the agent's questions now count as questions.
+

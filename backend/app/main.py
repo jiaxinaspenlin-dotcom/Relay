@@ -8,15 +8,26 @@ SSO, audit logging, and hosting approved for patient data.
 from __future__ import annotations
 
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from pydantic import BaseModel
 
 from app import clock
 from app.api import auth, call, dashboard, finder, inbox, office, referrals
+from app.call import phone
 from app.store import get_repo
 
-app = FastAPI(title="Relay")
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    # Resume any phone calls left open by a restart, then keep polling in the background.
+    phone.ensure_poller()
+    yield
+
+
+app = FastAPI(title="Relay", lifespan=lifespan)
 app.middleware("http")(auth.auth_middleware)
 for module in (auth, dashboard, finder, inbox, referrals, office, call):
     app.include_router(module.router)
@@ -29,11 +40,48 @@ def health() -> dict:
     return {"ok": True, "db": Path(repo.path).name, **clock.info()}
 
 
-@app.post("/api/test/reset")
-def test_reset() -> dict:
-    """End-to-end tests only: exists when RELAY_E2E=1 and the database is relay-e2e.db."""
+def _e2e_only():
+    """End-to-end test endpoints exist only when RELAY_E2E=1 and the database is relay-e2e.db."""
     repo = get_repo()
     if os.environ.get("RELAY_E2E") != "1" or Path(repo.path).name != "relay-e2e.db":
         raise HTTPException(404, "Not found")
-    repo.reset_everything()
+    return repo
+
+
+@app.post("/api/test/reset")
+def test_reset() -> dict:
+    _e2e_only().reset_everything()
     return {"ok": True}
+
+
+# Fake phone calls for the UI tests: the browser script swaps the real "call-office" request for
+# these, so e2e runs never dial anyone. The real transcript pipeline still runs on finish.
+class FakeCall(BaseModel):
+    referral_id: str
+
+
+class FakeFinish(BaseModel):
+    status: str = "done"
+    duration_secs: int | None = None
+    turns: list[dict] = []
+
+
+@app.post("/api/test/calls")
+def test_fake_call(body: FakeCall, request: Request) -> dict:
+    import uuid
+    repo = _e2e_only()
+    user = auth.current_user(request)
+    ref = repo.get(body.referral_id)
+    call = repo.add_call({
+        "id": f"call-{uuid.uuid4().hex[:12]}", "referral_id": ref.id, "user_id": user.id,
+        "user_name": user.name, "practice": ref.performer.name, "conversation_id": f"e2e-{uuid.uuid4().hex[:8]}",
+        "call_sid": None, "status": "calling", "reason": "", "started_at": phone.now_iso(), "finished_at": None,
+        "duration_secs": None, "transcript": [], "result": None, "applied_by": None, "applied_at": None, "e2e": True})
+    return {"call": phone.public(call)}
+
+
+@app.post("/api/test/calls/{cid}/finish")
+def test_finish_call(cid: str, body: FakeFinish) -> dict:
+    repo = _e2e_only()
+    conv = {"status": body.status, "metadata": {"call_duration_secs": body.duration_secs}, "transcript": body.turns}
+    return {"call": phone.public(phone.poll_once(repo, repo.call(cid), fetch=lambda _cid: conv))}

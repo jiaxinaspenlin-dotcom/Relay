@@ -30,6 +30,7 @@ MISSING_WORDS = {
 }
 DIGIT_WORDS = {"zero": "0", "oh": "0", "o": "0", "one": "1", "two": "2", "three": "3", "four": "4",
                "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9"}
+RESEND_METHODS = ("fax", "portal", "email")
 STAGE_TARGET = {"Received-complete": "received", "Received-incomplete": "received",
                 "Patient contacted": "patient_contacted"}
 
@@ -40,6 +41,7 @@ missing_items: list of any of "records", "insurance_authorization", "test_result
 patient_contacted: "yes" | "no" | "unknown"  (has the office contacted the patient to schedule)
 scheduling_phone: the scheduling phone number as ###-###-####, or null
 scheduling_hours: the office hours as said, or null
+resend_method: "fax" | "portal" | "email" | "unknown"  (if not received: how the office wants it resent)
 note: one short sentence of anything else the office said, or ""
 Use only what the office (user) said. If something was not said, use "unknown" or null."""
 
@@ -130,12 +132,14 @@ def rules_extract(turns: list[dict]) -> dict:
     """Deterministic fallback when no LLM is configured: reads the office's answers that follow
     each of the agent's questions."""
     out = {"received": "unknown", "missing_items": [], "patient_contacted": "unknown",
-           "scheduling_phone": None, "scheduling_hours": None, "note": ""}
+           "scheduling_phone": None, "scheduling_hours": None, "resend_method": "unknown", "note": ""}
     last_q = ""
     for t in turns:
         msg = t["message"].lower()
         if t["role"] == "agent":
-            last_q = msg
+            # Only the agent's questions count. A read-back ("the patient has not been contacted")
+            # followed by "Yep, you too" must not read as an answer.
+            last_q = " ".join(re.findall(r"[^.?!]*\?", msg))
             continue
         yes = bool(re.search(r"\b(yes|yeah|yep|we did|it was|we have)\b", msg))
         no = bool(re.search(r"\b(no|not yet|nope|haven't|have not)\b", msg))
@@ -147,12 +151,16 @@ def rules_extract(turns: list[dict]) -> dict:
                     out["missing_items"].append(item)
         if "contacted" in last_q and out["patient_contacted"] == "unknown":
             out["patient_contacted"] = "no" if no else "yes" if yes else "unknown"
+        if ("resend" in last_q or "send it" in last_q) and out["resend_method"] == "unknown":
+            out["resend_method"] = next((m for m in RESEND_METHODS if m in msg or (m == "email" and "e-mail" in msg)),
+                                        "unknown")
         if out["scheduling_phone"] is None:
             run = next((r for r in digit_runs(t["message"]) if len(phone_digits(r)) == 10), None)
             if run:
                 out["scheduling_phone"] = format_phone(phone_digits(run))
         if out["scheduling_hours"] is None and re.search(r"\b(monday|tuesday|wednesday|thursday|friday|weekdays)\b", msg):
-            hours = re.sub(r"^(and )?(the )?office hours are ", "", t["message"].strip(), flags=re.I).rstrip(".")
+            hours = re.sub(r"^((um|uh),? )?(and )?(the |our )?(scheduling |office )?hours are ", "",
+                           t["message"].strip(), flags=re.I).rstrip(".")
             out["scheduling_hours"] = hours.replace(",", "")
     return out
 
@@ -207,6 +215,15 @@ def validate(raw: dict, turns: list[dict], ref: Referral) -> dict:
     out["scheduling_hours"] = hours or None
     out["note"] = str(raw.get("note") or "")[:500]
 
+    method = str(raw.get("resend_method") or "unknown").lower()
+    if method not in (*RESEND_METHODS, "unknown"):
+        errors.append(f"Resend method '{method}' is not fax, portal, or email")
+        method = "unknown"
+    elif method != "unknown" and method not in office_text.lower():
+        errors.append(f"Resend method '{method}' was not said by the office")
+        method = "unknown"
+    out["resend_method"] = method if out["received"] == "no" else "unknown"
+
     if out["patient_contacted"] == "yes":
         proposed = "Patient contacted"
     elif out["received"] == "yes":
@@ -217,8 +234,49 @@ def validate(raw: dict, turns: list[dict], ref: Referral) -> dict:
         errors.append(f"{proposed} is not an allowed next step from {ref.stage.replace('_', ' ')}")
         proposed = None
     out["proposed_stage"] = proposed
+    # Not received: the stage stays Sent and the next step is a resend.
+    if out["received"] == "no":
+        out["proposed_action"] = "Resend referral" + (f" via {method}" if out["resend_method"] != "unknown" else "")
+    else:
+        out["proposed_action"] = None
     out["validation_errors"] = errors
     return out
+
+
+DAY_ABBR = {"monday": "Mon", "tuesday": "Tue", "wednesday": "Wed", "thursday": "Thu", "friday": "Fri",
+            "saturday": "Sat", "sunday": "Sun"}
+
+
+def short_hours(hours: str) -> str:
+    """'Monday through Friday from 8:00 to 4:00' → 'Mon–Fri 8–4'."""
+    h = hours.strip()
+    h = re.sub(r"\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b",
+               lambda m: DAY_ABBR[m.group(1).lower()], h, flags=re.I)
+    h = re.sub(r"\s+(through|to|-)\s+(?=(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b)", "–", h)
+    h = re.sub(r"\bfrom\s+", "", h, flags=re.I)
+    h = re.sub(r"(\d{1,2})(?::00)?\s*(?:to|-|until)\s*(\d{1,2})(?::00)?", r"\1–\2", h)
+    return re.sub(r"\s{2,}", " ", h.replace(",", "")).strip()
+
+
+def summary(result: dict) -> str:
+    """One line for the call result card, e.g.
+    'Not received, resend via portal. Scheduling: 413-555-0142, Mon–Fri 8–4'."""
+    parts = []
+    if result.get("received") == "no":
+        m = result.get("resend_method")
+        parts.append("Not received, resend" + (f" via {m}" if m and m != "unknown" else ""))
+    elif result.get("received") == "yes":
+        items = result.get("missing_items") or []
+        parts.append("Received, missing " + ", ".join(i.replace("_", " ") for i in items) if items else "Received, complete")
+        if result.get("patient_contacted") == "yes":
+            parts.append("Patient contacted")
+        elif result.get("patient_contacted") == "no":
+            parts.append("Patient not contacted yet")
+    else:
+        parts.append("Receipt not confirmed")
+    sched = [x for x in (result.get("scheduling_phone"), result.get("scheduling_hours") and short_hours(result["scheduling_hours"])) if x]
+    line = ". ".join(parts)
+    return line + (f". Scheduling: {', '.join(sched)}" if sched else "")
 
 
 def process(turns: list[dict], ref: Referral) -> dict:
@@ -231,5 +289,6 @@ def process(turns: list[dict], ref: Referral) -> dict:
         extractor = "rules"
     result = validate(raw, cleaned, ref)
     result["extractor"] = extractor
+    result["summary"] = summary(result)
     result["applied"] = False  # never applied; the coordinator confirms in Log update
     return result

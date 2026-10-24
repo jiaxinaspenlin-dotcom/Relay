@@ -10,6 +10,7 @@ import { RouteTrack, primaryFlag } from "../components/RouteTrack";
 import { ErrorNote, Loading } from "../components/Status";
 import { Button, SampleTag, btn } from "../components/ui";
 import { useMe } from "../components/useMe";
+import { rowCallStatus, useCallMode, useCallOffice } from "../components/OfficeCall";
 
 function EmptyState() {
   const nav = useNavigate();
@@ -30,18 +31,28 @@ function EmptyState() {
 }
 
 const ACTION_DRAWER: Record<string, DrawerKind | null> = {
-  follow_up: "follow_up", send_records: "follow_up", message_patient: "patient", open: null,
+  follow_up: "follow_up", send_records: "follow_up", message_patient: "patient", resend: null, open: null,
 };
 
 function Row({ card, flags, fresh, onAction }: { card: Card; flags: StuckFlag[]; fresh: boolean; onAction: (kind: DrawerKind) => void }) {
   const nav = useNavigate();
   const callKind = useCallKind();
+  const mode = useCallMode();
+  const callOffice = useCallOffice();
   // Clinicians see the same list read-only; logistics buttons are coordinator work.
   const coordinator = useMe()?.role !== "clinician";
   const main = flags.length ? primaryFlag(flags)! : undefined;
   const failure = main ? FAILURE_RULES.has(main.rule) : false;
-  const action = main?.action === "call_office" && !card.can_call ? "follow_up" : main?.action;
+  const call = rowCallStatus(card.call);
+  let action: string | undefined = main?.action === "call_office" && !card.can_call ? "follow_up" : main?.action;
+  if (call?.tone === "calling") action = undefined; // nothing to do while the phone rings
+  if (call?.tone === "ready") action = "review_call";
   const kind = action === "call_office" ? callKind : action ? ACTION_DRAWER[action] : null;
+  const onClick = () => {
+    if (action === "call_office" && mode === "phone") callOffice.mutate(card.id);
+    else if (kind) onAction(kind);
+    else nav(`/referrals/${card.id}`);
+  };
   const miles = card.miles === null ? "" : card.miles === 0 ? ", same town" : `, ${card.miles} mi`;
   return (
     <li
@@ -62,15 +73,24 @@ function Row({ card, flags, fresh, onAction }: { card: Card; flags: StuckFlag[];
         <div className={`mt-2 text-caption font-bold ${main ? (failure ? "text-rust" : "text-amber") : "text-muted font-normal"}`} data-testid="row-status">
           {main ? main.status : coordinator && card.reviewer ? copy.dashboard.waitingReview(card.reviewer) : card.status_label}
         </div>
+        {coordinator && call && (
+          <div data-testid="row-call" role="status" className={`mt-1 text-caption font-semibold ${call.tone === "none" ? "text-amber" : "text-hemlock"}`}>
+            {call.tone === "ready"
+              ? <span className="rounded-full bg-hemlock px-2 py-0.5 text-white">{call.text}</span>
+              : <span className="inline-flex items-center gap-2">{call.tone === "calling" && <span aria-hidden="true" className="h-2 w-2 animate-pulse rounded-full bg-hemlock" />}{call.text}</span>}
+          </div>
+        )}
+        {callOffice.error && <div className="mt-1 text-caption text-rust" role="alert">{(callOffice.error as Error).message}</div>}
       </div>
       <div className="relative z-10 flex justify-start min-[860px]:justify-end">
         {coordinator && action && (
           <button
             type="button"
-            className={btn("outline", "w-full min-[860px]:w-auto")}
-            onClick={() => (kind ? onAction(kind) : nav(`/referrals/${card.id}`))}
+            className={btn(action === "review_call" ? "primary" : "outline", "w-full min-[860px]:w-auto")}
+            onClick={onClick}
+            disabled={callOffice.isPending}
           >
-            {copy.dashboard.actions[action]}
+            {action === "review_call" ? copy.phoneCall.review : copy.dashboard.actions[action]}
           </button>
         )}
       </div>

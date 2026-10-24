@@ -37,7 +37,7 @@ class StuckFlag:
     threshold: int
     unit: str  # "days" or "business days"
     recipient: str  # who a follow-up goes to: specialist | patient | pcp | none
-    action: str  # call_office | follow_up | send_records | message_patient | open
+    action: str  # call_office | follow_up | send_records | message_patient | resend | open
     challenge_failure: Optional[int] = None  # 1 = never scheduled, 2 = plan never returned
 
     def to_dict(self) -> dict:
@@ -84,8 +84,19 @@ def stuck_flags(
     def flag(rule, days, message, status, key, unit, recipient, action, failure=None):
         out.append(StuckFlag(rule, days, message, status, key, s[key], unit, recipient, action, failure))
 
-    if stage == "sent":
+    if stage == "sent" and ref.office_not_received is not None:
+        # The office said on a call that it never got the referral: resend now (replaces the
+        # "not confirmed received" timer until the coordinator resends).
+        how = ref.office_resend_method if ref.office_resend_method not in (None, "unknown") else ""
+        n = (today - ref.office_not_received).days
+        flag("office_not_received", n,
+             "Office says the referral was not received" + (f", resend via {how}" if how else ", resend it"),
+             "Office says not received", "office_not_received_days", "days", "specialist", "resend")
+    elif stage == "sent":
         sent = last_event_date(ref, "sent")
+        resent = [e.at for e in ref.events if e.kind == "resend"]
+        if sent is not None and resent:
+            sent = max(sent, max(resent))  # a resend restarts the receipt clock
         if sent is not None:
             n = business_days_between(sent, today)
             if n >= s["sent_no_receipt_business_days"]:

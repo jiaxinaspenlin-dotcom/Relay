@@ -169,7 +169,29 @@ for likely barriers. It is never a judgment about the patient.
    deterministic rules), validated against the transcript (phone and hours must appear; spoken and
    written digits count as the same number), and checked against design.md §3. It SHALL never be
    applied: the coordinator confirms it in Log update.
+3. WHEN phone calling is configured (ELEVENLABS_API_KEY, ELEVENLABS_AGENT_ID,
+   ELEVENLABS_PHONE_NUMBER_ID, OFFICE_TEST_NUMBER) "Call office" SHALL place a real outbound call in
+   the background (POST /api/referrals/{id}/call-office, coordinators only). The number dialed SHALL
+   always be OFFICE_TEST_NUMBER, never a number from referral or CMS data. A server-side poller
+   (every 5 s, 10-minute timeout, resumes after restart) SHALL end each call as "ready for review"
+   (the office spoke) or "no answer" with a plain reason. The result card SHALL offer Apply (records
+   "AI call by {user}, {duration}" through loop/states.py), Edit (Log update pre-filled), and View
+   transcript; nothing is applied automatically. Fallback: the in-browser assistant when only voice
+   is configured, otherwise Log update.
 4. Every simulated action SHALL be labeled "Simulated response".
+5. WHEN the office says on a call that it did not receive the referral THE SYSTEM SHALL keep the
+   stage at Sent, capture how to resend (fax / portal / email), and show "Office says not received"
+   (amber) until the coordinator resends (copy / email / print, recorded as a Communication).
+
+## R14 — Roles (MUST)
+1. Coordinators see Dashboard (badge: needs attention), New referral, Settings, and do all
+   logistics (send, call office, log update, message patient, resend, barriers, transport).
+2. Clinicians see Inbox (badge: plans to review, heading "{n} plans to review"), Referrals (the
+   dashboard, read-only), Settings. Only clinicians see "Acknowledge and close"; coordinators see
+   "Waiting for Dr. {name} to review" on a returned plan.
+3. The rail shows the signed-in person's name and role above Sign out.
+4. The server SHALL enforce the split: logistics writes by a clinician return 403; close by a
+   coordinator returns 403.
 
 ## R8 — PCP inbox and loop closure (MUST)
 **User story:** As a PCP, I want the returned plan to land with the original referral, so that I can

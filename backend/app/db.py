@@ -34,6 +34,13 @@ CREATE TABLE IF NOT EXISTS office_tokens (
     token TEXT PRIMARY KEY,
     referral_id TEXT NOT NULL UNIQUE REFERENCES referrals(id) ON DELETE CASCADE
 );
+CREATE TABLE IF NOT EXISTS call_attempts (
+    id TEXT PRIMARY KEY,
+    referral_id TEXT NOT NULL REFERENCES referrals(id) ON DELETE CASCADE,
+    data TEXT NOT NULL,
+    status TEXT NOT NULL,
+    started_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -163,6 +170,46 @@ class Repo:
         row = self._one("SELECT referral_id FROM office_tokens WHERE token = ?", (token,))
         return row["referral_id"] if row else None
 
+    # ------------------------------------------------------------ AI phone calls
+    # One row per outbound call. `data` holds the attempt as JSON (conversation id, transcript,
+    # extracted result); status and started_at are columns so the poller can find open calls.
+    def add_call(self, call: dict) -> dict:
+        with self._lock:
+            self.conn.execute("INSERT INTO call_attempts(id, referral_id, data, status, started_at) VALUES(?, ?, ?, ?, ?)",
+                              (call["id"], call["referral_id"], json.dumps(call), call["status"], call["started_at"]))
+            self.conn.commit()
+        return call
+
+    def update_call(self, cid: str, **fields) -> dict:
+        with self._lock:
+            call = {**self.call(cid), **fields}
+            self.conn.execute("UPDATE call_attempts SET data = ?, status = ? WHERE id = ?",
+                              (json.dumps(call), call["status"], cid))
+            self.conn.commit()
+        return call
+
+    def call(self, cid: str) -> dict:
+        row = self._one("SELECT data FROM call_attempts WHERE id = ?", (cid,))
+        if row is None:
+            raise KeyError(f"No call {cid}")
+        return json.loads(row["data"])
+
+    def calls_for(self, rid: str) -> list[dict]:
+        """Newest first."""
+        rows = self._all("SELECT data FROM call_attempts WHERE referral_id = ? ORDER BY started_at DESC, rowid DESC", (rid,))
+        return [json.loads(r["data"]) for r in rows]
+
+    def latest_calls(self) -> dict[str, dict]:
+        """Each referral's newest call."""
+        out: dict[str, dict] = {}
+        for r in self._all("SELECT data FROM call_attempts ORDER BY started_at, rowid"):
+            c = json.loads(r["data"])
+            out[c["referral_id"]] = c
+        return out
+
+    def open_calls(self) -> list[dict]:
+        return [json.loads(r["data"]) for r in self._all("SELECT data FROM call_attempts WHERE status = 'calling' ORDER BY started_at")]
+
     # ------------------------------------------------------------ sample data + reset
     def has_sample(self) -> bool:
         return self._one("SELECT 1 FROM referrals WHERE sample = 1 LIMIT 1") is not None
@@ -198,6 +245,7 @@ class Repo:
             n = self.conn.execute("SELECT COUNT(*) FROM referrals WHERE sample = 1").fetchone()[0]
             self.conn.executescript(
                 "DELETE FROM office_tokens WHERE referral_id IN (SELECT id FROM referrals WHERE sample = 1);"
+                "DELETE FROM call_attempts WHERE referral_id IN (SELECT id FROM referrals WHERE sample = 1);"
                 "DELETE FROM referrals WHERE sample = 1; DELETE FROM patients WHERE sample = 1;")
             self.conn.commit()
         self.users.remove_sample_users()
@@ -208,7 +256,7 @@ class Repo:
     def clear_all(self) -> None:
         """Delete every patient and referral (and the sample accounts). Real accounts stay."""
         with self._lock:
-            self.conn.executescript("DELETE FROM office_tokens; DELETE FROM referrals; "
+            self.conn.executescript("DELETE FROM call_attempts; DELETE FROM office_tokens; DELETE FROM referrals; "
                                     "DELETE FROM patients;")
             self.conn.commit()
         self.users.remove_sample_users()
@@ -216,7 +264,7 @@ class Repo:
     def reset_everything(self) -> None:
         """Test-only (RELAY_E2E=1): empty every table, including accounts and settings."""
         with self._lock:
-            self.conn.executescript("DELETE FROM sessions; DELETE FROM users; DELETE FROM office_tokens; "
+            self.conn.executescript("DELETE FROM sessions; DELETE FROM users; DELETE FROM call_attempts; DELETE FROM office_tokens; "
                                     "DELETE FROM referrals; DELETE FROM patients; DELETE FROM settings;")
             self.conn.commit()
 

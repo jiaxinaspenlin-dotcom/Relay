@@ -1,53 +1,134 @@
-// AI call wiring through the UI: "Call office" on a stuck-at-Received referral opens the
-// CallAssistant, "Start call" reaches POST /api/referrals/{id}/call-session (not a 404), and a
-// clinician doesn't get the AI call. Fake microphone; never calls a real office.
+// AI call wiring through the UI. Never calls a real office:
+//  1. Browser assistant (phone calling switched off for this page): "Call office" opens the
+//     CallAssistant and "Start call" reaches POST /api/referrals/{id}/call-session.
+//  2. Background phone call (default): "Call office" → "Calling {practice}…" → "Call finished,
+//     review update" → result card → Apply updates the timeline. The real call-office request is
+//     swapped for an e2e-only fake call; the server's real transcript pipeline reads the sample.
+//  3. A not-received call → "Office says not received" → Resend referral clears it.
+//  4. Clinicians get no call buttons.
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { chromium } from "playwright-core";
 
 const WEB = process.env.WEB_URL ?? "http://127.0.0.1:5173";
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const T = 15000;
+const assert = (c, m) => { if (!c) throw new Error(m); };
+const turns = (name) => readFileSync(path.join(ROOT, "docs", name), "utf8").split("\n").filter((l) => l.trim())
+  .map((l) => { const i = l.indexOf(":"); return { role: l.slice(0, i).trim(), message: l.slice(i + 1).trim() }; });
+
 const browser = await chromium.launch({ channel: "chrome", headless: true,
   args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"] });
-const page = await (await browser.newContext({ permissions: ["microphone"] })).newPage();
+const ctx = await browser.newContext({ permissions: ["microphone"] });
+const page = await ctx.newPage();
 const h = await (await page.request.get(`${WEB}/api/health`)).json();
 if (h.db !== "relay-e2e.db") throw new Error(`Refusing to touch '${h.db}'`);
 await page.request.post(`${WEB}/api/test/reset`);
 await page.request.post(`${WEB}/api/sample-data`);
-const voice = (await (await page.request.get(`${WEB}/api/config`)).json()).voice_enabled;
+const cfg = await (await page.request.get(`${WEB}/api/config`)).json();
+
+// Safety net: no request from this browser ever reaches the real call-office endpoint.
+const fakeCalls = [];
+await ctx.route("**/api/referrals/*/call-office", async (route) => {
+  const rid = route.request().url().split("/").at(-2);
+  const r = await page.request.post(`${WEB}/api/test/calls`, { data: { referral_id: rid } });
+  const body = await r.json();
+  fakeCalls.push(body.call);
+  await route.fulfill({ status: r.status(), contentType: "application/json", body: JSON.stringify(body) });
+});
+let phoneMode = false;
+await ctx.route("**/api/config", (route) =>
+  route.fulfill({ contentType: "application/json", body: JSON.stringify({ ...cfg, phone_calling_enabled: phoneMode }) }));
 
 await page.goto(`${WEB}/sign-in`);
 await page.getByRole("button", { name: "Sign in as coordinator (sample)" }).click();
 await page.waitForURL(`${WEB}/`);
-const calls = [];
-page.on("request", (r) => { if (r.url().includes("/call-")) calls.push(`${r.method()} ${new URL(r.url()).pathname}`); });
-const statuses = [];
-page.on("response", (r) => { if (r.url().includes("/call-")) statuses.push(r.status()); });
 
+// 1. Browser assistant fallback
+const calls = [];
+page.on("request", (r) => { if (r.url().includes("/call-session")) calls.push(`${r.method()} ${new URL(r.url()).pathname}`); });
 await page.getByTestId("row-R-102").getByRole("button", { name: "Call office" }).click();
-if (voice) {
+if (cfg.voice_enabled) {
   const dialog = page.getByRole("dialog", { name: "Call office" });
   await dialog.getByText("Call the office with the AI assistant").waitFor({ timeout: T });
-  await Promise.all([
+  const [res] = await Promise.all([
     page.waitForResponse((r) => r.url().includes("/call-session"), { timeout: T }),
     dialog.getByRole("button", { name: "Start call" }).click(),
   ]);
+  assert(calls.includes("POST /api/referrals/R-102/call-session"), "call-session not requested at the expected path");
+  assert(res.status() !== 404, "call-session returned 404");
   await page.waitForTimeout(500);
-  console.log("requests:", calls.join(", "), "statuses:", statuses.join(", "));
-  if (!calls.includes("POST /api/referrals/R-102/call-session")) throw new Error("call-session not requested at the expected path");
-  if (statuses.includes(404)) throw new Error("call-session returned 404");
   const alert = await dialog.getByRole("alert").allInnerTexts();
-  console.log("assistant says:", alert.join(" ") || "(connected)");
+  console.log("1 browser assistant:", res.status(), alert.join(" ") || "(connected)");
+  await page.keyboard.press("Escape");
 } else {
   await page.getByRole("dialog", { name: "Log update" }).waitFor({ timeout: T });
-  console.log("voice disabled: Call office opens Log update");
+  console.log("1 voice disabled: Call office opens Log update");
+  await page.keyboard.press("Escape");
 }
-// Clinicians never get the AI call.
+
+// 2. Background phone call
+phoneMode = true;
+await page.goto(`${WEB}/`); // fresh page so the config is read again
+const row = page.getByTestId("row-R-102");
+await row.getByRole("button", { name: "Call office" }).click();
+await row.getByTestId("row-call").getByText(/^Calling .+…$/).waitFor({ timeout: T });
+assert(fakeCalls.length === 1, `expected one fake call, got ${fakeCalls.length}`);
+await page.goto(`${WEB}/referrals/R-102`);
+await page.getByTestId("header-call-status").getByText(/^Calling .+…$/).waitFor({ timeout: T });
+await page.request.post(`${WEB}/api/test/calls/${fakeCalls[0].id}/finish`,
+  { data: { status: "done", duration_secs: 92, turns: turns("sample_call_transcript.txt") } });
+const card = page.getByTestId("call-result");
+await card.waitFor({ timeout: T });
+const summary = await card.getByTestId("call-summary").innerText();
+assert(summary === "Received, missing records. Patient not contacted yet. Scheduling: 413-555-0142, Mon–Fri 8–4", `summary: ${summary}`);
+await card.getByText("View transcript").click();
+assert(!(await card.getByTestId("call-transcript").innerText()).includes("[happy]"), "voice tags shown");
+await page.goto(`${WEB}/`);
+await page.getByTestId("row-R-102").getByTestId("row-call").getByText("Call finished, review update").waitFor({ timeout: T });
+await page.getByTestId("row-R-102").getByRole("button", { name: "Review update" }).click();
+await page.waitForURL(`${WEB}/referrals/R-102`);
+await page.getByTestId("call-result").getByRole("button", { name: "Apply" }).click();
+await page.getByTestId("call-result").waitFor({ state: "detached", timeout: T });
+await page.getByTestId("timeline").getByText("AI call by Sam Ortiz, 1 min 32 s", { exact: false }).waitFor({ timeout: T });
+console.log("2 phone call: Calling → Call finished → Apply → timeline");
+
+// 3. Not received → Office says not received → Resend referral
+await page.goto(`${WEB}/`);
+await page.getByTestId("row-R-101").getByRole("button", { name: "Call office" }).click();
+await page.getByTestId("row-R-101").getByTestId("row-call").getByText(/^Calling/).waitFor({ timeout: T });
+await page.request.post(`${WEB}/api/test/calls/${fakeCalls[1].id}/finish`,
+  { data: { status: "done", duration_secs: 75, turns: turns("sample_call_not_received.txt") } });
+await page.goto(`${WEB}/referrals/R-101`);
+await page.getByTestId("call-summary").getByText("Not received, resend via portal. Scheduling: 413-555-0142, Mon–Fri 8–4").waitFor({ timeout: T });
+await page.getByTestId("call-result").getByRole("button", { name: "Apply" }).click();
+await page.getByTestId("status-line").getByText(/^Office says the referral was not received, resend via portal/).waitFor({ timeout: T });
+await page.goto(`${WEB}/`);
+await page.getByTestId("row-R-101").getByTestId("row-status").getByText("Office says not received").waitFor({ timeout: T });
+await page.getByTestId("row-R-101").getByRole("button", { name: "Resend referral" }).click();
+await page.waitForURL(`${WEB}/referrals/R-101`);
+const send = page.getByRole("region", { name: "Resend referral" });
+await send.getByRole("button", { name: "Copy text" }).click();
+await page.getByTestId("timeline").getByText("Referral resent").waitFor({ timeout: T });
+await page.goto(`${WEB}/`);
+assert(!(await page.getByTestId("row-R-101").getByTestId("row-status").innerText()).includes("Office says not received"), "flag not cleared");
+console.log("3 not received: flagged, resend clears it");
+
+// 4. No answer
+const noAns = await (await page.request.post(`${WEB}/api/test/calls`, { data: { referral_id: "R-102" } })).json();
+await page.request.post(`${WEB}/api/test/calls/${noAns.call.id}/finish`, { data: { status: "done", duration_secs: 30, turns: [] } });
+await page.getByTestId("row-R-102").getByTestId("row-call").getByText("No answer, try again").waitFor({ timeout: T });
+console.log("4 no answer shown on the row");
+
+// 5. Clinicians never get call buttons.
 const clin = await (await browser.newContext()).newPage();
 await clin.goto(`${WEB}/sign-in`);
 await clin.getByRole("button", { name: "Sign in as clinician (sample)" }).click();
 await clin.waitForURL(`${WEB}/inbox`);
-await clin.goto(`${WEB}/referrals/R-102`);
+await clin.goto(`${WEB}/referrals/R-109`);
 await clin.getByRole("heading", { level: 1 }).waitFor({ timeout: T });
-if (await clin.getByRole("button", { name: "Call office (AI)" }).count()) throw new Error("clinician sees the AI call");
+assert(await clin.getByRole("button", { name: /^Call office/ }).count() === 0, "clinician sees Call office");
 await page.request.post(`${WEB}/api/test/reset`);
 await browser.close();
 console.log("CALL UI PASS");

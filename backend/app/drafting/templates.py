@@ -100,7 +100,7 @@ TEMPLATES: dict[str, list[tuple[str, list[str]]]] = {
 }
 
 # Rules without a message template (the action is the coordinator's own, e.g. PT-1).
-NO_TEMPLATE = frozenset({"pt1_not_requested"})
+NO_TEMPLATE = frozenset({"pt1_not_requested", "office_not_received"})  # these need an action, not a message
 
 
 def template_key(flag: StuckFlag) -> str:

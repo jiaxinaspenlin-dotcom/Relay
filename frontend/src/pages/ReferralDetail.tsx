@@ -13,6 +13,7 @@ import { ErrorNote, Loading } from "../components/Status";
 import { Timeline } from "../components/Timeline";
 import { Button, Chip, Field, Muted, Panel, SampleTag, btn, inputCls } from "../components/ui";
 import { useMe } from "../components/useMe";
+import { CallPanel, useCallMode, useCallOffice } from "../components/OfficeCall";
 
 function SendPanel({ d }: { d: Detail }) {
   const qc = useQueryClient();
@@ -23,8 +24,11 @@ function SendPanel({ d }: { d: Detail }) {
     onSuccess: () => qc.invalidateQueries(),
   });
   const draft = d.card.stage === "draft";
+  // After an AI call where the office said it never got the referral, this is the next step.
+  const resend = d.card.stuck.some((f) => f.rule === "office_not_received");
   return (
-    <Panel title={draft ? copy.send.draftTitle : copy.send.sendAgain} id="send-h" className={draft ? "border-hemlock" : ""}>
+    <Panel title={draft ? copy.send.draftTitle : resend ? copy.dashboard.actions.resend : copy.send.sendAgain} id="send-h"
+      className={draft || resend ? "border-hemlock" : ""}>
       {draft && <p className="mb-3">{copy.send.draftNote}</p>}
       <SendButtons rid={rid} subject={msg.data?.subject ?? ""} text={msg.data?.text ?? ""} primary={draft ? "copy" : null}
         disabled={!msg.data || send.isPending} send={(c) => send.mutateAsync(c)} />
@@ -128,6 +132,9 @@ export default function ReferralDetail() {
   const [drawer, setDrawer] = useState<DrawerState>(null);
   const [barrier, setBarrier] = useState(false);
   const callKind = useCallKind();
+  const mode = useCallMode();
+  const callOffice = useCallOffice();
+  const calls = useQuery({ queryKey: ["calls", rid], queryFn: () => api.calls(rid), ...LIVE });
   // Clinicians read; coordinators do the logistics (the server enforces the same split).
   const coordinator = useMe()?.role !== "clinician";
   if (q.isLoading) return <Loading />;
@@ -139,7 +146,9 @@ export default function ReferralDetail() {
   const failure = flag ? FAILURE_RULES.has(flag.rule) : false;
   const unit = (f: typeof flag) => (f!.unit === "business days" ? (f!.threshold === 1 ? "business day" : "business days") : f!.threshold === 1 ? "day" : "days");
   const route = c.miles === null ? `${c.patient.town} to ${c.performer.town}` : c.miles === 0 ? `${c.patient.town}, same town` : `${c.patient.town} to ${c.performer.town}, ${c.miles} mi`;
-  const followUpAvailable = c.stuck.some((f) => f.rule !== "pt1_not_requested");
+  const followUpAvailable = c.stuck.some((f) => f.rule !== "pt1_not_requested" && f.rule !== "office_not_received");
+  const latestCall = calls.data?.calls[0];
+  const ringing = latestCall?.status === "calling";
   if (params.get("followup") === "1" && !drawer && followUpAvailable) {
     setTimeout(() => { setDrawer({ kind: "follow_up", rid }); setParams({}); }, 0);
   }
@@ -166,10 +175,20 @@ export default function ReferralDetail() {
             <SampleTag show={c.sample} />
           </div>
         </div>
-        {coordinator && c.can_call && (
-          <button type="button" className={btn("primary")} onClick={() => setDrawer({ kind: callKind, rid })}>
-            {callKind === "call" ? t.callAi : t.logUpdate}
-          </button>
+        {coordinator && ringing && (
+          <p role="status" data-testid="header-call-status" className="flex min-h-[40px] items-center gap-2 font-semibold text-hemlock">
+            <span aria-hidden="true" className="h-2.5 w-2.5 animate-pulse rounded-full bg-hemlock" />
+            {copy.phoneCall.calling(latestCall!.practice)}
+          </p>
+        )}
+        {coordinator && c.can_call && !ringing && (
+          <div className="space-y-1">
+            <button type="button" className={btn("primary")} disabled={callOffice.isPending}
+              onClick={() => (mode === "phone" ? callOffice.mutate(rid) : setDrawer({ kind: callKind, rid }))}>
+              {mode === "phone" ? copy.phoneCall.callOffice : callKind === "call" ? t.callAi : t.logUpdate}
+            </button>
+            {callOffice.error && <ErrorNote error={callOffice.error} />}
+          </div>
         )}
       </header>
 
@@ -184,6 +203,11 @@ export default function ReferralDetail() {
           </ul>
         )}
       </Panel>
+
+      {coordinator && (
+        <CallPanel d={d} onEdit={(prefill) => setDrawer({ kind: "update", rid, prefill })}
+          onPatientMessage={() => setDrawer({ kind: "patient", rid })} />
+      )}
 
       {coordinator && c.stage === "draft" && <SendPanel d={d} />}
 

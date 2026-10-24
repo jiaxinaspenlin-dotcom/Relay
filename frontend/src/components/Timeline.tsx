@@ -13,7 +13,10 @@ function describe(it: TimelineItem): { what: string; meta: string } {
   const what = it.event_kind === "stage" || !it.event_kind ? t.stage[it.stage!] ?? it.stage! : it.note ?? "";
   const note = it.event_kind === "stage" || !it.event_kind ? it.note ?? "" : "";
   if (it.source === "link") return { what, meta: [t.officeLink, note].filter(Boolean).join(". ") };
-  if (it.source === "ai_call") return { what, meta: [t.by("AI call", it.by || "coordinator"), note].filter(Boolean).join(". ") };
+  if (it.source === "ai_call") {
+    const who = t.by("AI call", it.by || "coordinator") + (it.call_duration ? `, ${it.call_duration}` : "");
+    return { what, meta: [who, note].filter(Boolean).join(". ") };
+  }
   if (it.by && it.source) return { what, meta: [t.by(`${cap(t.source[it.source] ?? it.source)}, logged`, it.by), note].filter(Boolean).join(". ") };
   if (it.by) return { what: t.by(what, it.by), meta: note };
   const who = t.actor[it.actor!] ?? it.actor ?? "";

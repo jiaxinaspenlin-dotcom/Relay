@@ -127,7 +127,7 @@ def test_session_needs_env(sample, monkeypatch):
     monkeypatch.setenv("ELEVENLABS_API_KEY", "")
     monkeypatch.setenv("ELEVENLABS_AGENT_ID", "")
     assert sample.post("/api/referrals/R-102/call-session").status_code == 503
-    assert sample.get("/api/config").json() == {"voice_enabled": False}
+    assert sample.get("/api/config").json()["voice_enabled"] is False
 
 
 def test_session_gating_and_variables(sample, monkeypatch):
@@ -150,7 +150,7 @@ def test_session_gating_and_variables(sample, monkeypatch):
     }
     assert seen["params"] == {"agent_id": "agent_123"} and seen["headers"] == {"xi-api-key": "test-key"}
     assert "test-key" not in r.text
-    assert sample.get("/api/config").json() == {"voice_enabled": True}
+    assert sample.get("/api/config").json()["voice_enabled"] is True
     # Not stuck at Sent or Received → 403
     for rid in ("R-104", "R-103", "R-106"):
         assert sample.post(f"/api/referrals/{rid}/call-session").status_code == 403

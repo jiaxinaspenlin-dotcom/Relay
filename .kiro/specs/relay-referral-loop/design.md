@@ -104,6 +104,7 @@ MA insurance type and is referenced from ServiceRequest.insurance.
 | Plan not acknowledged | 3 days | "Plan received {n} days ago, not yet reviewed by PCP" | "Plan not reviewed, {n} days" | Follow up |
 | Declined, not re-routed | 2 days | "Declined {n} days ago, no new referral" | "Declined, not re-routed" | Follow up |
 | No-show | immediate | "Missed appointment on {date}" | "Missed appointment" | Message patient |
+| Office says not received (after an AI call) | immediate | "Office says the referral was not received, resend via {method}" | "Office says not received" | Resend referral |
 | MassHealth ride not requested | appointment within 3 business days | "Appointment on {date}, MassHealth ride (PT-1) not requested" | "Ride not requested" | Open |
 
 The PT-1 rule applies to MassHealth and dual-eligible patients with an open transportation barrier
@@ -216,6 +217,16 @@ Plan back → Closed) is the signature element, repeated on every card and page.
    for the demo).
 5. **PCP inbox:** returned plans beside the original reason and timeline. "Acknowledge & close".
 6. **Patient status (SHOULD):** plain-language stepper, appointment city and date, barrier self-report.
+
+**AI phone calls (`call/phone.py`).** `call-office` posts to ElevenLabs' Twilio outbound-call
+endpoint with `to_number = OFFICE_TEST_NUMBER` (hard rule) and the referral's dynamic variables,
+then stores a `call_attempts` row (status `calling`). One daemon poller reads open calls from
+SQLite every 5 s and GETs the conversation: `done` with an office turn → transcript pipeline →
+`ready_for_review`; `done` with no office turn → `no_answer` "No one answered"; `failed` → "Call
+failed"; over 10 minutes → timed out. Apply turns the result into one Log update (or, for "not
+received", a call event plus `office_not_received`) with `source = ai_call` and the call length.
+Dashboard rows show "Calling {practice}…", "Call finished, review update", or "No answer, try
+again". e2e scripts replace call-office with an e2e-only fake call, so tests never dial anyone.
 
 ## 10. Demo script (3 minutes)
 1. **0:00** Read the brief's two failure lines. "Relay catches both." Dashboard: Needs attention shows

@@ -150,6 +150,8 @@ def test_clinicians_cannot_do_logistics(client, clinician):
         ("post", "/api/referrals/R-102/office-phone", {"phone": "413-555-0100"}),
         ("post", "/api/referrals/R-102/communications", {"recipient": "patient", "text": "Hi"}),
         ("post", "/api/referrals/R-102/call-session", None),
+        ("post", "/api/referrals/R-102/call-office", None),
+        ("post", "/api/referrals/R-102/calls/call-x/apply", None),
     ]
     for method, path, body in writes:
         r = getattr(clinician, method)(path, json=body) if body is not None else getattr(clinician, method)(path)

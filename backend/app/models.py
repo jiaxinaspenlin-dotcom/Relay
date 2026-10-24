@@ -73,9 +73,10 @@ class Event(_Model):
     note: str = ""
     source: Optional[UpdateSource] = None
     # "stage" = a stage transition; others record field changes without moving the stage.
-    kind: Literal["stage", "authorization", "barrier", "transport", "phone"] = "stage"
+    kind: Literal["stage", "authorization", "barrier", "transport", "phone", "call", "resend"] = "stage"
     by: str = ""  # the signed-in user who acted (empty for the office link)
     user_id: str = ""
+    call_duration: str = ""  # AI phone call length, e.g. "1 min 32 s" (source = ai_call)
 
 
 class Appointment(_Model):
@@ -190,6 +191,9 @@ class Referral(_Model):
     authorization_since: Optional[date] = None
     pt1_status: Literal["not_started", "requested", "confirmed"] = "not_started"
     transport_plan: str = ""  # free text for non-MassHealth patients
+    # Set when the office says (on an AI call) it never got the referral; cleared by a resend.
+    office_not_received: Optional[date] = None
+    office_resend_method: Optional[Literal["fax", "portal", "email", "unknown"]] = None
 
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 

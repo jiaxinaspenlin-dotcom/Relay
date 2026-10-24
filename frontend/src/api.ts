@@ -8,7 +8,7 @@ export type StuckFlag = {
   threshold: number;
   unit: string;
   recipient: string;
-  action: "call_office" | "follow_up" | "send_records" | "message_patient" | "open";
+  action: "call_office" | "follow_up" | "send_records" | "message_patient" | "resend" | "open";
   challenge_failure: number | null;
 };
 
@@ -50,6 +50,34 @@ export type Card = {
   stuck: StuckFlag[];
   can_call: boolean;
   reviewer: string | null;
+  call?: CallBrief | null; // newest AI phone call (dashboard only)
+};
+
+export type CallStatus = "calling" | "ready_for_review" | "no_answer" | "applied";
+export type CallBrief = { id: string; status: CallStatus; reason: string; practice: string; started_at: string };
+export type CallResult = {
+  received: "yes" | "no" | "unknown";
+  missing_items: string[];
+  patient_contacted: "yes" | "no" | "unknown";
+  scheduling_phone: string | null;
+  scheduling_hours: string | null;
+  resend_method: "fax" | "portal" | "email" | "unknown";
+  note: string;
+  proposed_stage: "Received-complete" | "Received-incomplete" | "Patient contacted" | null;
+  proposed_action: string | null;
+  validation_errors: string[];
+  summary: string;
+};
+export type CallAttempt = CallBrief & {
+  referral_id: string;
+  user_name: string;
+  finished_at: string | null;
+  duration_secs: number | null;
+  duration_label: string;
+  transcript: { role: "agent" | "user"; message: string }[];
+  result: CallResult | null;
+  summary: string;
+  applied_by: string | null;
 };
 
 export type Dashboard = {
@@ -71,6 +99,7 @@ export type Dashboard = {
 export type TimelineItem = {
   kind: "event" | "communication";
   event_kind?: string;
+  call_duration?: string;
   at: string;
   id?: string;
   stage?: string;
@@ -286,7 +315,7 @@ export const api = {
   sampleSignIn: (role: "coordinator" | "clinician") => post<{ user: User; home: string }>("/api/auth/sample-sign-in", { role }),
   setup: (body: { name: string; email: string; password: string; practice: string }) => post<{ user: User; home: string }>("/api/auth/setup", body),
   signOut: () => post<{ ok: boolean }>("/api/auth/sign-out", {}),
-  config: () => request<{ voice_enabled: boolean }>("/api/config"),
+  config: () => request<{ voice_enabled: boolean; phone_calling_enabled: boolean }>("/api/config"),
   dashboard: () => request<Dashboard>("/api/dashboard"),
   settings: () => request<Settings>("/api/settings"),
   updateSettings: (body: { practice?: Settings["practice"] }) => post<Settings>("/api/settings", body),
@@ -311,7 +340,10 @@ export const api = {
   referralMessage: (rid: string) => request<Message>(`/api/referrals/${rid}/message`),
   sendReferral: (rid: string, channel: "copy" | "email" | "print") =>
     post<Detail & { message: Message; communication_id: string }>(`/api/referrals/${rid}/send`, { channel }),
-  logUpdate: (rid: string, body: UpdateBody & { source: string }) => post<Detail>(`/api/referrals/${rid}/updates`, body),
+  logUpdate: (rid: string, body: UpdateBody & { source: string; call_id?: string }) => post<Detail>(`/api/referrals/${rid}/updates`, body),
+  callOffice: (rid: string) => post<{ call: CallAttempt }>(`/api/referrals/${rid}/call-office`, {}),
+  calls: (rid: string) => request<{ calls: CallAttempt[] }>(`/api/referrals/${rid}/calls`),
+  applyCall: (rid: string, cid: string) => post<Detail & { call: CallAttempt }>(`/api/referrals/${rid}/calls/${cid}/apply`, {}),
   addBarrier: (rid: string, type: string, note: string) => post<Detail>(`/api/referrals/${rid}/barriers`, { type, note }),
   setTransport: (rid: string, body: { pt1_status?: string; transport_plan?: string }) => post<Detail>(`/api/referrals/${rid}/transport`, body),
   setOfficePhone: (rid: string, phone: string) => post<Detail>(`/api/referrals/${rid}/office-phone`, { phone }),

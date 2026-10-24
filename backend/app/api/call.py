@@ -1,7 +1,12 @@
-"""AI call assistant endpoints, matching frontend/src/components/CallAssistant.tsx.
+"""AI call endpoints.
 
-The ElevenLabs API key stays on the server and is never logged or returned. Calls are offered
-only for referrals stuck at Sent or Received. Transcripts produce a suggestion; nothing is saved.
+Two ways to call the office, both for referrals stuck at Sent or Received, coordinators only:
+- call-office (default): a real phone call placed by the server (app/call/phone.py). It runs in
+  the background; the result waits for the coordinator to Apply, Edit, or ignore.
+- call-session / call-transcript: the in-browser CallAssistant (fallback when phone calling
+  isn't configured). Transcripts produce a suggestion; nothing is saved.
+
+The ElevenLabs API key stays on the server and is never logged or returned.
 """
 from __future__ import annotations
 
@@ -18,6 +23,9 @@ from app.dates import long
 from app.loop.stuck import stuck_flags
 from app.loop.timeline import first_event_date
 from app.api.auth import require_role
+from app.call import phone
+from app.loop.states import InvalidTransition, record_field_update
+from app.updates import UpdateBody, UpdateError, apply_update
 from app.store import get_repo
 from app.views import initials
 
@@ -102,6 +110,98 @@ def call_transcript(rid: str, body: TranscriptBody, request: Request) -> dict:
     except EmptyTranscript as e:
         raise HTTPException(400, str(e)) from e
     return {"conversation_id": body.conversation_id, "referral_id": rid, **out}
+
+
+# ---------------------------------------------------------------- background phone calls (E2)
+
+@router.post("/{rid}/call-office")
+def call_office(rid: str, request: Request) -> dict:
+    """Place a real phone call to the office (always OFFICE_TEST_NUMBER) and return at once."""
+    user = require_role(request, "coordinator", "call the office")
+    ref, patient = _eligible(rid)
+    repo = get_repo()
+    if any(c["status"] == "calling" for c in repo.calls_for(rid)):
+        raise HTTPException(409, "A call to this office is already in progress")
+    try:
+        call = phone.start_call(repo, ref, patient, user)
+    except phone.PhoneError as e:
+        raise HTTPException(502 if "configured" not in str(e) else 503, str(e)) from None
+    return {"call": phone.public(call)}
+
+
+@router.get("/{rid}/calls")
+def list_calls(rid: str) -> dict:
+    repo = get_repo()
+    try:
+        repo.get(rid)
+    except KeyError:
+        raise HTTPException(404, f"No referral {rid}") from None
+    return {"calls": [phone.public(c) for c in repo.calls_for(rid)]}
+
+
+def _call_for(rid: str, cid: str) -> dict:
+    try:
+        call = get_repo().call(cid)
+    except KeyError:
+        raise HTTPException(404, "No such call") from None
+    if call["referral_id"] != rid:
+        raise HTTPException(404, "No such call")
+    return call
+
+
+def call_note(res: dict) -> str:
+    """Extra facts from the call, written on the timeline event."""
+    return ". ".join(x for x in (
+        res.get("scheduling_phone") and f"Scheduling phone {res['scheduling_phone']}",
+        res.get("scheduling_hours") and f"Hours {res['scheduling_hours']}",
+        res.get("note"),
+    ) if x)
+
+
+def mark_applied(cid: str, user) -> dict:
+    return get_repo().update_call(cid, status="applied", applied_by=user.name, applied_at=phone.now_iso())
+
+
+@router.post("/{rid}/calls/{cid}/apply")
+def apply_call(rid: str, cid: str, request: Request) -> dict:
+    """The coordinator confirms the call result. Stage changes go through loop/states.py."""
+    from app.api.referrals import _detail
+    user = require_role(request, "coordinator", "apply an AI call result")
+    call = _call_for(rid, cid)
+    if call["status"] != "ready_for_review":
+        raise HTTPException(409, "This call has no result waiting for review")
+    repo = get_repo()
+    ref = repo.get(rid)
+    res = call["result"] or {}
+    today = clock.today(repo)
+    kw = dict(at=today, actor="coordinator", source="ai_call", by=user.name, user_id=user.id)
+    extra = call_note(res)
+    try:
+        if res.get("received") == "no":
+            method = res.get("resend_method") or "unknown"
+            note = "Office says not received" + (f", resend via {method}" if method != "unknown" else "")
+            new = record_field_update(ref, "call", note=". ".join(x for x in (note, extra) if x), **kw)
+            if ref.stage == "sent":
+                new.office_not_received, new.office_resend_method = today, method
+        elif res.get("proposed_stage"):
+            stage = res["proposed_stage"]
+            body = UpdateBody(
+                action={"Received-complete": "received", "Received-incomplete": "missing",
+                        "Patient contacted": "patient_contacted"}[stage],
+                missing=res.get("missing_items") or [], note=extra,
+                contact_mode="office_called" if stage == "Patient contacted" else None)
+            new = apply_update(ref, body, actor="coordinator", source="ai_call", today=today,
+                               by=user.name, user_id=user.id)
+        else:
+            new = record_field_update(ref, "call", note=". ".join(x for x in (res.get("summary"), extra) if x), **kw)
+    except UpdateError as e:
+        raise HTTPException(422, str(e)) from e
+    except InvalidTransition as e:
+        raise HTTPException(409, str(e)) from e
+    new.events[-1].call_duration = phone.duration_label(call.get("duration_secs"))
+    repo.put(new)
+    call = mark_applied(cid, user)
+    return {**_detail(new), "call": phone.public(call)}
 
 
 __all__ = ["router", "long", "long_month"]

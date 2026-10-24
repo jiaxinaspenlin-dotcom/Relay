@@ -162,6 +162,11 @@ def send_referral(rid: str, body: SendReferral, request: Request) -> dict:
     if ref.stage == "draft":
         new = transition(ref, "sent", at=clock.today(repo), actor=_actor(user), by=user.name,
                          user_id=user.id, note={"copy": "Copied for sending", "email": "Opened in email", "print": "Printed for fax"}[body.channel])
+    elif ref.office_not_received is not None:
+        # A resend after the office said it never got the referral clears "Office says not received".
+        new = record_field_update(ref, "resend", at=clock.today(repo), actor=_actor(user), by=user.name,
+                                  user_id=user.id, note="Referral resent")
+        new.office_not_received = None
     new = _comm(new, user, recipient="specialist", text=msg["text"], kind="referral", channel=body.channel)
     return {**_save(new), "message": msg, "communication_id": new.communications[-1].id}
 
@@ -170,6 +175,7 @@ def send_referral(rid: str, body: SendReferral, request: Request) -> dict:
 
 class LogUpdate(UpdateBody):
     source: Literal["phone", "fax", "email", "ai_call", "other"]
+    call_id: Optional[str] = None  # an AI phone call result the coordinator edited before saving
 
 
 @router.post("/referrals/{rid}/updates")
@@ -177,12 +183,25 @@ def log_update(rid: str, body: LogUpdate, request: Request) -> dict:
     user = require_role(request, "coordinator", "log updates")
     repo = get_repo()
     try:
-        new = apply_update(_get(rid), body, actor=_actor(user), source=body.source, today=clock.today(repo),
-                           by=user.name, user_id=user.id)
+        call = None
+        if body.call_id:
+            from app.api.call import _call_for
+            call = _call_for(rid, body.call_id)
+            if call["status"] != "ready_for_review":
+                raise HTTPException(409, "This call has no result waiting for review")
+        new = apply_update(_get(rid), body, actor=_actor(user), source="ai_call" if call else body.source,
+                           today=clock.today(repo), by=user.name, user_id=user.id)
     except UpdateError as e:
         raise HTTPException(422, str(e)) from e
     except InvalidTransition as e:
         raise HTTPException(409, str(e)) from e
+    if call:
+        from app.api.call import mark_applied
+        from app.call.phone import duration_label
+        new.events[-1].call_duration = duration_label(call.get("duration_secs"))
+        out = _save(new)
+        mark_applied(call["id"], user)
+        return out
     return _save(new)
 
 

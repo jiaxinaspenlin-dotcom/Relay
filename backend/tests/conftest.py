@@ -16,6 +16,18 @@ COORD = {"name": "Casey Reed", "email": "casey@example.test", "role": "coordinat
 CLIN = {"name": "Dr. Jo Park", "email": "jo@example.test", "role": "clinician", "password": "clin-pass-1"}
 
 
+@pytest.fixture(autouse=True)
+def no_real_phone_calls(monkeypatch):
+    """Tests never place a real call or reach ElevenLabs: the poller is off and both network
+    functions fail loudly unless a test replaces them."""
+    from app.call import phone
+    monkeypatch.setattr(phone, "POLLER_ENABLED", False)
+    def blocked(*a, **k):
+        raise AssertionError("a test tried to reach ElevenLabs")
+    monkeypatch.setattr(phone, "_post", blocked)
+    monkeypatch.setattr(phone, "fetch_conversation", blocked)
+
+
 @pytest.fixture(scope="session")
 def seed() -> dict:
     """Sample archetypes as of the fixed test date (sample dates are offsets from load time)."""
