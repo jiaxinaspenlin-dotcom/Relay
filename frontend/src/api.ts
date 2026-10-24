@@ -8,8 +8,10 @@ export type StuckFlag = {
   threshold: number;
   unit: string;
   recipient: string;
-  action: "call_office" | "follow_up" | "send_records" | "message_patient" | "resend" | "open";
+  action: NextActionKey;
   challenge_failure: number | null;
+  label: string;
+  clause: string;
 };
 
 export type StepperItem = { stage: string; label: string; at: string | null };
@@ -50,11 +52,16 @@ export type Card = {
   stuck: StuckFlag[];
   can_call: boolean;
   reviewer: string | null;
+  tab: "lost" | "waiting" | "ontrack";
+  row_status: string; // "Not scheduled, 14 days · Missing insurance authorization"
+  status_sentence: string; // detail: one sentence with times and limits
+  next_action: { key: NextActionKey; label: string } | null;
   call?: CallBrief | null; // newest AI phone call (dashboard only)
 };
 
+export type NextActionKey = "call_office" | "send_records" | "request_authorization" | "follow_up" | "message_patient" | "resend" | "request_ride";
 export type CallStatus = "calling" | "ready_for_review" | "no_answer" | "applied";
-export type CallBrief = { id: string; status: CallStatus; reason: string; practice: string; started_at: string };
+export type CallBrief = { id: string; status: CallStatus; phase?: string | null; phase_at?: string | null; reason: string; practice: string; started_at: string };
 export type CallResult = {
   received: "yes" | "no" | "unknown";
   missing_items: string[];
@@ -277,7 +284,7 @@ export type UpdateBody = {
 };
 
 export type User = { id: string; name: string; email: string; role: "coordinator" | "clinician"; practice: string; sample: boolean };
-export type AuthStatus = { has_users: boolean; has_sample: boolean; sample_accounts: { role: string; email: string }[] };
+export type AuthStatus = { has_users: boolean; has_sample: boolean; sample_accounts: { role: string; email: string; name: string }[] };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, { credentials: "same-origin", ...init, headers: { "Content-Type": "application/json", ...(init?.headers || {}) } });
@@ -347,7 +354,7 @@ export const api = {
   addBarrier: (rid: string, type: string, note: string) => post<Detail>(`/api/referrals/${rid}/barriers`, { type, note }),
   setTransport: (rid: string, body: { pt1_status?: string; transport_plan?: string }) => post<Detail>(`/api/referrals/${rid}/transport`, body),
   setOfficePhone: (rid: string, phone: string) => post<Detail>(`/api/referrals/${rid}/office-phone`, { phone }),
-  draft: (rid: string) => request<Draft>(`/api/referrals/${rid}/draft`),
+  draft: (rid: string, rule?: string) => request<Draft>(`/api/referrals/${rid}/draft${rule ? `?rule=${encodeURIComponent(rule)}` : ""}`),
   patientMessage: (rid: string) => request<PatientMessage>(`/api/referrals/${rid}/patient-message`),
   sendMessage: (rid: string, body: { recipient: string; text: string; rule?: string; drafted_text: string; channel: string; kind: string }) =>
     post<Detail & { communication_id: string }>(`/api/referrals/${rid}/communications`, body),

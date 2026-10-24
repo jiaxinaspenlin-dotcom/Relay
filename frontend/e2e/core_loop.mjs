@@ -32,7 +32,7 @@ await coord.request.post(`${WEB}/api/test/reset`);
 await coord.request.post(`${WEB}/api/sample-data`); // brand-new install: gives the sample accounts
 async function signIn(page, role) {
   await page.goto(`${WEB}/sign-in`);
-  await page.getByRole("button", { name: `Sign in as ${role} (sample)` }).click();
+  await page.getByRole("button", { name: new RegExp(`${role} \\(sample\\)`) }).click();
   await page.waitForURL((u) => !u.pathname.startsWith("/sign-in"), { timeout: T });
 }
 const SAM = "coordinator";
@@ -48,7 +48,9 @@ async function officeAct(label, fill) {
   await office.getByTestId("office-done").waitFor({ timeout: T });
 }
 // The dashboard and detail are open in the coordinator's browser; they must update on their own.
-async function seesOnDashboard(text) {
+// Rows live in tabs; clicking a tab doesn't reload the data.
+async function seesOnDashboard(text, tab) {
+  await coord.getByTestId(`tab-${tab}`).click();
   await row().getByTestId("row-status").getByText(text).waitFor({ timeout: T });
 }
 
@@ -70,17 +72,17 @@ await step("new referral: add patient inline, specialty, finder, send", async ()
   await coord.getByRole("button", { name: "Open in email" }).click();
   await coord.waitForURL(/\/referrals\/R-\d+$/, { timeout: T });
   rid = coord.url().split("/").pop();
-  href = await coord.getByTestId("office-link").getAttribute("href");
+  href = await coord.getByTestId("office-link").getAttribute("data-href");
   await coord.getByTestId("timeline").getByText("Referral sent").waitFor({ timeout: T });
   await coord.getByTestId("referral-hint").getByText(/130 CMR 450\.118\(J\)/).waitFor();
 });
 await step("dashboard shows it as Sent (on track)", async () => {
-  await coord.goto(WEB);
-  await coord.getByTestId("on-track").getByTestId(`row-${rid}`).getByText("Sent").waitFor({ timeout: T });
+  await coord.goto(`${WEB}/?tab=ontrack`);
+  await coord.getByTestId("on-track").getByTestId(`row-${rid}`).getByText(/^Sent /).waitFor({ timeout: T });
 });
 await step("office: Something is missing → dashboard 'Missing test results' without reload", async () => {
   await officeAct("Something is missing", (p) => p.getByLabel("Test results").check());
-  await seesOnDashboard("Missing test results");
+  await seesOnDashboard("Missing test results", "waiting");
 });
 await step("office: Received → detail updates without reload", async () => {
   await coord.goto(`${WEB}/referrals/${rid}`);
@@ -101,7 +103,7 @@ await step("office: Scheduled (date + time)", async () => {
 await step("office: No-show → dashboard 'Missed appointment'", async () => {
   await officeAct("No-show");
   await coord.goto(WEB);
-  await seesOnDashboard("Missed appointment");
+  await seesOnDashboard("Missed appointment", "waiting");
 });
 await step("office: Scheduled again, Seen", async () => {
   await officeAct("Scheduled", async (p) => {
@@ -109,7 +111,7 @@ await step("office: Scheduled again, Seen", async () => {
     await p.getByLabel("Time", { exact: true }).fill("09:00");
   });
   await officeAct("Seen");
-  await coord.getByTestId(`row-${rid}`).getByTestId("row-status").getByText("Seen").waitFor({ timeout: T });
+  await seesOnDashboard(/^Seen /, "ontrack");
 });
 await step("office: Return plan → Inbox", async () => {
   await officeAct("Return plan", async (p) => {
@@ -122,12 +124,13 @@ await step("office: Return plan → Inbox", async () => {
 });
 await step("Acknowledge and close → timeline Closed", async () => {
   await coord.getByTestId(`inbox-${rid}`).getByRole("button", { name: "Acknowledge and close" }).click();
+  await coord.getByTestId(`inbox-${rid}`).getByRole("button", { name: "Yes, close" }).click();
   await coord.getByTestId(`inbox-${rid}`).waitFor({ state: "detached", timeout: T });
   await coord.goto(`${WEB}/referrals/${rid}`);
-  await coord.getByTestId("timeline").getByText("Closed by Dr. Avery Lin", { exact: true }).waitFor({ timeout: T });
+  await coord.getByTestId("timeline").getByText(/^By Dr\. Avery Lin/).waitFor({ timeout: T });
 });
 await step("FHIR export validates", async () => {
-  const [dl] = await Promise.all([coord.waitForEvent("download", { timeout: T }), coord.getByRole("link", { name: "Download FHIR" }).click()]);
+  const [dl] = await Promise.all([coord.waitForEvent("download", { timeout: T }), coord.getByRole("button", { name: "Export" }).click().then(() => coord.getByRole("menuitem", { name: /Export for EHR/ }).click())]);
   const file = path.join(ROOT, `.e2e-core-fhir.json`);
   await dl.saveAs(file);
   const out = execFileSync(path.join(ROOT, ".venv/bin/python"), ["-c", `

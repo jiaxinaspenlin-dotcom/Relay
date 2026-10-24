@@ -5,13 +5,14 @@ import { copy } from "../copy";
 import { SendButtons, type Channel } from "./SendButtons";
 import { ErrorNote, Loading } from "./Status";
 import { UpdateForm, type UpdatePrefill } from "./UpdateForm";
+import { useToast } from "./Toast";
 import { Button, Drawer, Field, Muted, inputCls } from "./ui";
 import type { CallSuggestion } from "./CallAssistant";
 
 const CallAssistant = lazy(() => import("./CallAssistant"));
 
-export type DrawerKind = "update" | "follow_up" | "patient" | "call";
-export type DrawerState = { kind: DrawerKind; rid: string; prefill?: UpdatePrefill | null } | null;
+export type DrawerKind = "update" | "follow_up" | "patient" | "call" | "resend";
+export type DrawerState = { kind: DrawerKind; rid: string; prefill?: UpdatePrefill | null; rule?: string } | null;
 
 /** AI call suggestion → Log update prefill. The coordinator still has to press Save. */
 export function suggestionToPrefill(s: CallSuggestion): UpdatePrefill | null {
@@ -35,9 +36,10 @@ function UpdateDrawer({ rid, prefill, onClose }: { rid: string; prefill?: Update
   );
 }
 
-function FollowUpDrawer({ rid, onClose }: { rid: string; onClose: () => void }) {
+function FollowUpDrawer({ rid, rule, onClose }: { rid: string; rule?: string; onClose: () => void }) {
   const qc = useQueryClient();
-  const draft = useQuery({ queryKey: ["draft", rid], queryFn: () => api.draft(rid) });
+  const toast = useToast();
+  const draft = useQuery({ queryKey: ["draft", rid, rule], queryFn: () => api.draft(rid, rule) });
   const [text, setText] = useState("");
   useEffect(() => { if (draft.data) setText(draft.data.text); }, [draft.data]);
   const t = copy.drawer;
@@ -47,7 +49,7 @@ function FollowUpDrawer({ rid, onClose }: { rid: string; onClose: () => void }) 
       const r = await api.sendMessage(rid, { recipient: d.recipient, text, rule: d.rule, drafted_text: d.text, channel, kind: "follow_up" });
       return r.communication_id;
     },
-    onSuccess: () => { qc.invalidateQueries(); onClose(); },
+    onSuccess: () => { qc.invalidateQueries(); toast(copy.toast.followUp(draft.data!.recipient_label.toLowerCase())); onClose(); },
   });
   return (
     <Drawer title={t.followUp} onClose={onClose}>
@@ -89,10 +91,11 @@ function PatientDrawer({ rid, onClose }: { rid: string; onClose: () => void }) {
     mutationFn: () => api.setOfficePhone(rid, phone),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["patient-message", rid] }); qc.invalidateQueries({ queryKey: ["referral", rid] }); },
   });
+  const toast = useToast();
   const send = useMutation({
     mutationFn: async (channel: Channel) =>
       (await api.sendMessage(rid, { recipient: "patient", text, drafted_text: msg.data!.text, channel, kind: "patient_message" })).communication_id,
-    onSuccess: () => { qc.invalidateQueries(); onClose(); },
+    onSuccess: () => { qc.invalidateQueries(); toast(copy.toast.patient); onClose(); },
   });
   const t = copy.detail;
   return (
@@ -131,11 +134,43 @@ function CallDrawer({ rid, onClose, onSuggestion }: { rid: string; onClose: () =
   );
 }
 
+/** Send (or resend) the referral to the office: copy / email / print, recorded as a Communication. */
+export function SendReferral({ rid, primary, resend = true, onSent }: { rid: string; primary?: Channel | null; resend?: boolean; onSent?: () => void }) {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const msg = useQuery({ queryKey: ["message", rid], queryFn: () => api.referralMessage(rid) });
+  const send = useMutation({
+    mutationFn: async (c: Channel) => (await api.sendReferral(rid, c)),
+    onSuccess: (d) => {
+      qc.invalidateQueries();
+      toast((resend ? copy.toast.resent : copy.toast.sent)(d.referral.performer.name));
+      onSent?.();
+    },
+  });
+  return (
+    <div className="space-y-3">
+      <SendButtons rid={rid} subject={msg.data?.subject ?? ""} text={msg.data?.text ?? ""} primary={primary ?? null}
+        disabled={!msg.data || send.isPending} send={async (c) => (await send.mutateAsync(c)).communication_id} />
+      {send.error && <ErrorNote error={send.error} />}
+      <Muted className="block">{copy.delivery}</Muted>
+    </div>
+  );
+}
+
+function ResendDrawer({ rid, onClose }: { rid: string; onClose: () => void }) {
+  return (
+    <Drawer title={copy.dashboard.actions.resend} onClose={onClose}>
+      <SendReferral rid={rid} onSent={onClose} />
+    </Drawer>
+  );
+}
+
 export function ActionDrawers({ state, setState }: { state: DrawerState; setState: (s: DrawerState) => void }) {
   if (!state) return null;
   const close = () => setState(null);
   if (state.kind === "update") return <UpdateDrawer rid={state.rid} prefill={state.prefill} onClose={close} />;
-  if (state.kind === "follow_up") return <FollowUpDrawer rid={state.rid} onClose={close} />;
+  if (state.kind === "follow_up") return <FollowUpDrawer rid={state.rid} rule={state.rule} onClose={close} />;
+  if (state.kind === "resend") return <ResendDrawer rid={state.rid} onClose={close} />;
   if (state.kind === "patient") return <PatientDrawer rid={state.rid} onClose={close} />;
   return <CallDrawer rid={state.rid} onClose={close} onSuggestion={(p) => setState({ kind: "update", rid: state.rid, prefill: p })} />;
 }

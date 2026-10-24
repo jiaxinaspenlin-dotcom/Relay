@@ -13,8 +13,10 @@ const STAGE_RULES = new Set([
   "no_show", "declined_not_rerouted", "authorization_pending",
 ]);
 
+/** The flag a referral leads with: a challenge failure first (same order as the server's
+ * ordered_flags), then a stage rule, then anything else. */
 export function primaryFlag(flags: StuckFlag[]): StuckFlag | undefined {
-  return flags.find((f) => STAGE_RULES.has(f.rule)) ?? flags[0];
+  return flags.find((f) => FAILURE_RULES.has(f.rule)) ?? flags.find((f) => STAGE_RULES.has(f.rule)) ?? flags[0];
 }
 
 /** Grows from 0 to `target` once after mount, and again whenever the status key changes
@@ -72,7 +74,8 @@ export function RouteTrack({ steps, flags = [], labels = false }: { steps: Stepp
       {labels && (
         <ol className="mt-2 grid" style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}>
           {steps.map((s, i) => (
-            <li key={s.stage} className="text-center">
+            // Under 860px there's room for the current stage's label only (the track's aria-label lists all).
+            <li key={s.stage} className={`text-center ${i === current ? "" : "max-[859px]:invisible"}`}>
               <span className={`block text-caption ${s.at ? "text-ink" : "text-muted"} ${i === current && flag ? "font-semibold" : ""}`}>{s.label}</span>
               <span className="block text-[12px] leading-4 text-muted">{s.at ? shortDate(s.at) : ""}</span>
             </li>

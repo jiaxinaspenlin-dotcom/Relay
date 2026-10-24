@@ -37,8 +37,10 @@ class StuckFlag:
     threshold: int
     unit: str  # "days" or "business days"
     recipient: str  # who a follow-up goes to: specialist | patient | pcp | none
-    action: str  # call_office | follow_up | send_records | message_patient | resend | open
+    action: str  # call_office | follow_up | send_records | request_authorization | message_patient | resend | request_ride
     challenge_failure: Optional[int] = None  # 1 = never scheduled, 2 = plan never returned
+    label: str = ""  # the status without its time, for a second rule on one row: "Missing records"
+    clause: str = ""  # lower-case clause for the detail status sentence, with the limit
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -81,8 +83,12 @@ def stuck_flags(
     out: list[StuckFlag] = []
     stage = ref.stage
 
-    def flag(rule, days, message, status, key, unit, recipient, action, failure=None):
-        out.append(StuckFlag(rule, days, message, status, key, s[key], unit, recipient, action, failure))
+    def flag(rule, days, message, status, key, unit, recipient, action, failure=None, *, label, clause):
+        out.append(StuckFlag(rule, days, message, status, key, s[key], unit, recipient, action, failure,
+                             label=label, clause=clause))
+
+    def limit(key, unit):  # "(limit 7)"; never "limit 0"
+        return f" (limit {s[key]})" if s[key] > 0 else ""
 
     if stage == "sent" and ref.office_not_received is not None:
         # The office said on a call that it never got the referral: resend now (replaces the
@@ -91,7 +97,9 @@ def stuck_flags(
         n = (today - ref.office_not_received).days
         flag("office_not_received", n,
              "Office says the referral was not received" + (f", resend via {how}" if how else ", resend it"),
-             "Office says not received", "office_not_received_days", "days", "specialist", "resend")
+             f"Office says not received {short(ref.office_not_received)}", "office_not_received_days", "days",
+             "specialist", "resend", label="Office says not received",
+             clause="the office says it was not received" + (f"; resend via {how}" if how else "; resend it"))
     elif stage == "sent":
         sent = last_event_date(ref, "sent")
         resent = [e.at for e in ref.events if e.kind == "resend"]
@@ -103,16 +111,23 @@ def stuck_flags(
                 flag("sent_no_receipt", n,
                      f"Sent {_plural(n, 'business day')} ago, not confirmed received",
                      f"Not confirmed received, {_plural(n, 'business day')}",
-                     "sent_no_receipt_business_days", "business days", "specialist", "call_office")
+                     "sent_no_receipt_business_days", "business days", "specialist", "call_office",
+                     label="Not confirmed received",
+                     clause=f"not confirmed received after {_plural(n, 'business day')}"
+                            + limit("sent_no_receipt_business_days", "business days"))
 
     if stage == "received" and ref.receipt is not None and not ref.receipt.complete:
         since = last_event_date(ref, "received")
         n = (today - since).days if since else 0
         items = missing_text(ref.receipt.missing)
         if n >= s["received_incomplete_days"]:
+            action = ("send_records" if "records" in ref.receipt.missing
+                      else "request_authorization" if "insurance_authorization" in ref.receipt.missing
+                      else "follow_up")
             flag("received_incomplete", n, f"Received incomplete, missing {items}",
-                 f"Missing {items}", "received_incomplete_days", "days", "specialist",
-                 "send_records" if "records" in ref.receipt.missing else "follow_up")
+                 f"Missing {items}, {_plural(n, 'day') if n else 'today'}", "received_incomplete_days", "days",
+                 "specialist", action, label=f"Missing {items}",
+                 clause=f"missing {items}" + (f" for {_plural(n, 'day')}" if n else ""))
 
     if stage in ("received", "patient_contacted"):
         got = first_event_date(ref, "received")
@@ -124,7 +139,11 @@ def stuck_flags(
                 flag("not_scheduled", n, f"Received {_plural(n, 'day')} ago, {detail}",
                      f"Not scheduled, {_plural(n, 'day')}", "not_scheduled_days", "days",
                      "specialist" if stage == "received" else "patient",
-                     "call_office" if stage == "received" else "message_patient", failure=1)
+                     "call_office" if stage == "received" else "message_patient", failure=1,
+                     label="Not scheduled",
+                     clause=(f"patient not contacted for {_plural(n, 'day')}" if stage == "received"
+                             else f"patient contacted but not scheduled for {_plural(n, 'day')}")
+                            + limit("not_scheduled_days", "days"))
 
     if stage == "seen":
         seen = last_event_date(ref, "seen")
@@ -133,7 +152,8 @@ def stuck_flags(
             if n >= s["seen_no_plan_days"]:
                 flag("seen_no_plan", n, f"Seen {_plural(n, 'day')} ago, plan not received",
                      f"No plan back, {_plural(n, 'day')}", "seen_no_plan_days", "days",
-                     "specialist", "follow_up", failure=2)
+                     "specialist", "follow_up", failure=2, label="No plan back",
+                     clause=f"no plan back after {_plural(n, 'day')}" + limit("seen_no_plan_days", "days"))
 
     if stage == "plan_returned":
         returned = ref.plan.returned_on if ref.plan else last_event_date(ref, "plan_returned")
@@ -143,7 +163,8 @@ def stuck_flags(
                 flag("plan_not_acknowledged", n,
                      f"Plan received {_plural(n, 'day')} ago, not yet reviewed by PCP",
                      f"Plan not reviewed, {_plural(n, 'day')}", "plan_not_acknowledged_days",
-                     "days", "pcp", "follow_up")
+                     "days", "pcp", "follow_up", label="Plan not reviewed",
+                     clause=f"plan not reviewed for {_plural(n, 'day')}" + limit("plan_not_acknowledged_days", "days"))
 
     if stage == "declined":
         dec = last_event_date(ref, "declined")
@@ -151,7 +172,9 @@ def stuck_flags(
             n = (today - dec).days
             if n >= s["declined_not_rerouted_days"]:
                 flag("declined_not_rerouted", n, f"Declined {_plural(n, 'day')} ago, no new referral",
-                     "Declined, not re-routed", "declined_not_rerouted_days", "days", "pcp", "follow_up")
+                     f"Declined {short(dec)}, not re-routed", "declined_not_rerouted_days", "days", "pcp",
+                     "follow_up", label="Declined, not re-routed",
+                     clause=f"not re-routed after {_plural(n, 'day')}" + limit("declined_not_rerouted_days", "days"))
 
     if stage == "no_show":
         appt = ref.appointment
@@ -159,15 +182,19 @@ def stuck_flags(
         if missed is not None:
             n = max((today - missed).days, 0)
             if n >= s["no_show_days"]:
-                flag("no_show", n, f"Missed appointment on {short(missed)}", "Missed appointment",
-                     "no_show_days", "days", "patient", "message_patient")
+                flag("no_show", n, f"Missed appointment on {short(missed)}", f"Missed appointment {short(missed)}",
+                     "no_show_days", "days", "patient", "message_patient", label="Missed appointment",
+                     clause=f"the patient missed the appointment on {short(missed)}")
 
     if stage not in TERMINAL and ref.authorization == "pending" and ref.authorization_since:
         n = business_days_between(ref.authorization_since, today)
         if n > s["authorization_pending_business_days"]:
             flag("authorization_pending", n, f"Authorization pending for {_plural(n, 'business day')}",
                  f"Authorization pending, {_plural(n, 'business day')}",
-                 "authorization_pending_business_days", "business days", "specialist", "follow_up")
+                 "authorization_pending_business_days", "business days", "specialist", "request_authorization",
+                 label="Authorization pending",
+                 clause=f"authorization pending for {_plural(n, 'business day')}"
+                        + limit("authorization_pending_business_days", "business days"))
 
     # MassHealth ride (PT-1): appointment within the lead time and no ride requested yet.
     # Applies when a transportation barrier is open, since not every member needs a ride.
@@ -179,7 +206,9 @@ def stuck_flags(
         if n <= s["pt1_lead_business_days"]:
             flag("pt1_not_requested", n,
                  f"Appointment on {short(appt.start)}, MassHealth ride (PT-1) not requested",
-                 "Ride not requested", "pt1_lead_business_days", "business days", "none", "open")
+                 f"Ride not requested, visit {short(appt.start)}", "pt1_lead_business_days", "business days",
+                 "none", "request_ride", label="Ride not requested",
+                 clause=f"MassHealth ride (PT-1) not requested for the visit on {short(appt.start)}")
     return out
 
 

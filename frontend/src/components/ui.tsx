@@ -1,4 +1,4 @@
-import { cloneElement, useId, type ButtonHTMLAttributes, type ReactElement, type ReactNode } from "react";
+import { cloneElement, useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type ReactElement, type ReactNode } from "react";
 import { copy } from "../copy";
 
 // Primitives from .kiro/steering/design.md: white surfaces, one hemlock accent, 1px borders,
@@ -115,6 +115,25 @@ export function Drawer({ title, onClose, children }: { title: string; onClose: (
         </div>
         {children}
       </div>
+    </div>
+  );
+}
+
+/** Asks once before an action that's hard to undo: the button turns into a short question with
+ * Confirm and Cancel; focus moves to Confirm. */
+export function ConfirmButton({ label, question, confirmLabel, onConfirm, variant = "primary", disabled }: {
+  label: string; question: string; confirmLabel: string; onConfirm: () => void; variant?: Variant; disabled?: boolean;
+}) {
+  const [asking, setAsking] = useState(false);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => { if (asking) confirmRef.current?.focus(); }, [asking]);
+  if (!asking) return <Button variant={variant} onClick={() => setAsking(true)} disabled={disabled}>{label}</Button>;
+  return (
+    <div role="group" aria-label={question} className="flex flex-wrap items-center gap-3">
+      <span className="font-semibold">{question}</span>
+      <button ref={confirmRef} type="button" className={btn(variant === "danger" ? "danger" : "primary")} disabled={disabled}
+        onClick={() => { setAsking(false); onConfirm(); }}>{confirmLabel}</button>
+      <Button variant="quiet" onClick={() => setAsking(false)}>{copy.confirm.cancel}</Button>
     </div>
   );
 }

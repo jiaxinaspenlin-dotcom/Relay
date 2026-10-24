@@ -42,8 +42,9 @@ await ctx.route("**/api/config", (route) =>
   route.fulfill({ contentType: "application/json", body: JSON.stringify({ ...cfg, phone_calling_enabled: phoneMode }) }));
 
 await page.goto(`${WEB}/sign-in`);
-await page.getByRole("button", { name: "Sign in as coordinator (sample)" }).click();
+await page.getByRole("button", { name: /coordinator \(sample\)/ }).click();
 await page.waitForURL(`${WEB}/`);
+await page.goto(`${WEB}/?tab=lost`);
 
 // 1. Browser assistant fallback
 const calls = [];
@@ -68,63 +69,82 @@ if (cfg.voice_enabled) {
   await page.keyboard.press("Escape");
 }
 
-// 2. Background phone call
+// 2. Background phone call: chip states on the row, live call card on the detail
 phoneMode = true;
-await page.goto(`${WEB}/`); // fresh page so the config is read again
+await page.goto(`${WEB}/?tab=lost`); // fresh page so the config is read again
 const row = page.getByTestId("row-R-102");
+const btnBox = await row.getByRole("button", { name: "Call office" }).boundingBox();
 await row.getByRole("button", { name: "Call office" }).click();
-await row.getByTestId("row-call").getByText(/^Calling .+…$/).waitFor({ timeout: T });
+const chip = row.getByTestId("row-call");
+await chip.getByText("Dialing office").waitFor({ timeout: T });
+const chipBox = await chip.boundingBox();
+assert(Math.abs(chipBox.height - btnBox.height) < 1, `chip height ${chipBox.height} vs button ${btnBox.height}`);
 assert(fakeCalls.length === 1, `expected one fake call, got ${fakeCalls.length}`);
+const cid = fakeCalls[0].id;
+await page.request.post(`${WEB}/api/test/calls/${cid}/phase`, { data: { phase: "in-progress" } });
+await chip.getByText(/^On the call \d+:\d\d$/).waitFor({ timeout: T });
 await page.goto(`${WEB}/referrals/R-102`);
-await page.getByTestId("header-call-status").getByText(/^Calling .+…$/).waitFor({ timeout: T });
-await page.request.post(`${WEB}/api/test/calls/${fakeCalls[0].id}/finish`,
+const live = page.getByTestId("live-call");
+await live.getByText(/AI assistant is on the call with /).waitFor({ timeout: T });
+await live.getByText("You can keep working").waitFor();
+assert(await page.getByTestId("header-primary").count() === 0, "header primary shown during the call");
+await page.request.post(`${WEB}/api/test/calls/${cid}/phase`, { data: { phase: "processing" } });
+await live.locator('[aria-current="step"]').getByText("Summarizing").waitFor({ timeout: T });
+await page.goto(`${WEB}/?tab=lost`);
+await chip.getByText(/^Reading the call \d+:\d\d$/).waitFor({ timeout: T });
+await page.request.post(`${WEB}/api/test/calls/${cid}/finish`,
   { data: { status: "done", duration_secs: 92, turns: turns("sample_call_transcript.txt") } });
+await chip.getByRole("button", { name: "Review call update" }).click();
+await page.waitForURL(`${WEB}/referrals/R-102#call-result`);
 const card = page.getByTestId("call-result");
 await card.waitFor({ timeout: T });
 const summary = await card.getByTestId("call-summary").innerText();
 assert(summary === "Received, missing records. Patient not contacted yet. Scheduling: 413-555-0142, Mon–Fri 8–4", `summary: ${summary}`);
 await card.getByText("View transcript").click();
 assert(!(await card.getByTestId("call-transcript").innerText()).includes("[happy]"), "voice tags shown");
-await page.goto(`${WEB}/`);
-await page.getByTestId("row-R-102").getByTestId("row-call").getByText("Call finished, review update").waitFor({ timeout: T });
-await page.getByTestId("row-R-102").getByRole("button", { name: "Review update" }).click();
-await page.waitForURL(`${WEB}/referrals/R-102`);
-await page.getByTestId("call-result").getByRole("button", { name: "Apply" }).click();
-await page.getByTestId("call-result").waitFor({ state: "detached", timeout: T });
-await page.getByTestId("timeline").getByText("AI call by Sam Ortiz, 1 min 32 s", { exact: false }).waitFor({ timeout: T });
-console.log("2 phone call: Calling → Call finished → Apply → timeline");
+await card.getByRole("button", { name: "Apply" }).click();
+await card.waitFor({ state: "detached", timeout: T });
+await page.getByTestId("toast").getByText("Call update applied").waitFor({ timeout: T });
+await page.getByTestId("timeline").getByText("AI call by Sam Ortiz, 1:32 · Missing: records · Scheduling: Mon–Fri 8–4 · 413-555-0142").waitFor({ timeout: T });
+console.log("2 phone call: Dialing → On the call → Reading → Review call update → Apply → timeline");
 
 // 3. Not received → Office says not received → Resend referral
-await page.goto(`${WEB}/`);
+await page.goto(`${WEB}/?tab=waiting`);
 await page.getByTestId("row-R-101").getByRole("button", { name: "Call office" }).click();
-await page.getByTestId("row-R-101").getByTestId("row-call").getByText(/^Calling/).waitFor({ timeout: T });
+await page.getByTestId("row-R-101").getByTestId("row-call").getByText("Dialing office").waitFor({ timeout: T });
 await page.request.post(`${WEB}/api/test/calls/${fakeCalls[1].id}/finish`,
   { data: { status: "done", duration_secs: 75, turns: turns("sample_call_not_received.txt") } });
 await page.goto(`${WEB}/referrals/R-101`);
 await page.getByTestId("call-summary").getByText("Not received, resend via portal. Scheduling: 413-555-0142, Mon–Fri 8–4").waitFor({ timeout: T });
 await page.getByTestId("call-result").getByRole("button", { name: "Apply" }).click();
-await page.getByTestId("status-line").getByText(/^Office says the referral was not received, resend via portal/).waitFor({ timeout: T });
-await page.goto(`${WEB}/`);
-await page.getByTestId("row-R-101").getByTestId("row-status").getByText("Office says not received").waitFor({ timeout: T });
+await page.getByTestId("status-line").getByText(/The office says it was not received; resend via portal\.$/).waitFor({ timeout: T });
+await page.goto(`${WEB}/?tab=waiting`);
+await page.getByTestId("row-R-101").getByTestId("row-status").getByText(/^Office says not received /).waitFor({ timeout: T });
 await page.getByTestId("row-R-101").getByRole("button", { name: "Resend referral" }).click();
-await page.waitForURL(`${WEB}/referrals/R-101`);
-const send = page.getByRole("region", { name: "Resend referral" });
+const send = page.getByRole("dialog", { name: "Resend referral" });
 await send.getByRole("button", { name: "Copy text" }).click();
+await page.getByTestId("toast").getByText(/^Referral resent to /).waitFor({ timeout: T });
+// Resent today, so it's no longer stuck: it leaves Waiting for On track.
+await page.getByTestId("waiting").getByTestId("row-R-101").waitFor({ state: "detached", timeout: T });
+await page.getByTestId("tab-ontrack").click();
+await page.getByTestId("on-track").getByTestId("row-R-101").getByTestId("row-status").getByText(/^Sent /).waitFor({ timeout: T });
+await page.goto(`${WEB}/referrals/R-101`);
 await page.getByTestId("timeline").getByText("Referral resent").waitFor({ timeout: T });
-await page.goto(`${WEB}/`);
-assert(!(await page.getByTestId("row-R-101").getByTestId("row-status").innerText()).includes("Office says not received"), "flag not cleared");
 console.log("3 not received: flagged, resend clears it");
 
 // 4. No answer
+await page.goto(`${WEB}/?tab=lost`);
 const noAns = await (await page.request.post(`${WEB}/api/test/calls`, { data: { referral_id: "R-102" } })).json();
 await page.request.post(`${WEB}/api/test/calls/${noAns.call.id}/finish`, { data: { status: "done", duration_secs: 30, turns: [] } });
-await page.getByTestId("row-R-102").getByTestId("row-call").getByText("No answer, try again").waitFor({ timeout: T });
+const na = page.getByTestId("row-R-102").getByTestId("row-call");
+await na.getByText("No answer", { exact: true }).waitFor({ timeout: T });
+await na.getByRole("button", { name: "Try again" }).waitFor();
 console.log("4 no answer shown on the row");
 
 // 5. Clinicians never get call buttons.
 const clin = await (await browser.newContext()).newPage();
 await clin.goto(`${WEB}/sign-in`);
-await clin.getByRole("button", { name: "Sign in as clinician (sample)" }).click();
+await clin.getByRole("button", { name: /clinician \(sample\)/ }).click();
 await clin.waitForURL(`${WEB}/inbox`);
 await clin.goto(`${WEB}/referrals/R-109`);
 await clin.getByRole("heading", { level: 1 }).waitFor({ timeout: T });

@@ -74,7 +74,7 @@ def apply_update(ref: Referral, body: UpdateBody, *, actor: str, source: str, to
         if not body.missing:
             raise UpdateError("Check at least one missing item")
         kw["receipt"] = Receipt(complete=False, missing=list(dict.fromkeys(body.missing)), note=note)
-        note = "Missing " + ", ".join(MISSING_LABELS[m] for m in kw["receipt"].missing) + (f". {note}" if note else "")
+        note = "Missing: " + ", ".join(MISSING_LABELS[m] for m in kw["receipt"].missing) + (f" · {note}" if note else "")
     elif a == "patient_contacted":
         if body.contact_mode is None:
             raise UpdateError("Say whether the office called the patient or told the patient to call")

@@ -22,7 +22,7 @@ async function reset(page) {
 
 async function signInAs(page, role) {
   await page.goto(`${WEB}/sign-in`);
-  await page.getByRole("button", { name: `Sign in as ${role} (sample)` }).click();
+  await page.getByRole("button", { name: new RegExp(`${role} \\(sample\\)`) }).click();
   await page.waitForURL((u) => !u.pathname.startsWith("/sign-in"), { timeout: T });
 }
 
@@ -42,7 +42,7 @@ const tests = {
   async A1(page) {
     await page.goto(`${WEB}/sign-in`);
     await page.getByRole("button", { name: "Load sample data" }).click(); // brand-new install
-    await page.getByRole("button", { name: "Sign in as coordinator (sample)" }).waitFor({ timeout: T });
+    await page.getByRole("button", { name: /coordinator \(sample\)/ }).waitFor({ timeout: T });
     await signInAs(page, "coordinator");
     await page.getByTestId("signed-in-as").getByText("Sam Ortiz").waitFor({ timeout: T });
     await page.getByTestId("signed-in-role").getByText("Coordinator", { exact: true }).waitFor();
@@ -74,16 +74,18 @@ const tests = {
     await page.getByRole("button", { name: "Copy text" }).click();
     await page.waitForURL(/\/referrals\/R-\d+$/, { timeout: T });
     ctx.rid = page.url().split("/").pop();
-    await page.getByTestId("timeline").getByTestId("event-title").getByText("Sent by Sam Ortiz", { exact: true }).waitFor({ timeout: T });
-    ctx.officeHref = await page.getByTestId("office-link").getAttribute("href");
+    await page.getByTestId("timeline").getByTestId("event-title").getByText("Sent", { exact: true }).waitFor({ timeout: T });
+    await page.getByTestId("timeline").getByTestId("event-meta").getByText(/^By Sam Ortiz/).waitFor({ timeout: T });
+    ctx.officeHref = await page.getByTestId("office-link").getAttribute("data-href");
   },
 
   // Office link → "Something is missing: records" → the referral appears under Waiting as "Missing records".
   async A2(page, officePage) {
-    await page.goto(WEB); // dashboard stays open; it must update by itself
+    await page.goto(`${WEB}/?tab=ontrack`); // dashboard stays open; it must update by itself
     await page.getByTestId(`row-${ctx.rid}`).waitFor({ timeout: T });
     await office(officePage, ctx.officeHref, "Something is missing", (p) => p.getByLabel("Records").check());
     await officePage.getByTestId("office-status").getByText("Missing records").waitFor({ timeout: T });
+    await page.getByTestId("tab-waiting").click(); // no reload: the row moved tabs on its own
     await page.getByTestId("waiting").getByTestId(`row-${ctx.rid}`).getByTestId("row-status").getByText("Missing records").waitFor({ timeout: T });
   },
 
@@ -115,7 +117,7 @@ const tests = {
 
   // With sample data loaded, the dashboard shows both challenge failures under "Lost in the handoff".
   async A4(page) {
-    await page.goto(WEB);
+    await page.goto(`${WEB}/?tab=lost`);
     const lost = page.getByTestId("lost");
     await lost.getByText("Not scheduled, 14 days").waitFor({ timeout: T });
     await lost.getByText("No plan back, 12 days").waitFor({ timeout: T });
@@ -142,7 +144,7 @@ const tests = {
     await waitingFor.waitFor({ timeout: T });
     assert(/^Waiting for Dr\. .+ to review$/.test(await waitingFor.innerText()), `coordinator note: ${await waitingFor.innerText()}`);
     assert(await page.getByRole("button", { name: "Acknowledge and close" }).count() === 0, "coordinator sees Acknowledge and close");
-    await page.goto(WEB);
+    await page.goto(`${WEB}/?tab=ontrack`);
     await page.getByTestId(`row-${ctx.rid}`).getByTestId("row-status").getByText(/^Waiting for Dr\. .+ to review$/).waitFor({ timeout: T });
     const clin = await (await page.context().browser().newContext({ acceptDownloads: true })).newPage();
     await signInAs(clin, "clinician");
@@ -153,7 +155,7 @@ const tests = {
     for (const l of ["Inbox", "Referrals", "Settings"]) await crail.getByRole("link", { name: new RegExp(`^${l}`) }).waitFor();
     assert(await crail.getByRole("link", { name: /^(Dashboard|New referral)/ }).count() === 0, "clinician rail shows coordinator links");
     await crail.getByRole("link", { name: /^Referrals/ }).click();
-    await clin.getByTestId("lost").waitFor({ timeout: T });
+    await clin.getByRole("tablist").waitFor({ timeout: T });
     for (const b of ["Call office", "Follow up", "Message patient", "Send records", "Log update", "New referral"]) {
       assert(await clin.getByRole("button", { name: b, exact: true }).count() === 0 && await clin.getByRole("link", { name: b, exact: true }).count() === 0, `clinician sees ${b}`);
     }
@@ -162,10 +164,11 @@ const tests = {
     await item.waitFor({ timeout: T });
     assert((await item.getByTestId("returned-plan").innerText()).includes("Stress echo"), "plan missing");
     await item.getByRole("button", { name: "Acknowledge and close" }).click();
+    await item.getByRole("button", { name: "Yes, close" }).click();
     await item.waitFor({ state: "detached", timeout: T });
     await clin.goto(`${WEB}/referrals/${ctx.rid}`);
-    await clin.getByTestId("timeline").getByText("Closed by Dr. Avery Lin", { exact: true }).waitFor({ timeout: T });
-    const [dl] = await Promise.all([clin.waitForEvent("download", { timeout: T }), clin.getByRole("link", { name: "Download FHIR" }).click()]);
+    await clin.getByTestId("timeline").getByText(/^By Dr\. Avery Lin/).waitFor({ timeout: T });
+    const [dl] = await Promise.all([clin.waitForEvent("download", { timeout: T }), clin.getByRole("button", { name: "Export" }).click().then(() => clin.getByRole("menuitem", { name: /Export for EHR/ }).click())]);
     const file = path.join(ROOT, `.e2e-${ctx.rid}-fhir.json`);
     await dl.saveAs(file);
     const out = execFileSync(path.join(ROOT, ".venv/bin/python"), ["-c", `

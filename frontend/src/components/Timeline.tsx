@@ -2,45 +2,44 @@ import type { TimelineItem } from "../api";
 import { copy } from "../copy";
 import { shortDate } from "../format";
 
-// Date column, what happened (with the person who did it), and where it came from in muted text:
-// "Sent by Sam Ortiz", "Closed by Dr. Avery Lin", "Office link", "AI call by Sam Ortiz".
-function describe(it: TimelineItem): { what: string; meta: string } {
+// Each entry: date, a title for what happened ("Received", "AI call", "Referral sent"), and one
+// compact muted subtitle joined with " · ":
+// "AI call by Sam Ortiz, 2:33 · Missing: insurance authorization · Scheduling: Mon–Fri 8–4 · 413-555-0142".
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+export function describe(it: TimelineItem): { title: string; subtitle: string } {
   const t = copy.timeline;
+  const join = (...parts: (string | false | null | undefined)[]) => parts.filter(Boolean).join(" · ");
   if (it.kind === "communication") {
     const channel = t.channel[it.channel ?? "manual"];
-    return { what: t.sent[it.message_kind ?? "follow_up"], meta: it.sent_by ? `${channel} by ${it.sent_by}` : channel };
+    return { title: t.sent[it.message_kind ?? "follow_up"], subtitle: join(cap(it.sent_by ? t.by(channel, it.sent_by) : channel), it.edited && t.edited) };
   }
-  const what = it.event_kind === "stage" || !it.event_kind ? t.stage[it.stage!] ?? it.stage! : it.note ?? "";
-  const note = it.event_kind === "stage" || !it.event_kind ? it.note ?? "" : "";
-  if (it.source === "link") return { what, meta: [t.officeLink, note].filter(Boolean).join(". ") };
-  if (it.source === "ai_call") {
-    const who = t.by("AI call", it.by || "coordinator") + (it.call_duration ? `, ${it.call_duration}` : "");
-    return { what, meta: [who, note].filter(Boolean).join(". ") };
-  }
-  if (it.by && it.source) return { what, meta: [t.by(`${cap(t.source[it.source] ?? it.source)}, logged`, it.by), note].filter(Boolean).join(". ") };
-  if (it.by) return { what: t.by(what, it.by), meta: note };
-  const who = t.actor[it.actor!] ?? it.actor ?? "";
-  return { what, meta: [[who, it.source ? t.source[it.source] ?? it.source : ""].filter(Boolean).join(", "), note].filter(Boolean).join(". ") };
+  const stageEvent = it.event_kind === "stage" || !it.event_kind;
+  const title = stageEvent ? t.stage[it.stage!] ?? it.stage! : t.kind[it.event_kind!] ?? cap(it.event_kind!);
+  const note = it.note ?? "";
+  let who: string;
+  if (it.source === "link") who = t.officeLink;
+  else if (it.source === "ai_call") who = t.by("AI call", it.by || "coordinator") + (it.call_duration ? `, ${it.call_duration}` : "");
+  else if (it.by && it.source) who = t.by(`${cap(t.source[it.source] ?? it.source)}, logged`, it.by);
+  else if (it.by) who = t.byPerson(it.by);
+  else who = [t.actor[it.actor!] ?? it.actor ?? "", it.source ? t.source[it.source] ?? it.source : ""].filter(Boolean).join(", ");
+  return { title, subtitle: join(who, note) };
 }
-
-const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function Timeline({ items }: { items: TimelineItem[] }) {
   return (
     <ol className="space-y-4" data-testid="timeline">
       {[...items].reverse().map((it, i) => {
-        const { what, meta } = describe(it);
+        const { title, subtitle } = describe(it);
         return (
-          <li key={i} data-kind={it.kind} className="grid grid-cols-[4.5rem_1fr] gap-3">
-            <span className="text-caption text-muted">{shortDate(it.at)}</span>
+          <li key={i} data-kind={it.kind} className="grid grid-cols-[64px_1fr] gap-3">
+            <span className="pt-px text-caption text-muted">{shortDate(it.at)}</span>
             <div className="min-w-0">
-              <div className="font-semibold" data-testid="event-title">{what}</div>
-              {(meta || it.edited) && (
-                <div className="text-caption text-muted" data-testid="event-meta">{meta}{it.edited ? `${meta ? ". " : ""}${copy.timeline.edited}` : ""}</div>
-              )}
+              <div className="font-semibold" data-testid="event-title">{title}</div>
+              {subtitle && <div className="text-caption text-muted" data-testid="event-meta">{subtitle}</div>}
               {it.kind === "communication" && (
                 <details className="mt-1">
-                  <summary className="cursor-pointer text-caption text-hemlock">Show message</summary>
+                  <summary className="cursor-pointer text-caption text-hemlock">{copy.timeline.showMessage}</summary>
                   <pre className="mt-1 whitespace-pre-wrap rounded-control border border-line bg-surface p-3 font-sans text-caption">{it.text}</pre>
                 </details>
               )}

@@ -23,8 +23,8 @@ def dashboard() -> dict:
     latest = repo.latest_calls()
     def brief(rid: str):
         c = latest.get(rid)
-        return {"id": c["id"], "status": c["status"], "reason": c["reason"], "practice": c["practice"],
-                "started_at": c["started_at"]} if c else None
+        return {"id": c["id"], "status": c["status"], "phase": c.get("phase"), "phase_at": c.get("phase_at"),
+                "reason": c["reason"], "practice": c["practice"], "started_at": c["started_at"]} if c else None
     for row in view["needs_attention"]:
         row["card"]["call"] = brief(row["card"]["id"])
     for col in view["pipeline"]:

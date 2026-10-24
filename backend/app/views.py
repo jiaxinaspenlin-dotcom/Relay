@@ -5,6 +5,7 @@ from datetime import date
 from typing import Optional
 
 from app.config import PRACTICE_SETTINGS
+from app.dates import short, time12
 from app.context.place import place_context
 from app.finder.distance import miles_between
 from app.finder.towns import resolve_town
@@ -88,6 +89,61 @@ def stepper(ref: Referral) -> list[dict]:
             for s, label in STEPPER]
 
 
+# The two challenge failures (never scheduled, plan never back) are "Lost in the handoff".
+FAILURE_RULES = {"not_scheduled", "seen_no_plan"}
+
+STAGE_PHRASE = {"draft": "Draft", "sent": "Sent", "received": "Received", "patient_contacted": "Patient contacted",
+                "scheduled": "Scheduled", "seen": "Seen", "plan_returned": "Plan back", "closed": "Closed",
+                "declined": "Declined", "no_show": "Missed appointment", "cancelled": "Cancelled",
+                "patient_barrier": "Patient barrier"}
+
+# One next action per referral, used by the dashboard row button and the detail's primary button.
+NEXT_ACTION_LABELS = {"call_office": "Call office", "send_records": "Send records",
+                      "request_authorization": "Request authorization", "follow_up": "Follow up",
+                      "message_patient": "Message patient", "resend": "Resend referral",
+                      "request_ride": "Request ride"}
+
+
+def ordered_flags(flags: list) -> list:
+    """Challenge failures lead; the rest keep their rule order."""
+    return sorted(flags, key=lambda f: f.rule not in FAILURE_RULES)
+
+
+def status_text(ref: Referral, today: date) -> str:
+    """On-track status with its time: "Scheduled Nov 3, 2:30 PM", "Sent Oct 22"."""
+    if ref.stage == "draft":
+        return "Draft, not sent yet"
+    if ref.stage == "scheduled" and ref.appointment:
+        t = time12(ref.appointment.time)
+        return f"Scheduled {short(ref.appointment.start)}" + (f", {t}" if t else "")
+    if ref.stage == "received" and ref.receipt and not ref.receipt.complete:
+        return f"Missing {missing_text(ref.receipt.missing)}"
+    entered = stage_entered(ref) or ref.authored_on
+    return f"{STAGE_PHRASE.get(ref.stage, STAGE_LABELS[ref.stage])} {short(entered)}"
+
+
+def status_sentence(ref: Referral, flags: list, today: date) -> str:
+    """The detail page's one status sentence, e.g. "Received Oct 10. Missing insurance
+    authorization; patient not contacted for 14 days (limit 7)."."""
+    head = status_text(ref, today)
+    if ref.stage == "received" and ref.receipt and not ref.receipt.complete:
+        head = f"Received {short(stage_entered(ref) or ref.authored_on)}"
+    clauses = [f.clause for f in flags if f.clause]
+    if not clauses:
+        return f"{head}."
+    body = "; ".join(clauses)
+    return f"{head}. {body[0].upper()}{body[1:]}."
+
+
+def next_action(flags: list, can_call: bool) -> Optional[dict]:
+    if not flags:
+        return None
+    key = ordered_flags(flags)[0].action
+    if key == "call_office" and not can_call:
+        key = "follow_up"
+    return {"key": key, "label": NEXT_ACTION_LABELS[key]}
+
+
 def _coverage_map(patients: dict[str, dict]) -> dict[str, str]:
     return {pid: p.get("coverage", "unknown") for pid, p in patients.items()}
 
@@ -119,6 +175,12 @@ def referral_card(ref: Referral, patients: dict[str, dict], today: date, reroute
                           for b in ref.barriers if b.status == "open"],
         "stuck": [f.to_dict() for f in flags],
         "can_call": bool(flags) and ref.stage in ("sent", "received"),
+        # Dashboard tab and row text. Lost = a challenge failure; Waiting = any other stuck rule.
+        "tab": ("lost" if any(f.rule in FAILURE_RULES for f in flags) else "waiting" if flags else "ontrack"),
+        "row_status": (" · ".join([ordered_flags(flags)[0].status] + [f.label for f in ordered_flags(flags)[1:]])
+                       if flags else status_text(ref, today)),
+        "status_sentence": status_sentence(ref, flags, today),
+        "next_action": next_action(flags, bool(flags) and ref.stage in ("sent", "received")),
         # Who reviews a returned plan (coordinators see "Waiting for Dr. {name} to review").
         "reviewer": reviewer_name(ref.requester.clinician) if ref.stage == "plan_returned" else None,
     }

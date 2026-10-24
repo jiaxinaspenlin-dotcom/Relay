@@ -291,4 +291,4 @@ def test_new_referral_declined_via_office_link(client, real_today):
     ev = client.get(f"/api/referrals/{rid}").json()["referral"]["events"][-1]
     assert (ev["stage"], ev["actor"], ev["source"], ev["note"]) == ("declined", "office", "link", "Not accepting new patients")
     _later(real_today, 2)
-    assert _row(client, rid)["flags"][0]["status"] == "Declined, not re-routed"
+    assert _row(client, rid)["flags"][0]["status"] == "Declined Oct 24, not re-routed"

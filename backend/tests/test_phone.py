@@ -152,7 +152,7 @@ def test_finished_call_is_ready_for_review(sample):
     # Never applied automatically
     assert sample.get("/api/referrals/R-102").json()["card"]["stage"] == "received"
     listed = sample.get("/api/referrals/R-102/calls").json()["calls"][0]
-    assert listed["status"] == "ready_for_review" and listed["duration_label"] == "1 min 32 s"
+    assert listed["status"] == "ready_for_review" and listed["duration_label"] == "1:32"
 
 
 def test_not_received_call(sample):
@@ -174,13 +174,13 @@ def test_not_received_call(sample):
     assert d["card"]["stage"] == "sent"
     assert [f["rule"] for f in d["card"]["stuck"]] == ["office_not_received"]
     flag = d["card"]["stuck"][0]
-    assert flag["status"] == "Office says not received" and flag["action"] == "resend"
+    assert flag["status"] == "Office says not received Oct 24" and flag["label"] == "Office says not received" and flag["action"] == "resend"
     assert flag["rule"] not in ("not_scheduled", "seen_no_plan")  # amber, not a challenge failure
     ev = d["referral"]["events"][-1]
     assert ev["kind"] == "call" and ev["source"] == "ai_call" and ev["by"] == "Casey Reed"
-    assert ev["call_duration"] == "1 min 15 s" and "resend via portal" in ev["note"]
+    assert ev["call_duration"] == "1:15" and "resend via portal" in ev["note"]
     row = next(x for x in sample.get("/api/dashboard").json()["needs_attention"] if x["referral_id"] == "R-101")
-    assert row["flags"][0]["status"] == "Office says not received"
+    assert row["flags"][0]["status"] == "Office says not received Oct 24"
 
     # The coordinator resends: recorded as a Communication, flag cleared, receipt clock restarts.
     d = sample.post("/api/referrals/R-101/send", json={"channel": "email"}).json()
@@ -237,10 +237,10 @@ def test_apply_records_the_user_and_duration(sample):
     assert d["card"]["stage"] == "received" and d["referral"]["receipt"] == {
         "complete": False, "missing": ["records"], "note": d["referral"]["receipt"]["note"]}
     ev = d["referral"]["events"][-1]
-    assert ev["source"] == "ai_call" and ev["by"] == "Casey Reed" and ev["call_duration"] == "1 min 32 s"
-    assert "Scheduling phone 413-555-0142" in ev["note"]
+    assert ev["source"] == "ai_call" and ev["by"] == "Casey Reed" and ev["call_duration"] == "1:32"
+    assert ev["note"] == "Missing: records · Scheduling: Mon–Fri 8–4 · 413-555-0142"
     tl = [i for i in d["timeline"] if i["kind"] == "event"][-1]
-    assert tl["by"] == "Casey Reed" and tl["call_duration"] == "1 min 32 s"
+    assert tl["by"] == "Casey Reed" and tl["call_duration"] == "1:32"
     assert d["call"]["status"] == "applied" and d["call"]["applied_by"] == "Casey Reed"
     assert sample.post(f"/api/referrals/R-102/calls/{call['id']}/apply").status_code == 409
 
@@ -252,7 +252,7 @@ def test_edit_then_save_marks_the_call_used(sample):
         "action": "received", "source": "phone", "note": "Records sent separately", "call_id": call["id"]})
     assert r.status_code == 200, r.text
     ev = r.json()["referral"]["events"][-1]
-    assert ev["source"] == "ai_call" and ev["call_duration"] == "40 s" and ev["by"] == "Casey Reed"
+    assert ev["source"] == "ai_call" and ev["call_duration"] == "0:40" and ev["by"] == "Casey Reed"
     assert get_repo().call(call["id"])["status"] == "applied"
 
 
@@ -290,3 +290,24 @@ def test_dashboard_rows_show_the_call(sample):
     poll(call, conv("done", turns_from("sample_call_transcript.txt")))
     row = next(x for x in sample.get("/api/dashboard").json()["needs_attention"] if x["referral_id"] == "R-102")
     assert row["card"]["call"]["status"] == "ready_for_review"
+
+
+def test_phase_follows_the_conversation(sample):
+    call = place(sample, "R-102")
+    assert get_repo().call(call["id"])["phase"] == "initiated"
+    assert poll(call, conv("in-progress"))["phase"] == "in-progress"
+    assert poll(call, conv("processing"))["phase"] == "processing"
+    row = next(x for x in sample.get("/api/dashboard").json()["needs_attention"] if x["referral_id"] == "R-102")
+    assert row["card"]["call"]["phase"] == "processing"
+
+
+def test_hours_keep_full_ranges_and_display_short():
+    """The extractor keeps the office's full range ("Monday through Friday"); the UI shows it short."""
+    from app.call import transcript as tr
+    for name, said in (("sample_call_transcript.txt", "Monday through Friday 8:00 to 4:00"),
+                       ("sample_call_not_received.txt", "Monday through Friday from 8:00 to 4:00")):
+        raw = tr.rules_extract(tr.clean_turns(turns_from(name)))
+        assert raw["scheduling_hours"] == said
+        assert tr.short_hours(said) == "Mon–Fri 8–4"
+    assert tr.short_hours("Monday to Thursday, 8:30 to 4:30") == "Mon–Thu 8:30–4:30"
+    assert tr.short_hours("Tuesday through Saturday 9 to 5") == "Tue–Sat 9–5"

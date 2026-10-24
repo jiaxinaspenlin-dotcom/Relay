@@ -40,7 +40,7 @@ received: "yes" | "no" | "unknown"  (did the office say it received the referral
 missing_items: list of any of "records", "insurance_authorization", "test_results", "other"
 patient_contacted: "yes" | "no" | "unknown"  (has the office contacted the patient to schedule)
 scheduling_phone: the scheduling phone number as ###-###-####, or null
-scheduling_hours: the office hours as said, or null
+scheduling_hours: the office hours exactly as said, keeping the full range of days (e.g. "Monday through Friday 8:00 to 4:00"), or null
 resend_method: "fax" | "portal" | "email" | "unknown"  (if not received: how the office wants it resent)
 note: one short sentence of anything else the office said, or ""
 Use only what the office (user) said. If something was not said, use "unknown" or null."""

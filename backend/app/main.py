@@ -75,9 +75,21 @@ def test_fake_call(body: FakeCall, request: Request) -> dict:
     call = repo.add_call({
         "id": f"call-{uuid.uuid4().hex[:12]}", "referral_id": ref.id, "user_id": user.id,
         "user_name": user.name, "practice": ref.performer.name, "conversation_id": f"e2e-{uuid.uuid4().hex[:8]}",
-        "call_sid": None, "status": "calling", "reason": "", "started_at": phone.now_iso(), "finished_at": None,
+        "call_sid": None, "status": "calling", "phase": "initiated", "phase_at": phone.now_iso(), "reason": "", "started_at": phone.now_iso(), "finished_at": None,
         "duration_secs": None, "transcript": [], "result": None, "applied_by": None, "applied_at": None, "e2e": True})
     return {"call": phone.public(call)}
+
+
+class FakePhase(BaseModel):
+    phase: str
+
+
+@app.post("/api/test/calls/{cid}/phase")
+def test_call_phase(cid: str, body: FakePhase) -> dict:
+    """Move a fake call through initiated → in-progress → processing (UI tests and screenshots)."""
+    repo = _e2e_only()
+    conv = {"status": body.phase, "metadata": {}, "transcript": []}
+    return {"call": phone.public(phone.poll_once(repo, repo.call(cid), fetch=lambda _cid: conv))}
 
 
 @app.post("/api/test/calls/{cid}/finish")

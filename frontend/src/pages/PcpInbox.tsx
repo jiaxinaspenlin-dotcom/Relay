@@ -5,7 +5,8 @@ import { LIVE, api, type InboxItem } from "../api";
 import { copy } from "../copy";
 import { shortDate } from "../format";
 import { ErrorNote, Loading } from "../components/Status";
-import { Button, Field, Muted, SampleTag, inputCls } from "../components/ui";
+import { ConfirmButton, Field, Muted, SampleTag, inputCls } from "../components/ui";
+import { useToast } from "../components/Toast";
 import { useMe } from "../components/useMe";
 
 // Reading layout, 72 characters per line: the original question, the plan in template
@@ -14,7 +15,8 @@ function Item({ item }: { item: InboxItem }) {
   const me = useMe();
   const qc = useQueryClient();
   const [note, setNote] = useState("");
-  const close = useMutation({ mutationFn: () => api.close(item.card.id, note), onSuccess: () => qc.invalidateQueries() });
+  const toast = useToast();
+  const close = useMutation({ mutationFn: () => api.close(item.card.id, note), onSuccess: () => { qc.invalidateQueries(); toast(copy.toast.closed); } });
   const p = item.plan;
   const t = copy.inbox;
   const sections: [string, string][] = [
@@ -47,7 +49,7 @@ function Item({ item }: { item: InboxItem }) {
       {me?.role === "clinician" ? (
         <div className="space-y-3 border-t border-line pt-4">
           <Field label={t.note}><input className={inputCls} value={note} onChange={(e) => setNote(e.target.value)} /></Field>
-          <Button variant="primary" onClick={() => close.mutate()} disabled={close.isPending}>{t.acknowledge}</Button>
+          <ConfirmButton label={t.acknowledge} question={t.closeQuestion} confirmLabel={t.closeConfirm} onConfirm={() => close.mutate()} disabled={close.isPending} />
           {close.error && <ErrorNote error={close.error} />}
         </div>
       ) : (

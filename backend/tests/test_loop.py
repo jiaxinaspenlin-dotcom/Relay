@@ -214,12 +214,12 @@ def test_sample_flags(refs):
     f = _by_rule(refs["R-101"])["sent_no_receipt"]
     assert f.status == "Not confirmed received, 5 business days" and f.action == "call_office"
     m = _by_rule(refs["R-109"])["received_incomplete"]
-    assert (m.status, m.action) == ("Missing records", "send_records")
+    assert (m.status, m.action) == ("Missing records, 3 days", "send_records")
     assert rules(refs["R-103"]) == set()  # appointment more than 3 business days out
     assert rules(refs["R-105"]) == set()  # plan returned 2 days ago, limit 3
     assert rules(refs["R-106"]) == set()
-    assert _by_rule(refs["R-107"])["declined_not_rerouted"].status == "Declined, not re-routed"
-    assert _by_rule(refs["R-108"])["no_show"].status == "Missed appointment"
+    assert _by_rule(refs["R-107"])["declined_not_rerouted"].status == "Declined Oct 20, not re-routed"
+    assert _by_rule(refs["R-108"])["no_show"].status == "Missed appointment Oct 15"
 
 
 def test_needs_attention_failures_first(refs):
@@ -314,3 +314,41 @@ def test_pipeline_columns(refs):
     cols = {c["stage"]: c["referral_ids"] for c in pipeline(list(refs.values()))}
     assert cols["received"] == ["R-102", "R-109"] and cols["seen"] == ["R-104"]
     assert "closed" not in cols
+
+
+# ---------------------------------------------------------------- dashboard tabs and status text
+
+def test_cards_tab_status_and_next_action(client):
+    """Lost = challenge failures only; every status carries its time; one sentence on detail;
+    the row button and the detail primary share one next action."""
+    from app.store import get_repo
+    from app.views import referral_card
+    client.post("/api/sample-data")
+    repo = get_repo()
+    pts = repo.patients()
+    cards = {r.id: referral_card(r, pts, TODAY, set()) for r in repo.all()}
+    assert {i for i, c in cards.items() if c["tab"] == "lost"} == {"R-102", "R-104"}
+    assert cards["R-102"]["row_status"] == "Not scheduled, 14 days"
+    assert cards["R-104"]["row_status"] == "No plan back, 12 days"
+    assert cards["R-101"]["tab"] == "waiting" and cards["R-101"]["row_status"] == "Not confirmed received, 5 business days"
+    assert cards["R-108"]["row_status"].startswith("Missed appointment ")
+    assert cards["R-103"]["tab"] == "ontrack" and cards["R-103"]["row_status"].startswith("Scheduled ")
+    assert cards["R-103"]["next_action"] is None
+    assert cards["R-102"]["next_action"] == {"key": "call_office", "label": "Call office"}
+    assert cards["R-109"]["next_action"] == {"key": "send_records", "label": "Send records"}
+    assert cards["R-102"]["status_sentence"] == "Received Oct 10. Patient not contacted for 14 days (limit 7)."
+    assert cards["R-109"]["status_sentence"].startswith("Received ") and "missing records for 3 days" in cards["R-109"]["status_sentence"].lower()
+    for c in cards.values():
+        assert "limit 0" not in c["status_sentence"].lower(), c["status_sentence"]
+
+
+def test_several_rules_lead_with_the_challenge_failure(refs):
+    from app.loop.stuck import stuck_flags
+    from app.models import Receipt
+    from app.views import next_action, ordered_flags
+    r = refs["R-102"].model_copy(deep=True)
+    r.receipt = Receipt(complete=False, missing=["insurance_authorization"])
+    flags = ordered_flags(stuck_flags(r, TODAY))
+    assert flags[0].rule == "not_scheduled"
+    assert " · ".join([flags[0].status] + [f.label for f in flags[1:]]) == "Not scheduled, 14 days · Missing insurance authorization"
+    assert next_action(flags, True)["label"] == "Call office"

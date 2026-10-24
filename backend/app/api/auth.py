@@ -97,7 +97,7 @@ def status() -> dict:
     return {
         "has_users": repo.users.count() > 0,
         "has_sample": has_sample,
-        "sample_accounts": [{"role": u["role"], "email": u["email"]} for u in SAMPLE_USERS] if has_sample else [],
+        "sample_accounts": [{"role": u["role"], "email": u["email"], "name": u["name"]} for u in SAMPLE_USERS] if has_sample else [],
     }
 
 

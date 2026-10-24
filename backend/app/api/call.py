@@ -150,12 +150,11 @@ def _call_for(rid: str, cid: str) -> dict:
 
 
 def call_note(res: dict) -> str:
-    """Extra facts from the call, written on the timeline event."""
-    return ". ".join(x for x in (
-        res.get("scheduling_phone") and f"Scheduling phone {res['scheduling_phone']}",
-        res.get("scheduling_hours") and f"Hours {res['scheduling_hours']}",
-        res.get("note"),
-    ) if x)
+    """Extra facts from the call for the timeline subtitle: "Scheduling: Mon–Fri 8–4 · 413-555-0142"."""
+    from app.call.transcript import short_hours
+    sched = [x for x in (res.get("scheduling_hours") and short_hours(res["scheduling_hours"]),
+                         res.get("scheduling_phone")) if x]
+    return " · ".join(x for x in ("Scheduling: " + " · ".join(sched) if sched else "", res.get("note")) if x)
 
 
 def mark_applied(cid: str, user) -> dict:
@@ -180,7 +179,7 @@ def apply_call(rid: str, cid: str, request: Request) -> dict:
         if res.get("received") == "no":
             method = res.get("resend_method") or "unknown"
             note = "Office says not received" + (f", resend via {method}" if method != "unknown" else "")
-            new = record_field_update(ref, "call", note=". ".join(x for x in (note, extra) if x), **kw)
+            new = record_field_update(ref, "call", note=" · ".join(x for x in (note, extra) if x), **kw)
             if ref.stage == "sent":
                 new.office_not_received, new.office_resend_method = today, method
         elif res.get("proposed_stage"):
@@ -193,7 +192,7 @@ def apply_call(rid: str, cid: str, request: Request) -> dict:
             new = apply_update(ref, body, actor="coordinator", source="ai_call", today=today,
                                by=user.name, user_id=user.id)
         else:
-            new = record_field_update(ref, "call", note=". ".join(x for x in (res.get("summary"), extra) if x), **kw)
+            new = record_field_update(ref, "call", note=" · ".join(x for x in (res.get("summary"), extra) if x), **kw)
     except UpdateError as e:
         raise HTTPException(422, str(e)) from e
     except InvalidTransition as e:

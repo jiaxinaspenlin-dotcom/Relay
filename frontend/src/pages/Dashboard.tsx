@@ -1,16 +1,27 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Stethoscope } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { LIVE, api, type Card, type StuckFlag } from "../api";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { LIVE, api, type Card } from "../api";
 import { copy } from "../copy";
-import { FAILURE_RULES } from "../format";
-import { ActionDrawers, useCallKind, type DrawerKind, type DrawerState } from "../components/ActionDrawers";
-import { RouteTrack, primaryFlag } from "../components/RouteTrack";
+import { ActionDrawers, type DrawerState } from "../components/ActionDrawers";
+import { useRunNextAction } from "../components/NextAction";
+import { CallChip, activeCall } from "../components/OfficeCall";
+import { RouteTrack } from "../components/RouteTrack";
 import { ErrorNote, Loading } from "../components/Status";
-import { Button, SampleTag, btn } from "../components/ui";
+import { Button, StatusText, btn, type Tone } from "../components/ui";
 import { useMe } from "../components/useMe";
-import { rowCallStatus, useCallMode, useCallOffice } from "../components/OfficeCall";
+
+type TabKey = "lost" | "waiting" | "ontrack";
+const TABS: TabKey[] = ["lost", "waiting", "ontrack"];
+const TERMINAL = new Set(["closed", "cancelled", "declined"]);
+
+// Section colors: rust for Lost, amber for Waiting, hemlock for On track.
+const TAB_STYLE: Record<TabKey, { text: string; line: string; pill: string; tone: Tone }> = {
+  lost: { text: "text-rust", line: "bg-rust", pill: "bg-rust-tint text-rust", tone: "rust" },
+  waiting: { text: "text-amber", line: "bg-amber", pill: "bg-amber-tint text-amber", tone: "amber" },
+  ontrack: { text: "text-hemlock", line: "bg-hemlock", pill: "bg-hemlock-tint text-hemlock", tone: "muted" },
+};
 
 function EmptyState() {
   const nav = useNavigate();
@@ -30,136 +41,165 @@ function EmptyState() {
   );
 }
 
-const ACTION_DRAWER: Record<string, DrawerKind | null> = {
-  follow_up: "follow_up", send_records: "follow_up", message_patient: "patient", resend: null, open: null,
-};
-
-function Row({ card, flags, fresh, onAction }: { card: Card; flags: StuckFlag[]; fresh: boolean; onAction: (kind: DrawerKind) => void }) {
+function Row({ card, tab, coordinator, setDrawer }: { card: Card; tab: TabKey; coordinator: boolean; setDrawer: (s: DrawerState) => void }) {
+  const next = useRunNextAction(setDrawer);
   const nav = useNavigate();
-  const callKind = useCallKind();
-  const mode = useCallMode();
-  const callOffice = useCallOffice();
-  // Clinicians see the same list read-only; logistics buttons are coordinator work.
-  const coordinator = useMe()?.role !== "clinician";
-  const main = flags.length ? primaryFlag(flags)! : undefined;
-  const failure = main ? FAILURE_RULES.has(main.rule) : false;
-  const call = rowCallStatus(card.call);
-  let action: string | undefined = main?.action === "call_office" && !card.can_call ? "follow_up" : main?.action;
-  if (call?.tone === "calling") action = undefined; // nothing to do while the phone rings
-  if (call?.tone === "ready") action = "review_call";
-  const kind = action === "call_office" ? callKind : action ? ACTION_DRAWER[action] : null;
-  const onClick = () => {
-    if (action === "call_office" && mode === "phone") callOffice.mutate(card.id);
-    else if (kind) onAction(kind);
-    else nav(`/referrals/${card.id}`);
-  };
   const miles = card.miles === null ? "" : card.miles === 0 ? ", same town" : `, ${card.miles} mi`;
+  const status = tab === "ontrack" && coordinator && card.reviewer ? copy.dashboard.waitingReview(card.reviewer) : card.row_status;
+  const call = coordinator ? activeCall(card.call) : null;
   return (
-    <li
-      data-testid={`row-${card.id}`}
-      className={`group relative grid grid-cols-1 items-center gap-4 border-b border-line px-6 py-5 last:border-b-0 hover:bg-paper/70 min-[860px]:grid-cols-[1fr_1.5fr_160px] ${fresh ? "slide-in" : ""}`}
-    >
-      {/* The whole row opens referral detail; the action button sits above this link. */}
-      <Link to={`/referrals/${card.id}`} aria-label={copy.dashboard.rowLabel(card.patient.name)} className="absolute inset-0 rounded-none focus-visible:outline-offset-[-2px]" />
+    <li data-testid={`row-${card.id}`}
+      className="relative grid grid-cols-1 items-center gap-4 border-b border-line px-6 py-4 last:border-b-0 hover:bg-paper min-[860px]:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_200px] max-[859px]:px-4">
+      {/* The whole row opens the referral; the action sits above this link. */}
+      <Link to={`/referrals/${card.id}`} aria-label={copy.dashboard.rowLabel(card.patient.name)} className="absolute inset-0 focus-visible:outline-offset-[-2px]" />
       <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="truncate font-semibold">{card.patient.name}</span>
-          <SampleTag show={card.sample} />
-        </div>
+        <div className="truncate font-semibold">{card.patient.name}</div>
         <div className="text-caption text-muted">{card.specialty}{miles}</div>
       </div>
       <div className="min-w-0">
-        <RouteTrack steps={card.stepper} flags={flags} />
-        <div className={`mt-2 text-caption font-bold ${main ? (failure ? "text-rust" : "text-amber") : "text-muted font-normal"}`} data-testid="row-status">
-          {main ? main.status : coordinator && card.reviewer ? copy.dashboard.waitingReview(card.reviewer) : card.status_label}
-        </div>
-        {coordinator && call && (
-          <div data-testid="row-call" role="status" className={`mt-1 text-caption font-semibold ${call.tone === "none" ? "text-amber" : "text-hemlock"}`}>
-            {call.tone === "ready"
-              ? <span className="rounded-full bg-hemlock px-2 py-0.5 text-white">{call.text}</span>
-              : <span className="inline-flex items-center gap-2">{call.tone === "calling" && <span aria-hidden="true" className="h-2 w-2 animate-pulse rounded-full bg-hemlock" />}{call.text}</span>}
-          </div>
-        )}
-        {callOffice.error && <div className="mt-1 text-caption text-rust" role="alert">{(callOffice.error as Error).message}</div>}
+        <RouteTrack steps={card.stepper} flags={card.stuck} />
+        <StatusText tone={TAB_STYLE[tab].tone} className="mt-2 text-caption" testid="row-status">{status}</StatusText>
+        {next.error && <p role="alert" className="mt-1 text-caption text-rust">{next.error.message}</p>}
       </div>
-      <div className="relative z-10 flex justify-start min-[860px]:justify-end">
-        {coordinator && action && (
-          <button
-            type="button"
-            className={btn(action === "review_call" ? "primary" : "outline", "w-full min-[860px]:w-auto")}
-            onClick={onClick}
-            disabled={callOffice.isPending}
-          >
-            {action === "review_call" ? copy.phoneCall.review : copy.dashboard.actions[action]}
+      <div className="relative z-10 flex h-10 items-center justify-start min-[860px]:justify-end">
+        {call ? (
+          <CallChip call={call} onReview={() => nav(`/referrals/${card.id}#call-result`)} onRetry={() => next.run(card)} />
+        ) : coordinator && card.next_action && tab !== "ontrack" ? (
+          <button type="button" className={btn("secondary", "max-[859px]:w-full")} onClick={() => next.run(card)} disabled={next.pending}>
+            {card.next_action.label}
           </button>
-        )}
+        ) : null}
       </div>
     </li>
   );
 }
 
-function Section({ title, rows, fresh, onAction, testid }: {
-  title: string; testid: string; rows: { card: Card; flags: StuckFlag[] }[]; fresh: Set<string>;
-  onAction: (rid: string, kind: DrawerKind) => void;
-}) {
-  if (!rows.length) return null;
-  const id = `${testid}-h`;
-  return (
-    <section aria-labelledby={id} data-testid={testid}>
-      <h2 id={id} className="mb-3 text-body text-muted">{title}</h2>
-      <ul className="overflow-hidden rounded-panel border border-line bg-surface">
-        {rows.map((r) => (
-          <Row key={r.card.id} card={r.card} flags={r.flags} fresh={fresh.has(r.card.id)} onAction={(k) => onAction(r.card.id, k)} />
-        ))}
-      </ul>
-    </section>
-  );
+function readStored(key: string): TabKey | null {
+  try {
+    const v = window.localStorage.getItem(key);
+    return v && (TABS as string[]).includes(v) ? (v as TabKey) : null;
+  } catch {
+    return null;
+  }
+}
+
+function store(key: string, v: TabKey) {
+  try {
+    window.localStorage.setItem(key, v);
+  } catch {
+    /* private mode or storage full: the URL still holds the tab */
+  }
 }
 
 export default function Dashboard() {
   const q = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard, ...LIVE });
-  const coordinator = useMe()?.role !== "clinician";
+  const me = useMe();
+  const coordinator = me?.role !== "clinician";
   const [drawer, setDrawer] = useState<DrawerState>(null);
-  // Motion: a referral that newly becomes stuck (between refreshes, e.g. after an office update)
-  // slides into its section. Nothing slides on the first load; bars grow on load instead.
-  const seen = useRef<Set<string> | null>(null);
-  const [fresh, setFresh] = useState<Set<string>>(new Set());
+  const [params, setParams] = useSearchParams();
+  const storeKey = `relay.dashTab.${me?.id ?? "anon"}`;
+  const tabRefs = useRef<Record<TabKey, HTMLButtonElement | null>>({ lost: null, waiting: null, ontrack: null });
+
+  // A tab's pill flashes when a referral moves into it between refreshes (not on first load).
+  const seen = useRef<Record<TabKey, Set<string>> | null>(null);
+  const [flash, setFlash] = useState<Set<TabKey>>(new Set());
+
+  const cards = q.data ? q.data.pipeline.flatMap((c) => c.cards) : [];
+  const groups: Record<TabKey, Card[]> = { lost: [], waiting: [], ontrack: [] };
+  for (const c of cards) {
+    if (c.tab === "ontrack" && TERMINAL.has(c.stage)) continue;
+    groups[c.tab].push(c);
+  }
+  const order = (q.data?.needs_attention ?? []).map((r) => r.referral_id);
+  for (const k of ["lost", "waiting"] as TabKey[]) groups[k].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+
   useEffect(() => {
     if (!q.data) return;
-    const ids = new Set(q.data.needs_attention.map((r) => r.referral_id));
-    if (seen.current) setFresh(new Set([...ids].filter((i) => !seen.current!.has(i))));
-    seen.current = ids;
+    const now: Record<TabKey, Set<string>> = { lost: new Set(groups.lost.map((c) => c.id)), waiting: new Set(groups.waiting.map((c) => c.id)), ontrack: new Set(groups.ontrack.map((c) => c.id)) };
+    if (seen.current) {
+      const moved = TABS.filter((k) => [...now[k]].some((id) => !seen.current![k].has(id)));
+      if (moved.length) {
+        setFlash(new Set(moved));
+        window.setTimeout(() => setFlash(new Set()), 1200);
+      }
+    }
+    seen.current = now;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q.data]);
 
-  if (q.isLoading) return <Loading />;
+  if (q.isLoading) return <Loading rows={4} />;
   if (q.error) return <ErrorNote error={q.error} />;
   const d = q.data!;
   if (d.total === 0) return <EmptyState />;
-  const lost = d.needs_attention.filter((r) => r.flags.some((f) => FAILURE_RULES.has(f.rule)));
-  const waiting = d.needs_attention.filter((r) => !r.flags.some((f) => FAILURE_RULES.has(f.rule)));
-  const stuckIds = new Set(d.needs_attention.map((r) => r.referral_id));
-  const onTrack = d.pipeline.flatMap((c) => c.cards).filter((c) => !stuckIds.has(c.id));
+
+  const fromUrl = params.get("tab");
+  const urlTab = fromUrl === "lost" || fromUrl === "waiting" || fromUrl === "ontrack" ? fromUrl : null;
+  const fallback = TABS.find((k) => groups[k].length) ?? "lost";
+  const tab: TabKey = urlTab ?? readStored(storeKey) ?? fallback;
+  const select = (k: TabKey, focus = false) => {
+    store(storeKey, k);
+    setParams((p) => { const n = new URLSearchParams(p); n.set("tab", k); return n; }, { replace: true });
+    if (focus) tabRefs.current[k]?.focus();
+  };
+  const onKey = (e: KeyboardEvent) => {
+    const i = TABS.indexOf(tab);
+    const to = e.key === "ArrowRight" ? TABS[(i + 1) % 3] : e.key === "ArrowLeft" ? TABS[(i + 2) % 3]
+      : e.key === "Home" ? TABS[0] : e.key === "End" ? TABS[2] : null;
+    if (to) { e.preventDefault(); select(to, true); }
+  };
   const t = copy.dashboard;
-  const open = (rid: string, kind: DrawerKind) => setDrawer({ kind, rid });
+  const attention = groups.lost.length + groups.waiting.length;
+  const rows = groups[tab];
 
   return (
     <>
-      {/* Background stethoscope: dashboard only, behind everything, hidden on small screens. */}
-      <div aria-hidden="true" className="pointer-events-none absolute -right-[260px] top-0 z-0 hidden overflow-visible min-[860px]:block">
-        <Stethoscope size={800} strokeWidth={0.5} color="#1F5F5B" style={{ opacity: 0.08, transform: "rotate(-24deg)" }} />
+      {/* Background stethoscope: dashboard only, very faint, behind everything. */}
+      <div aria-hidden="true" className="pointer-events-none absolute -right-[240px] top-0 z-0 hidden overflow-visible min-[860px]:block">
+        <Stethoscope size={800} strokeWidth={0.2} color="#1F5F5B" style={{ opacity: 0.05, transform: "rotate(-24deg)" }} />
       </div>
-      <div className="relative z-10 space-y-10">
+      <div className="relative z-10 space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-page font-bold" data-testid="headline">{t.headline(d.summary.stuck)}</h1>
+            <h1 className="text-page font-bold" data-testid="headline">{t.headline(attention)}</h1>
             <p className="mt-1 text-muted">{t.open(d.summary.open)}</p>
+            {d.has_sample && (
+              <p className="mt-2 text-caption text-muted" data-testid="sample-line">
+                {t.showingSample} · <Link to="/settings" className="text-hemlock underline-offset-2 hover:underline">{t.removeSample}</Link>
+              </p>
+            )}
           </div>
           {coordinator && <Link to="/new" className={btn("primary")}>{t.newReferral}</Link>}
         </div>
-        {d.needs_attention.length === 0 && <p className="text-muted">{t.none}</p>}
-        <Section title={t.lost} testid="lost" rows={lost.map((r) => ({ card: r.card, flags: r.flags }))} fresh={fresh} onAction={open} />
-        <Section title={t.waiting} testid="waiting" rows={waiting.map((r) => ({ card: r.card, flags: r.flags }))} fresh={fresh} onAction={open} />
-        <Section title={t.onTrack} testid="on-track" rows={onTrack.map((c) => ({ card: c, flags: [] }))} fresh={fresh} onAction={open} />
+
+        <div role="tablist" aria-label={t.tabsLabel} className="flex gap-6 overflow-x-auto border-b border-line" onKeyDown={onKey}>
+          {TABS.map((k) => {
+            const active = k === tab;
+            const st = TAB_STYLE[k];
+            return (
+              <button key={k} ref={(el) => { tabRefs.current[k] = el; }} type="button" role="tab" id={`tab-${k}`}
+                aria-selected={active} aria-controls={`panel-${k}`} tabIndex={active ? 0 : -1} data-testid={`tab-${k}`}
+                onClick={() => select(k)}
+                className={`relative -mb-px flex h-12 shrink-0 items-center gap-2 whitespace-nowrap px-1 font-semibold focus-visible:outline-offset-[-2px] ${active ? st.text : "text-muted hover:text-ink"}`}>
+                {t.tabs[k]}
+                <span className={`inline-flex h-6 min-w-[24px] items-center justify-center rounded-full px-2 text-caption font-semibold ${active ? st.pill : "border border-line bg-surface text-muted"} ${flash.has(k) ? "pill-flash" : ""}`}>
+                  {groups[k].length}
+                </span>
+                <span aria-hidden="true" className={`absolute inset-x-0 bottom-0 h-[3px] rounded-full ${active ? st.line : "bg-transparent"}`} />
+              </button>
+            );
+          })}
+        </div>
+
+        <section role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} data-testid={tab === "ontrack" ? "on-track" : tab} tabIndex={0}
+          className="overflow-hidden rounded-panel border border-line bg-surface">
+          {rows.length === 0 ? (
+            <p className="px-6 py-8 text-muted" data-testid="tab-empty">{t.emptyTab[tab]}</p>
+          ) : (
+            <ul>
+              {rows.map((c) => <Row key={c.id} card={c} tab={tab} coordinator={coordinator} setDrawer={setDrawer} />)}
+            </ul>
+          )}
+        </section>
       </div>
       <ActionDrawers state={drawer} setState={setDrawer} />
     </>

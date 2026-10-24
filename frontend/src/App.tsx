@@ -12,6 +12,7 @@ import PcpInbox from "./pages/PcpInbox";
 import SettingsPage from "./pages/Settings";
 import OfficePage from "./pages/Office";
 import PrintPage from "./pages/Print";
+import SummaryPage from "./pages/Summary";
 import SignIn from "./pages/SignIn";
 import { Loading } from "./components/Status";
 
@@ -115,6 +116,7 @@ export default function App() {
       {/* The office link and print pages use no app chrome. */}
       <Route path="/office/:token" element={<OfficePage />} />
       <Route path="/print/:rid/:commId" element={<PrintPage />} />
+      <Route path="/summary/:rid" element={<SummaryPage />} />
       <Route path="/sign-in" element={<SignIn />} />
       <Route element={<Shell />}>
         <Route path="/" element={<Dashboard />} />

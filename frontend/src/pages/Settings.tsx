@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api";
 import { copy } from "../copy";
 import { ErrorNote, Loading } from "../components/Status";
-import { Button, Field, Muted, Panel, inputCls } from "../components/ui";
+import { Button, ConfirmButton, Field, Muted, Panel, inputCls } from "../components/ui";
 
 export default function SettingsPage() {
   const qc = useQueryClient();
@@ -41,7 +41,7 @@ export default function SettingsPage() {
       <Panel title={t.data} id="data-h">
         <Muted className="mb-4 block">{t.sampleHelp}</Muted>
         {s.data!.has_sample
-          ? <Button onClick={() => remove.mutate()} disabled={remove.isPending}>{t.removeSample}</Button>
+          ? <ConfirmButton variant="danger" label={t.removeSample} question={t.removeQuestion} confirmLabel={t.removeConfirm} onConfirm={() => remove.mutate()} disabled={remove.isPending} />
           : <Button onClick={() => load.mutate()} disabled={load.isPending}>{t.loadSample}</Button>}
       </Panel>
     </div>

@@ -26,3 +26,29 @@
 /* Skeleton loading bars; static under reduced motion. */
 .skeleton { background: linear-gradient(90deg, #EEF2F0 0%, #F6F8F7 50%, #EEF2F0 100%); background-size: 200% 100%; animation: skeleton 1.2s ease-in-out infinite; }
 @keyframes skeleton { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+.toast-in { animation: toast-in 200ms ease-out; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+/* A tab's count pill flashes when a referral moves into that tab. */
+.pill-flash { animation: pill-flash 1200ms ease-out; }
+@keyframes pill-flash { 0%, 40% { box-shadow: 0 0 0 4px rgba(31, 95, 91, 0.25); transform: scale(1.12); } 100% { box-shadow: 0 0 0 0 rgba(31, 95, 91, 0); transform: none; } }
+
+/* ------------------------------------------------------------ live call chip (OfficeCall.tsx) */
+.call-ring { opacity: 0; animation: call-ring 1.6s ease-out infinite; }
+@keyframes call-ring { from { transform: scale(1); opacity: 0.6; } to { transform: scale(1.9); opacity: 0; } }
+.phone-wiggle { animation: phone-wiggle 1.6s ease-in-out infinite; transform-origin: 50% 50%; }
+@keyframes phone-wiggle { 0%, 60%, 100% { transform: rotate(0); } 70% { transform: rotate(-12deg); } 80% { transform: rotate(10deg); } 90% { transform: rotate(-6deg); } }
+.voice-bar { height: 8px; animation: voice-bar 900ms ease-in-out infinite; }
+@keyframes voice-bar { 0%, 100% { height: 4px; } 50% { height: 16px; } }
+.call-spin { animation: call-spin 900ms linear infinite; }
+@keyframes call-spin { to { transform: rotate(360deg); } }
+.shimmer-text { background: linear-gradient(90deg, #1C2B33 0%, #1C2B33 40%, #8FA3A0 50%, #1C2B33 60%, #1C2B33 100%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 1.8s linear infinite; }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.call-pop { animation: call-pop 400ms ease-out 1; }
+@keyframes call-pop { 0% { transform: scale(0.9); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .call-ring, .phone-wiggle, .voice-bar, .call-spin, .shimmer-text, .call-pop, .skeleton, .pill-flash, .toast-in { animation: none !important; }
+  .call-ring { opacity: 0; }
+  .shimmer-text { color: #1C2B33; background: none; }
+}

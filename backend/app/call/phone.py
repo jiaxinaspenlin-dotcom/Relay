@@ -51,12 +51,11 @@ def long_month(d) -> str:
 
 
 def duration_label(secs: Optional[int]) -> str:
+    """Call length as m:ss ("2:33")."""
     if secs is None:
         return ""
     m, s = divmod(int(secs), 60)
-    if not m:
-        return f"{s} s"
-    return f"{m} min {s} s" if s else f"{m} min"
+    return f"{m}:{s:02d}"
 
 
 def _redact(text: str) -> str:
@@ -141,6 +140,8 @@ def start_call(repo, ref, patient: dict, user) -> dict:
         "conversation_id": out["conversation_id"],
         "call_sid": out.get("callSid") or out.get("call_sid"),
         "status": "calling",
+        "phase": "initiated",  # ElevenLabs conversation status while calling
+        "phase_at": now_iso(),
         "reason": "",
         "started_at": now_iso(),
         "finished_at": None,
@@ -187,8 +188,11 @@ def poll_once(repo, call: dict, *, now: Optional[datetime] = None,
         if timed_out:
             return repo.update_call(call["id"], status="no_answer", reason=TIMED_OUT, finished_at=now.isoformat(),
                                     duration_secs=secs)
+        if status and status != call.get("phase"):
+            # initiated → in-progress → processing, shown as "Dialing", "On the call", "Reading the call"
+            return repo.update_call(call["id"], phase=status, phase_at=now.isoformat())
         return call
-    fields = {"finished_at": now.isoformat(), "duration_secs": secs}
+    fields = {"finished_at": now.isoformat(), "duration_secs": secs, "phase": status, "phase_at": now.isoformat()}
     if status == "failed":
         return repo.update_call(call["id"], status="no_answer", reason=CALL_FAILED, **fields)
     if not any(t["role"] == "user" for t in turns):
