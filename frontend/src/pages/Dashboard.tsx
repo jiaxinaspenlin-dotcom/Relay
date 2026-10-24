@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Stethoscope } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { api, type Card, type StuckFlag } from "../api";
+import { LIVE, api, type Card, type StuckFlag } from "../api";
 import { copy } from "../copy";
 import { FAILURE_RULES } from "../format";
 import { ActionDrawers, useCallKind, type DrawerKind, type DrawerState } from "../components/ActionDrawers";
@@ -93,7 +93,7 @@ function Section({ title, rows, fresh, onAction, testid }: {
 }
 
 export default function Dashboard() {
-  const q = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard });
+  const q = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard, ...LIVE });
   const [drawer, setDrawer] = useState<DrawerState>(null);
   // The one motion moment: a referral that newly crosses its limit slides in with a highlight.
   const seen = useRef<Set<string> | null>(null);

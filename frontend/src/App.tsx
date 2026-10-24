@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Inbox, LayoutGrid, SlidersHorizontal, type LucideIcon } from "lucide-react";
 import { NavLink, Outlet, Route, Routes } from "react-router-dom";
-import { api } from "./api";
+import { LIVE, api } from "./api";
 import { copy } from "./copy";
-import { shortDate } from "./format";
 import { RouteGlyph } from "./components/ui";
 import Dashboard from "./pages/Dashboard";
 import NewReferral from "./pages/NewReferral";
@@ -45,7 +44,7 @@ function RailLink({ to, icon: Icon, label, count, end }: { to: string; icon: Luc
 
 function Shell() {
   const s = useQuery({ queryKey: ["settings"], queryFn: api.settings });
-  const d = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard });
+  const d = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard, ...LIVE });
   return (
     <div className="min-h-screen min-[860px]:flex">
       {/* The rail stretches to the page height; its contents stay pinned while the page scrolls. */}
@@ -63,11 +62,6 @@ function Shell() {
         </div>
       </aside>
       <div className="relative min-w-0 flex-1 overflow-x-hidden bg-paper">
-        {s.data?.clock.demo_mode && (
-          <div role="status" data-testid="demo-banner" className="border-b border-line bg-surface px-12 py-1.5 text-caption text-muted max-[859px]:px-5">
-            {copy.demoBanner}, {shortDate(s.data.clock.today)}
-          </div>
-        )}
         <main className="relative mx-auto max-w-[1000px] px-12 py-10 max-[859px]:px-5 max-[859px]:py-6">
           <Outlet />
         </main>

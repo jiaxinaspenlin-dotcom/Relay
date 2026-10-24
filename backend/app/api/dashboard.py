@@ -1,4 +1,4 @@
-"""Dashboard, settings (practice details, Demo mode clock), sample data, and data reset."""
+"""Dashboard, settings (practice details), sample data, and data reset. Always the real clock."""
 from __future__ import annotations
 
 from typing import Optional
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api")
 @router.get("/dashboard")
 def dashboard() -> dict:
     repo = get_repo()
-    return dashboard_view(repo.all(), repo.patients(), clock.today(repo))
+    return dashboard_view(repo.all(), repo.patients(), clock.today())
 
 
 # ---------------------------------------------------------------- settings
@@ -30,13 +30,12 @@ class PracticeDetails(BaseModel):
 
 
 class SettingsBody(BaseModel):
-    demo_mode: Optional[bool] = None
     practice: Optional[PracticeDetails] = None
 
 
 def _settings() -> dict:
     repo = get_repo()
-    return {"clock": clock.info(repo), "practice": repo.setting("practice"),
+    return {"today": clock.today().isoformat(), "practice": repo.setting("practice"),
             "has_sample": repo.has_sample(), "referrals": repo.count()}
 
 
@@ -47,56 +46,29 @@ def get_settings() -> dict:
 
 @router.post("/settings")
 def update_settings(body: SettingsBody) -> dict:
-    repo = get_repo()
-    if body.demo_mode is not None:
-        clock.set_demo_mode(repo, body.demo_mode)
     if body.practice is not None:
-        repo.set_setting("practice", body.practice.model_dump())
+        get_repo().set_setting("practice", body.practice.model_dump())
     return _settings()
-
-
-class ClockAction(BaseModel):
-    advance_days: Optional[int] = None
-    reset: bool = False
-
-
-@router.get("/clock")
-def get_clock() -> dict:
-    return clock.info(get_repo())
-
-
-@router.post("/clock")
-def set_clock(body: ClockAction) -> dict:
-    repo = get_repo()
-    try:
-        if body.reset:
-            return clock.reset(repo)
-        return clock.advance(repo, body.advance_days or 0)
-    except ValueError as e:
-        raise HTTPException(409 if "Demo mode" in str(e) else 422, str(e)) from e
 
 
 # ---------------------------------------------------------------- data
 
 @router.post("/sample-data")
 def load_sample() -> dict:
+    """Load the sample referrals, dated relative to today."""
     repo = get_repo()
     try:
-        n = repo.load_sample(clock.today(repo))
+        n = repo.load_sample(clock.today())
     except SampleAlreadyLoaded as e:
         raise HTTPException(409, str(e)) from e
     return {"loaded": n, **_settings()}
 
 
-@router.post("/sample-data/reset")
-def reset_sample() -> dict:
-    """Demo mode: put the sample referrals back as they were (dated relative to today)."""
-    repo = get_repo()
-    if not repo.setting("demo_mode"):
-        raise HTTPException(409, "Turn on Demo mode in Settings to reset sample data")
-    clock.reset(repo)
-    n = repo.reset_sample(clock.today(repo))
-    return {"loaded": n, **_settings()}
+@router.delete("/sample-data")
+def remove_sample() -> dict:
+    """Remove sample referrals and sample patients. Records you entered stay."""
+    n = get_repo().remove_sample()
+    return {"removed": n, **_settings()}
 
 
 @router.get("/config")
@@ -114,7 +86,5 @@ def clear_data(body: ClearBody) -> dict:
     """Delete every patient and referral. Requires confirm = "DELETE"."""
     if body.confirm != "DELETE":
         raise HTTPException(422, 'Type DELETE to confirm')
-    repo = get_repo()
-    repo.clear_all()
-    clock.reset(repo)
+    get_repo().clear_all()
     return _settings()

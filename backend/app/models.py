@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Literal, Optional
 
@@ -207,11 +207,45 @@ def strip_synthetic_suffixes(obj):
     return obj
 
 
-def load_seed(path: Path | None = None) -> dict:
-    """Load referrals.json (sample data) with `referrals` parsed into models."""
+def _on(today: date, offset):
+    """Sample dates are integer day offsets from load time; None stays None."""
+    if offset is None:
+        return None
+    if isinstance(offset, int):
+        return (today + timedelta(days=offset)).isoformat()
+    raise ValueError(f"Sample date must be a day offset (int), got {offset!r}")
+
+
+def resolve_offsets(r: dict, today: date) -> dict:
+    """Turn one sample referral's day offsets into dates as of `today`."""
+    r = json.loads(json.dumps(r))
+    r["authored_on"] = _on(today, r["authored_on"])
+    r["authorization_since"] = _on(today, r.get("authorization_since"))
+    for e in r["events"]:
+        e["at"] = _on(today, e["at"])
+    if r.get("appointment"):
+        r["appointment"]["start"] = _on(today, r["appointment"]["start"])
+    for b in r.get("barriers", []):
+        b["opened"] = _on(today, b["opened"])
+        b["addressed"] = _on(today, b.get("addressed"))
+    for c in r.get("communications", []):
+        c["sent"] = _on(today, c["sent"])
+    if r.get("plan"):
+        r["plan"]["returned_on"] = _on(today, r["plan"]["returned_on"])
+        r["plan"]["visit_date"] = _on(today, r["plan"]["visit_date"])
+    if r.get("closure"):
+        r["closure"]["at"] = _on(today, r["closure"]["at"])
+    return r
+
+
+def load_seed(today: date | None = None, path: Path | None = None) -> dict:
+    """Load referrals.json (sample data) as of `today` (default: the real date)."""
+    from app import config  # late import: tests patch config.real_today
+    today = today or config.real_today()
     path = path or DATA_SYNTHETIC / "referrals.json"
     doc = strip_synthetic_suffixes(json.loads(path.read_text(encoding="utf-8")))
-    doc["referrals"] = [Referral.model_validate(r) for r in doc["referrals"]]
+    doc["referrals"] = [Referral.model_validate(resolve_offsets(r, today)) for r in doc["referrals"]]
+    doc["as_of"] = today.isoformat()
     return doc
 
 

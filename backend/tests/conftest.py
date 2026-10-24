@@ -15,7 +15,8 @@ TODAY = date(2026, 10, 24)
 
 @pytest.fixture(scope="session")
 def seed() -> dict:
-    return load_seed()
+    """Sample archetypes as of the fixed test date (sample dates are offsets from load time)."""
+    return load_seed(TODAY)
 
 
 @pytest.fixture()
@@ -26,7 +27,8 @@ def refs(seed) -> dict:
 
 @pytest.fixture()
 def real_today(monkeypatch):
-    """Pin the 'real' clock for API tests. Returns a setter to move it."""
+    """Injected test clock: pins config.real_today for API tests. Returns a setter to move it.
+    This is the only way tests move time; the app itself always uses the real date."""
     state = {"today": TODAY}
     monkeypatch.setattr(config, "real_today", lambda: state["today"])
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { api, type InboxItem } from "../api";
+import { LIVE, api, type InboxItem } from "../api";
 import { copy } from "../copy";
 import { shortDate } from "../format";
 import { ErrorNote, Loading } from "../components/Status";
@@ -50,7 +50,7 @@ function Item({ item }: { item: InboxItem }) {
 }
 
 export default function PcpInbox() {
-  const q = useQuery({ queryKey: ["inbox"], queryFn: api.inbox });
+  const q = useQuery({ queryKey: ["inbox"], queryFn: api.inbox, ...LIVE });
   if (q.isLoading) return <Loading />;
   if (q.error) return <ErrorNote error={q.error} />;
   return (

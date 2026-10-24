@@ -23,4 +23,4 @@ for module in (dashboard, finder, inbox, referrals, office, call):
 def health() -> dict:
     repo = get_repo()
     # db file name (not path) lets the e2e script refuse to wipe anything but its own database.
-    return {"ok": True, "db": Path(repo.path).name, **clock.info(repo)}
+    return {"ok": True, "db": Path(repo.path).name, **clock.info()}

@@ -14,7 +14,7 @@ from pathlib import Path
 from threading import RLock
 from typing import Any, Optional
 
-from app.config import DEFAULT_PRACTICE, SAMPLE_BASE_DATE
+from app.config import DEFAULT_PRACTICE
 from app.models import Referral, load_patients, load_seed
 
 SCHEMA = """
@@ -41,8 +41,6 @@ CREATE TABLE IF NOT EXISTS settings (
 """
 
 DEFAULT_SETTINGS: dict[str, Any] = {
-    "demo_mode": False,
-    "demo_offset_days": 0,
     "practice": DEFAULT_PRACTICE,
 }
 
@@ -168,11 +166,10 @@ class Repo:
         return self._one("SELECT 1 FROM referrals WHERE sample = 1 LIMIT 1") is not None
 
     def load_sample(self, today: date) -> int:
-        """Load referrals.json + Synthea patients, shifting dates so the sample reads as of `today`."""
+        """Load referrals.json + Synthea patients. Sample dates are day offsets resolved as of `today`."""
         if self.has_sample():
             raise SampleAlreadyLoaded("Sample data is already loaded")
-        shift = today - SAMPLE_BASE_DATE
-        seed = load_seed()
+        seed = load_seed(today)
         existing = self.patients()
         for p in load_patients().values():
             if p["id"] not in existing:
@@ -183,7 +180,6 @@ class Repo:
             new_id = f"R-{int(r.id.split('-')[1]) + offset}" if offset else r.id
             id_map[r.id] = new_id
         for r in seed["referrals"]:
-            r = shift_dates(r, shift)
             r.id = id_map[r.id]
             r.replaces = id_map.get(r.replaces) if r.replaces else None
             r.sample = True
@@ -191,14 +187,15 @@ class Repo:
             self.token_for(r.id)
         return len(seed["referrals"])
 
-    def reset_sample(self, today: date) -> int:
-        """Delete sample referrals and sample patients, then load the sample again."""
+    def remove_sample(self) -> int:
+        """Delete sample referrals, sample patients, and their office links. Real records stay."""
         with self._lock:
+            n = self.conn.execute("SELECT COUNT(*) FROM referrals WHERE sample = 1").fetchone()[0]
             self.conn.executescript(
                 "DELETE FROM office_tokens WHERE referral_id IN (SELECT id FROM referrals WHERE sample = 1);"
                 "DELETE FROM referrals WHERE sample = 1; DELETE FROM patients WHERE sample = 1;")
             self.conn.commit()
-        return self.load_sample(today)
+        return n
 
     def clear_all(self) -> None:
         with self._lock:
@@ -206,28 +203,3 @@ class Repo:
                                     "DELETE FROM patients;")
             self.conn.commit()
 
-
-def shift_dates(ref: Referral, delta: timedelta) -> Referral:
-    """Copy of `ref` with every workflow date moved by `delta` (condition onset is left alone)."""
-    if not delta:
-        return ref.model_copy(deep=True)
-    r = ref.model_copy(deep=True)
-    r.authored_on += delta
-    for e in r.events:
-        e.at += delta
-    if r.appointment:
-        r.appointment.start += delta
-    for b in r.barriers:
-        b.opened += delta
-        if b.addressed:
-            b.addressed += delta
-    for c in r.communications:
-        c.sent += delta
-    if r.plan:
-        r.plan.returned_on += delta
-        r.plan.visit_date += delta
-    if r.closure:
-        r.closure.at += delta
-    if r.authorization_since:
-        r.authorization_since += delta
-    return r

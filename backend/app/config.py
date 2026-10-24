@@ -22,12 +22,6 @@ except ImportError:  # pragma: no cover
 # SQLite file. One file, created on first start. Override with RELAY_DB=/path/to/file.db.
 DB_PATH = Path(os.environ.get("RELAY_DB", str(ROOT / "data" / "relay.db")))
 
-# The date the sample data (referrals.json) was written for. Loading sample data shifts every
-# sample date by (today - SAMPLE_BASE_DATE) so "days stuck" reads the same on any day.
-SAMPLE_BASE_DATE: date = date(2026, 10, 24)
-DEMO_TODAY: date = date.fromisoformat(os.environ.get("DEMO_TODAY", SAMPLE_BASE_DATE.isoformat()))
-
-
 def real_today() -> date:
     """The real local date. Everything else goes through app.clock.today()."""
     return date.today()

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { api, type Detail } from "../api";
+import { LIVE, api, type Detail } from "../api";
 import { copy } from "../copy";
 import { FAILURE_RULES } from "../format";
 import { ActionDrawers, useCallKind, type DrawerState } from "../components/ActionDrawers";
@@ -123,7 +123,7 @@ function County({ d }: { d: Detail }) {
 export default function ReferralDetail() {
   const { rid = "" } = useParams();
   const [params, setParams] = useSearchParams();
-  const q = useQuery({ queryKey: ["referral", rid], queryFn: () => api.referral(rid) });
+  const q = useQuery({ queryKey: ["referral", rid], queryFn: () => api.referral(rid), ...LIVE });
   const [drawer, setDrawer] = useState<DrawerState>(null);
   const [barrier, setBarrier] = useState(false);
   const callKind = useCallKind();

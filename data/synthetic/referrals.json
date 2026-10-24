@@ -1,6 +1,6 @@
 {
   "note": "Sample referrals: synthetic patients, fictional practices and phone numbers.",
-  "demo_today": "2026-10-24",
+  "dates": "Workflow dates are integer day offsets from load time (0 = today, -14 = 14 days ago).",
   "pcp": {
     "practice": "Quabbin Hills Family Medicine",
     "clinician": "Dr. Avery Lin",
@@ -63,11 +63,11 @@
       "stage": "sent",
       "task_status": "requested",
       "business_status": "sent",
-      "authored_on": "2026-10-17",
+      "authored_on": -7,
       "events": [
         {
           "stage": "sent",
-          "at": "2026-10-17",
+          "at": -7,
           "actor": "coordinator",
           "note": "",
           "source": null,
@@ -116,11 +116,11 @@
       "stage": "received",
       "task_status": "received",
       "business_status": "received-complete",
-      "authored_on": "2026-10-06",
+      "authored_on": -18,
       "events": [
         {
           "stage": "sent",
-          "at": "2026-10-06",
+          "at": -18,
           "actor": "coordinator",
           "note": "",
           "source": null,
@@ -128,7 +128,7 @@
         },
         {
           "stage": "received",
-          "at": "2026-10-10",
+          "at": -14,
           "actor": "specialist",
           "note": "",
           "source": "fax",
@@ -140,7 +140,7 @@
         {
           "type": "transportation",
           "status": "open",
-          "opened": "2026-10-12",
+          "opened": -12,
           "note": "No car; daughter works weekdays."
         }
       ],
@@ -188,11 +188,11 @@
       "stage": "scheduled",
       "task_status": "in-progress",
       "business_status": "scheduled",
-      "authored_on": "2026-10-01",
+      "authored_on": -23,
       "events": [
         {
           "stage": "sent",
-          "at": "2026-10-01",
+          "at": -23,
           "actor": "coordinator",
           "note": "",
           "source": null,
@@ -200,7 +200,7 @@
         },
         {
           "stage": "received",
-          "at": "2026-10-03",
+          "at": -21,
           "actor": "specialist",
           "note": "",
           "source": "fax",
@@ -208,7 +208,7 @@
         },
         {
           "stage": "patient_contacted",
-          "at": "2026-10-06",
+          "at": -18,
           "actor": "specialist",
           "note": "Office called the patient.",
           "source": "phone",
@@ -216,7 +216,7 @@
         },
         {
           "stage": "scheduled",
-          "at": "2026-10-08",
+          "at": -16,
           "actor": "specialist",
           "note": "",
           "source": "phone",
@@ -224,7 +224,7 @@
         }
       ],
       "appointment": {
-        "start": "2026-11-03",
+        "start": 10,
         "time": "10:30",
         "status": "booked"
       },
@@ -232,7 +232,7 @@
         {
           "type": "transportation",
           "status": "open",
-          "opened": "2026-10-08",
+          "opened": -16,
           "note": "Doesn't drive; lives alone."
         }
       ],
@@ -246,7 +246,7 @@
       },
       "contact_mode": "office_called",
       "authorization": "approved",
-      "authorization_since": "2026-10-07",
+      "authorization_since": -17,
       "pt1_status": "not_started",
       "transport_plan": ""
     },
@@ -280,11 +280,11 @@
       "stage": "seen",
       "task_status": "in-progress",
       "business_status": "visit-completed",
-      "authored_on": "2026-09-15",
+      "authored_on": -39,
       "events": [
         {
           "stage": "sent",
-          "at": "2026-09-15",
+          "at": -39,
           "actor": "coordinator",
           "note": "",
           "source": null,
@@ -292,7 +292,7 @@
         },
         {
           "stage": "received",
-          "at": "2026-09-17",
+          "at": -37,
           "actor": "specialist",
           "note": "",
           "source": "fax",
@@ -300,7 +300,7 @@
         },
         {
           "stage": "patient_contacted",
-          "at": "2026-09-18",
+          "at": -36,
           "actor": "specialist",
           "note": "Patient told to call.",
           "source": "fax",
@@ -308,7 +308,7 @@
         },
         {
           "stage": "scheduled",
-          "at": "2026-09-19",
+          "at": -35,
           "actor": "specialist",
           "note": "",
           "source": "phone",
@@ -316,7 +316,7 @@
         },
         {
           "stage": "seen",
-          "at": "2026-10-12",
+          "at": -12,
           "actor": "specialist",
           "note": "",
           "source": "phone",
@@ -324,7 +324,7 @@
         }
       ],
       "appointment": {
-        "start": "2026-10-12",
+        "start": -12,
         "time": "09:00",
         "status": "fulfilled"
       },
@@ -373,11 +373,11 @@
       "stage": "plan_returned",
       "task_status": "completed",
       "business_status": "plan-returned",
-      "authored_on": "2026-09-08",
+      "authored_on": -46,
       "events": [
         {
           "stage": "sent",
-          "at": "2026-09-08",
+          "at": -46,
           "actor": "coordinator",
           "note": "",
           "source": null,
@@ -385,7 +385,7 @@
         },
         {
           "stage": "received",
-          "at": "2026-09-10",
+          "at": -44,
           "actor": "specialist",
           "note": "",
           "source": "fax",
@@ -393,7 +393,7 @@
         },
         {
           "stage": "patient_contacted",
-          "at": "2026-09-11",
+          "at": -43,
           "actor": "specialist",
           "note": "",
           "source": "phone",
@@ -401,7 +401,7 @@
         },
         {
           "stage": "scheduled",
-          "at": "2026-09-12",
+          "at": -42,
           "actor": "specialist",
           "note": "",
           "source": "phone",
@@ -409,7 +409,7 @@
         },
         {
           "stage": "seen",
-          "at": "2026-10-15",
+          "at": -9,
           "actor": "specialist",
           "note": "",
           "source": "phone",
@@ -417,7 +417,7 @@
         },
         {
           "stage": "plan_returned",
-          "at": "2026-10-22",
+          "at": -2,
           "actor": "specialist",
           "note": "",
           "source": "fax",
@@ -425,7 +425,7 @@
         }
       ],
       "appointment": {
-        "start": "2026-10-15",
+        "start": -9,
         "time": "13:15",
         "status": "fulfilled"
       },
@@ -433,9 +433,9 @@
       "communications": [],
       "plan": {
         "simulated": true,
-        "returned_on": "2026-10-22",
+        "returned_on": -2,
         "from": "Connecticut River Endocrine Group",
-        "visit_date": "2026-10-15",
+        "visit_date": -9,
         "reason": "Nonproliferative diabetic retinopathy due to type II diabetes mellitus",
         "assessment": "Diabetes-related findings reviewed.",
         "plan": "Follow-up in 3 months. Endocrinology will send updated lab orders to the PCP.",
@@ -485,11 +485,11 @@
       "stage": "closed",
       "task_status": "completed",
       "business_status": "closed-by-referrer",
-      "authored_on": "2026-08-25",
+      "authored_on": -60,
       "events": [
         {
           "stage": "sent",
-          "at": "2026-08-25",
+          "at": -60,
           "actor": "coordinator",
           "note": "",
           "source": null,
@@ -497,7 +497,7 @@
         },
         {
           "stage": "received",
-          "at": "2026-08-26",
+          "at": -59,
           "actor": "specialist",
           "note": "",
           "source": "fax",
@@ -505,7 +505,7 @@
         },
         {
           "stage": "patient_contacted",
-          "at": "2026-08-27",
+          "at": -58,
           "actor": "specialist",
           "note": "",
           "source": "phone",
@@ -513,7 +513,7 @@
         },
         {
           "stage": "scheduled",
-          "at": "2026-08-29",
+          "at": -56,
           "actor": "specialist",
           "note": "",
           "source": "phone",
@@ -521,7 +521,7 @@
         },
         {
           "stage": "seen",
-          "at": "2026-09-23",
+          "at": -31,
           "actor": "specialist",
           "note": "",
           "source": "phone",
@@ -529,7 +529,7 @@
         },
         {
           "stage": "plan_returned",
-          "at": "2026-09-30",
+          "at": -24,
           "actor": "specialist",
           "note": "",
           "source": "fax",
@@ -537,7 +537,7 @@
         },
         {
           "stage": "closed",
-          "at": "2026-10-05",
+          "at": -19,
           "actor": "pcp",
           "note": "Plan reviewed; added to problem list.",
           "source": null,
@@ -545,7 +545,7 @@
         }
       ],
       "appointment": {
-        "start": "2026-09-23",
+        "start": -31,
         "time": "11:00",
         "status": "fulfilled"
       },
@@ -553,9 +553,9 @@
       "communications": [],
       "plan": {
         "simulated": true,
-        "returned_on": "2026-09-30",
+        "returned_on": -24,
         "from": "Central Mass Kidney Care",
-        "visit_date": "2026-09-23",
+        "visit_date": -31,
         "reason": "Chronic kidney disease stage 3 (disorder)",
         "assessment": "Kidney function reviewed; stable at this visit.",
         "plan": "Repeat kidney labs in 3 months, ordered by nephrology. Follow-up in 6 months.",
@@ -564,7 +564,7 @@
         "omitted_fields_note": "ACCESS-specific fields (track, OAP measures) omitted: not an ACCESS referral."
       },
       "closure": {
-        "at": "2026-10-05",
+        "at": -19,
         "by": "Dr. Avery Lin",
         "reason": "plan_received",
         "note": "Plan reviewed; added to problem list."
@@ -610,11 +610,11 @@
       "stage": "declined",
       "task_status": "rejected",
       "business_status": "declined",
-      "authored_on": "2026-10-14",
+      "authored_on": -10,
       "events": [
         {
           "stage": "sent",
-          "at": "2026-10-14",
+          "at": -10,
           "actor": "coordinator",
           "note": "",
           "source": null,
@@ -622,7 +622,7 @@
         },
         {
           "stage": "declined",
-          "at": "2026-10-20",
+          "at": -4,
           "actor": "specialist",
           "note": "No new-patient capacity this quarter.",
           "source": "fax",
@@ -671,11 +671,11 @@
       "stage": "no_show",
       "task_status": "in-progress",
       "business_status": "no-show",
-      "authored_on": "2026-09-22",
+      "authored_on": -32,
       "events": [
         {
           "stage": "sent",
-          "at": "2026-09-22",
+          "at": -32,
           "actor": "coordinator",
           "note": "",
           "source": null,
@@ -683,7 +683,7 @@
         },
         {
           "stage": "received",
-          "at": "2026-09-23",
+          "at": -31,
           "actor": "specialist",
           "note": "",
           "source": "fax",
@@ -691,7 +691,7 @@
         },
         {
           "stage": "patient_contacted",
-          "at": "2026-09-24",
+          "at": -30,
           "actor": "specialist",
           "note": "",
           "source": "phone",
@@ -699,7 +699,7 @@
         },
         {
           "stage": "scheduled",
-          "at": "2026-09-26",
+          "at": -28,
           "actor": "specialist",
           "note": "",
           "source": "phone",
@@ -707,7 +707,7 @@
         },
         {
           "stage": "no_show",
-          "at": "2026-10-15",
+          "at": -9,
           "actor": "specialist",
           "note": "",
           "source": "phone",
@@ -715,7 +715,7 @@
         }
       ],
       "appointment": {
-        "start": "2026-10-15",
+        "start": -9,
         "time": "08:30",
         "status": "noshow"
       },
@@ -723,7 +723,7 @@
         {
           "type": "schedule_work",
           "status": "open",
-          "opened": "2026-10-16",
+          "opened": -8,
           "note": "Works weekday shifts; asked about late-day slots."
         }
       ],
@@ -771,11 +771,11 @@
       "stage": "received",
       "task_status": "received",
       "business_status": "received-incomplete",
-      "authored_on": "2026-10-19",
+      "authored_on": -5,
       "events": [
         {
           "stage": "sent",
-          "at": "2026-10-19",
+          "at": -5,
           "actor": "coordinator",
           "note": "",
           "source": null,
@@ -783,7 +783,7 @@
         },
         {
           "stage": "received",
-          "at": "2026-10-21",
+          "at": -3,
           "actor": "specialist",
           "note": "Need last two office notes and recent labs.",
           "source": "fax",
@@ -804,7 +804,7 @@
       },
       "contact_mode": null,
       "authorization": "pending",
-      "authorization_since": "2026-10-21",
+      "authorization_since": -3,
       "pt1_status": "not_started",
       "transport_plan": ""
     }

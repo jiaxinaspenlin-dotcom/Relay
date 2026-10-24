@@ -9,7 +9,12 @@ Writes data/synthetic/referrals.json
 Workflow (design.md §3): Sent → Received (complete / incomplete) → Patient contacted → Scheduled →
 Seen → Plan returned → Closed, with Declined, No-show, Cancelled, Patient barrier on the side.
 Sample referrals go to FICTIONAL practices in real towns, with fictional 555-01xx phone numbers.
-Dates are written for 2026-10-24 and shifted to "today" when the app loads sample data.
+
+Dates are DAY OFFSETS FROM LOAD TIME, not calendar dates: every workflow date is written as an
+integer (e.g. received = -14 means "14 days before the day the sample is loaded"). The app turns
+them into dates when it loads sample data, so "Not scheduled, 14 days" and "No plan back, 12 days"
+are right whenever the app runs. Scenarios are authored against a reference day (REF) only to
+keep the arithmetic readable; REF never reaches the output.
 """
 from __future__ import annotations
 
@@ -19,7 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SYN = ROOT / "data" / "synthetic"
-BASE = date(2026, 10, 24)
+REF = date(2026, 10, 24)  # authoring reference only: d(m, day) returns (date - REF).days
 
 PCP = {
     "practice": "Quabbin Hills Family Medicine",
@@ -62,8 +67,9 @@ PLANS = {
 }
 
 
-def d(month: int, day: int) -> str:
-    return date(2026, month, day).isoformat()
+def d(month: int, day: int) -> int:
+    """Offset in days from load time for a scenario date written against REF."""
+    return (date(2026, month, day) - REF).days
 
 
 def ev(stage: str, at: str, actor: str, note: str = "", source: str | None = None) -> dict:
@@ -198,7 +204,7 @@ def main() -> None:
 
     out = {
         "note": "Sample referrals: synthetic patients, fictional practices and phone numbers.",
-        "demo_today": BASE.isoformat(),
+        "dates": "Workflow dates are integer day offsets from load time (0 = today, -14 = 14 days ago).",
         "pcp": PCP,
         "fictional_practices": list(PRACTICES.values()),
         "referrals": referrals,

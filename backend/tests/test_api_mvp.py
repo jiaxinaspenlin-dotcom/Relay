@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.db import Repo
@@ -43,12 +44,9 @@ def _office(c, token, **body):
     return r.json()
 
 
-def _demo_skip(c, days):
-    c.post("/api/settings", json={"demo_mode": True})
-    for _ in range(days // 7):
-        c.post("/api/clock", json={"advance_days": 7})
-    for _ in range(days % 7):
-        c.post("/api/clock", json={"advance_days": 1})
+def _later(set_today, days):
+    """Move the injected test clock forward."""
+    set_today(TODAY + timedelta(days=days))
 
 
 def _row(c, rid):
@@ -61,7 +59,7 @@ def test_starts_empty(client):
     d = client.get("/api/dashboard").json()
     assert d["total"] == 0 and d["needs_attention"] == []
     s = client.get("/api/settings").json()
-    assert s["clock"]["demo_mode"] is False and s["clock"]["today"] == TODAY.isoformat()
+    assert s["today"] == TODAY.isoformat() and s["has_sample"] is False
 
 
 def test_data_persists_in_sqlite_file(tmp_path, real_today):
@@ -75,25 +73,32 @@ def test_data_persists_in_sqlite_file(tmp_path, real_today):
     set_repo(None)
 
 
-def test_sample_data_and_reset(client):
+def test_sample_data_load_and_remove(client):
+    rid, _ = _create_and_send(client, _add_patient(client)["id"])  # a real referral survives removal
     assert client.post("/api/sample-data").status_code == 200
     assert client.post("/api/sample-data").status_code == 409
     d = client.get("/api/dashboard").json()
-    statuses = {r["referral_id"]: [f["status"] for f in r["flags"]] for r in d["needs_attention"]}
-    assert "Not scheduled, 14 days" in statuses["R-102"] and "No plan back, 12 days" in statuses["R-104"]
-    assert d["summary"]["lost"] == 2
-    assert client.post("/api/sample-data/reset").status_code == 409  # demo mode only
-    client.post("/api/settings", json={"demo_mode": True})
-    client.post("/api/office/" + client.get("/api/referrals/R-102").json()["office_path"].split("/")[-1],
-                json={"action": "patient_contacted", "contact_mode": "office_called"})
-    assert client.post("/api/sample-data/reset").status_code == 200
-    assert client.get("/api/referrals/R-102").json()["card"]["stage"] == "received"
+    lost = {r["referral_id"]: [f["status"] for f in r["flags"]] for r in d["needs_attention"] if r["failure"]}
+    sample_ids = {r: k for r, k in ((c["id"], c["patient"]["name"]) for col in d["pipeline"] for c in col["cards"])}
+    assert any("Not scheduled, 14 days" in v for v in lost.values())
+    assert any("No plan back, 12 days" in v for v in lost.values())
+    assert d["summary"]["lost"] == 2 and len(sample_ids) > 1
+    r = client.delete("/api/sample-data").json()
+    assert r["removed"] == 9 and r["has_sample"] is False
+    d = client.get("/api/dashboard").json()
+    assert d["total"] == 1 and d["pipeline"][1]["referral_ids"] == [rid]
+    assert all(not p["sample"] for p in client.get("/api/patients").json()["patients"])
 
 
-def test_sample_dates_shift_to_today(client, real_today):
-    real_today(TODAY + timedelta(days=40))
+@pytest.mark.parametrize("days_later", [0, 1, 40, 365])
+def test_sample_dates_are_relative_to_load_time(client, real_today, days_later):
+    """Whenever the app runs, the sample reads the same: 14 days not scheduled, 12 days no plan."""
+    real_today(TODAY + timedelta(days=days_later))
     client.post("/api/sample-data")
     assert "Not scheduled, 14 days" in [f["status"] for f in _row(client, "R-102")["flags"]]
+    assert "No plan back, 12 days" in [f["status"] for f in _row(client, "R-104")["flags"]]
+    ev = client.get("/api/referrals/R-102").json()["referral"]["events"]
+    assert ev[-1]["at"] == (TODAY + timedelta(days=days_later - 14)).isoformat()
 
 
 def test_no_synthetic_suffix_and_sample_tag(client):
@@ -120,10 +125,10 @@ def test_d1_enter_referral(client):
 
 # ---------------------------------------------------------------- D2: may not have arrived → missing
 
-def test_d2_not_confirmed_received_then_missing(client):
+def test_d2_not_confirmed_received_then_missing(client, real_today):
     rid, token = _create_and_send(client, _add_patient(client)["id"])
     assert _row(client, rid) is None
-    _demo_skip(client, 3)  # Sat 10-24 → Tue 10-27: 2 business days
+    _later(real_today, 3)  # Sat 10-24 → Tue 10-27: 2 business days
     row = _row(client, rid)
     assert row and row["flags"][0]["status"].startswith("Not confirmed received")
     assert row["card"]["can_call"] is True
@@ -171,10 +176,10 @@ def test_phone_entered_when_directory_has_none(client):
 
 # ---------------------------------------------------------------- D4: lost in the handoff
 
-def test_d4_not_scheduled_then_contacted_scheduled_seen(client):
+def test_d4_not_scheduled_then_contacted_scheduled_seen(client, real_today):
     rid, token = _create_and_send(client, _add_patient(client)["id"])
     _office(client, token, action="received")
-    _demo_skip(client, 7)
+    _later(real_today, 7)
     row = _row(client, rid)
     assert row["failure"] and row["flags"][0]["status"] == "Not scheduled, 7 days"
     _office(client, token, action="patient_contacted", contact_mode="office_called")
@@ -240,10 +245,10 @@ def test_referral_hint_by_insurance(client):
     assert hints["commercial_hmo"] == hints["dual"] == "Referral and authorization rules depend on the plan. Check with the plan."
 
 
-def test_follow_up_draft_verifies(client):
+def test_follow_up_draft_verifies(client, real_today):
     rid, token = _create_and_send(client, _add_patient(client)["id"])
     _office(client, token, action="received")
-    _demo_skip(client, 7)
+    _later(real_today, 7)
     d = client.get(f"/api/referrals/{rid}/draft").json()
     assert d["verified"], d["problems"]
     assert d["rule"] == "not_scheduled" and f"/office/{token}" in d["text"] and "Mass HIway" in d["text"]
@@ -272,3 +277,13 @@ def test_concurrent_reads_and_writes_stay_consistent(client):
     with ThreadPoolExecutor(max_workers=8) as ex:
         futures = [ex.submit(read if i % 3 else write, i) for i in range(60)]
         assert all(f.result() for f in futures)
+
+
+def test_new_referral_declined_via_office_link(client, real_today):
+    rid, token = _create_and_send(client, _add_patient(client)["id"])
+    v = _office(client, token, action="declined", note="Not accepting new patients")
+    assert v["stage"] == "declined" and v["actions"] == []
+    ev = client.get(f"/api/referrals/{rid}").json()["referral"]["events"][-1]
+    assert (ev["stage"], ev["actor"], ev["source"], ev["note"]) == ("declined", "office", "link", "Not accepting new patients")
+    _later(real_today, 2)
+    assert _row(client, rid)["flags"][0]["status"] == "Declined, not re-routed"

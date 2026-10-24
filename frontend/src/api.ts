@@ -203,10 +203,8 @@ export type InboxItem = {
   timeline: TimelineItem[];
 };
 
-export type Clock = { today: string; real_today: string; demo_mode: boolean; offset_days: number };
-
 export type Settings = {
-  clock: Clock;
+  today: string;
   practice: { practice: string; clinician: string; coordinator: string };
   has_sample: boolean;
   referrals: number;
@@ -265,17 +263,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 const post = <T,>(path: string, body: unknown) => request<T>(path, { method: "POST", body: JSON.stringify(body) });
 
+/** Office updates arrive from another browser (the office link), so screens that show referral
+ * status refetch on a short interval and on window focus. */
+export const LIVE = { refetchInterval: 5000, refetchOnWindowFocus: true } as const;
+
 export type FinderParams = { maxMiles: number | null; acceptsOnly: boolean; limit: number };
 
 export const api = {
   config: () => request<{ voice_enabled: boolean }>("/api/config"),
   dashboard: () => request<Dashboard>("/api/dashboard"),
   settings: () => request<Settings>("/api/settings"),
-  updateSettings: (body: { demo_mode?: boolean; practice?: Settings["practice"] }) => post<Settings>("/api/settings", body),
-  advanceClock: (days: 1 | 7) => post<Clock>("/api/clock", { advance_days: days }),
-  resetClock: () => post<Clock>("/api/clock", { reset: true }),
+  updateSettings: (body: { practice?: Settings["practice"] }) => post<Settings>("/api/settings", body),
   loadSample: () => post<Settings>("/api/sample-data", {}),
-  resetSample: () => post<Settings>("/api/sample-data/reset", {}),
+  removeSample: () => request<Settings>("/api/sample-data", { method: "DELETE" }),
   clearData: () => post<Settings>("/api/clear-data", { confirm: "DELETE" }),
   towns: () => request<{ towns: string[] }>("/api/towns"),
   patients: () => request<{ patients: Patient[]; specialties: string[]; coverage_options: Record<string, string> }>("/api/patients"),
