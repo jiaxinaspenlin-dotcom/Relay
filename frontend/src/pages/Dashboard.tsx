@@ -9,17 +9,19 @@ import { ActionDrawers, useCallKind, type DrawerKind, type DrawerState } from ".
 import { RouteTrack, primaryFlag } from "../components/RouteTrack";
 import { ErrorNote, Loading } from "../components/Status";
 import { Button, SampleTag, btn } from "../components/ui";
+import { useMe } from "../components/useMe";
 
 function EmptyState() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const sample = useMutation({ mutationFn: api.loadSample, onSuccess: () => qc.invalidateQueries() });
+  const coordinator = useMe()?.role !== "clinician";
   return (
     <div className="max-w-xl pt-6" data-testid="empty-state">
       <h1 className="text-page font-bold">{copy.empty.title}</h1>
       <p className="mt-2 text-muted">{copy.empty.body}</p>
       <div className="mt-8 flex flex-wrap gap-3">
-        <Button variant="primary" onClick={() => nav("/new")}>{copy.empty.add}</Button>
+        {coordinator && <Button variant="primary" onClick={() => nav("/new")}>{copy.empty.add}</Button>}
         <Button onClick={() => sample.mutate()} disabled={sample.isPending}>{copy.empty.sample}</Button>
       </div>
       {sample.error && <div className="mt-3"><ErrorNote error={sample.error} /></div>}
@@ -34,6 +36,8 @@ const ACTION_DRAWER: Record<string, DrawerKind | null> = {
 function Row({ card, flags, fresh, onAction }: { card: Card; flags: StuckFlag[]; fresh: boolean; onAction: (kind: DrawerKind) => void }) {
   const nav = useNavigate();
   const callKind = useCallKind();
+  // Clinicians see the same list read-only; logistics buttons are coordinator work.
+  const coordinator = useMe()?.role !== "clinician";
   const main = flags.length ? primaryFlag(flags)! : undefined;
   const failure = main ? FAILURE_RULES.has(main.rule) : false;
   const action = main?.action === "call_office" && !card.can_call ? "follow_up" : main?.action;
@@ -56,11 +60,11 @@ function Row({ card, flags, fresh, onAction }: { card: Card; flags: StuckFlag[];
       <div className="min-w-0">
         <RouteTrack steps={card.stepper} flags={flags} />
         <div className={`mt-2 text-caption font-bold ${main ? (failure ? "text-rust" : "text-amber") : "text-muted font-normal"}`} data-testid="row-status">
-          {main ? main.status : card.status_label}
+          {main ? main.status : coordinator && card.reviewer ? copy.dashboard.waitingReview(card.reviewer) : card.status_label}
         </div>
       </div>
       <div className="relative z-10 flex justify-start min-[860px]:justify-end">
-        {action && (
+        {coordinator && action && (
           <button
             type="button"
             className={btn("outline", "w-full min-[860px]:w-auto")}
@@ -94,6 +98,7 @@ function Section({ title, rows, fresh, onAction, testid }: {
 
 export default function Dashboard() {
   const q = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard, ...LIVE });
+  const coordinator = useMe()?.role !== "clinician";
   const [drawer, setDrawer] = useState<DrawerState>(null);
   // Motion: a referral that newly becomes stuck (between refreshes, e.g. after an office update)
   // slides into its section. Nothing slides on the first load; bars grow on load instead.
@@ -129,7 +134,7 @@ export default function Dashboard() {
             <h1 className="text-page font-bold" data-testid="headline">{t.headline(d.summary.stuck)}</h1>
             <p className="mt-1 text-muted">{t.open(d.summary.open)}</p>
           </div>
-          <Link to="/new" className={btn("primary")}>{t.newReferral}</Link>
+          {coordinator && <Link to="/new" className={btn("primary")}>{t.newReferral}</Link>}
         </div>
         {d.needs_attention.length === 0 && <p className="text-muted">{t.none}</p>}
         <Section title={t.lost} testid="lost" rows={lost.map((r) => ({ card: r.card, flags: r.flags }))} fresh={fresh} onAction={open} />

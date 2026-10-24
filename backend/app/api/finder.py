@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field, field_validator
 
 from app import clock
@@ -13,6 +13,7 @@ from app.config import FINDER_SPECIALTIES
 from app.finder.rank import find
 from app.finder.towns import resolve_town, towns
 from app.models import COVERAGE_LABELS, Coverage
+from app.api.auth import require_role
 from app.store import get_repo
 from app.views import patient_brief
 
@@ -53,7 +54,8 @@ class NewPatient(BaseModel):
 
 
 @router.post("/patients", status_code=201)
-def add_patient(body: NewPatient) -> dict:
+def add_patient(body: NewPatient, request: Request) -> dict:
+    require_role(request, "coordinator", "add patients")
     repo = get_repo()
     town = resolve_town(body.town)
     if town is None:

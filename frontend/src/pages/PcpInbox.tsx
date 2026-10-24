@@ -49,7 +49,9 @@ function Item({ item }: { item: InboxItem }) {
           {close.error && <ErrorNote error={close.error} />}
         </div>
       ) : (
-        <Muted className="block border-t border-line pt-5">{t.clinicianOnly}</Muted>
+        <p className="border-t border-line pt-5 font-semibold text-amber" data-testid="waiting-review">
+          {item.card.reviewer ? copy.dashboard.waitingReview(item.card.reviewer) : t.clinicianOnly}
+        </p>
       )}
     </article>
   );
@@ -57,11 +59,13 @@ function Item({ item }: { item: InboxItem }) {
 
 export default function PcpInbox() {
   const q = useQuery({ queryKey: ["inbox"], queryFn: api.inbox, ...LIVE });
+  const me = useMe();
   if (q.isLoading) return <Loading />;
   if (q.error) return <ErrorNote error={q.error} />;
+  const n = q.data!.items.length;
   return (
     <div className="space-y-8">
-      <h1 className="text-page font-bold">{copy.inbox.title}</h1>
+      <h1 className="text-page font-bold" data-testid="inbox-heading">{me?.role === "clinician" ? copy.inbox.toReview(n) : copy.inbox.title}</h1>
       {q.data!.items.length === 0 && <p className="text-muted">{copy.inbox.empty}</p>}
       {q.data!.items.map((it) => <Item key={it.card.id} item={it} />)}
     </div>

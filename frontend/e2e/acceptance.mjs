@@ -45,6 +45,10 @@ const tests = {
     await page.getByRole("button", { name: "Sign in as coordinator (sample)" }).waitFor({ timeout: T });
     await signInAs(page, "coordinator");
     await page.getByTestId("signed-in-as").getByText("Sam Ortiz").waitFor({ timeout: T });
+    await page.getByTestId("signed-in-role").getByText("Coordinator", { exact: true }).waitFor();
+    const rail = page.getByRole("navigation", { name: "Main" });
+    for (const l of ["Dashboard", "New referral", "Settings"]) await rail.getByRole("link", { name: new RegExp(`^${l}`) }).waitFor();
+    assert(await rail.getByRole("link", { name: /^Inbox/ }).count() === 0, "coordinator rail shows Inbox");
     await page.goto(`${WEB}/new`);
     await page.getByRole("button", { name: "Add new patient" }).click();
     const form = page.getByRole("form", { name: "Add new patient" });
@@ -134,10 +138,26 @@ const tests = {
       await p.getByLabel("Plan", { exact: true }).fill("Stress echo in 2 weeks, ordered by cardiology. Follow-up after results.");
     });
     await page.goto(`${WEB}/inbox`);
-    await page.getByTestId(`inbox-${ctx.rid}`).getByText("Only a clinician can acknowledge and close.").waitFor({ timeout: T });
+    const waitingFor = page.getByTestId(`inbox-${ctx.rid}`).getByTestId("waiting-review");
+    await waitingFor.waitFor({ timeout: T });
+    assert(/^Waiting for Dr\. .+ to review$/.test(await waitingFor.innerText()), `coordinator note: ${await waitingFor.innerText()}`);
+    assert(await page.getByRole("button", { name: "Acknowledge and close" }).count() === 0, "coordinator sees Acknowledge and close");
+    await page.goto(WEB);
+    await page.getByTestId(`row-${ctx.rid}`).getByTestId("row-status").getByText(/^Waiting for Dr\. .+ to review$/).waitFor({ timeout: T });
     const clin = await (await page.context().browser().newContext({ acceptDownloads: true })).newPage();
     await signInAs(clin, "clinician");
     assert(clin.url().endsWith("/inbox"), `clinician should land on Inbox, got ${clin.url()}`);
+    await clin.getByTestId("inbox-heading").getByText(/^\d+ plans? to review$/).waitFor({ timeout: T });
+    await clin.getByTestId("signed-in-role").getByText("Clinician", { exact: true }).waitFor();
+    const crail = clin.getByRole("navigation", { name: "Main" });
+    for (const l of ["Inbox", "Referrals", "Settings"]) await crail.getByRole("link", { name: new RegExp(`^${l}`) }).waitFor();
+    assert(await crail.getByRole("link", { name: /^(Dashboard|New referral)/ }).count() === 0, "clinician rail shows coordinator links");
+    await crail.getByRole("link", { name: /^Referrals/ }).click();
+    await clin.getByTestId("lost").waitFor({ timeout: T });
+    for (const b of ["Call office", "Follow up", "Message patient", "Send records", "Log update", "New referral"]) {
+      assert(await clin.getByRole("button", { name: b, exact: true }).count() === 0 && await clin.getByRole("link", { name: b, exact: true }).count() === 0, `clinician sees ${b}`);
+    }
+    await clin.goto(`${WEB}/inbox`);
     const item = clin.getByTestId(`inbox-${ctx.rid}`);
     await item.waitFor({ timeout: T });
     assert((await item.getByTestId("returned-plan").innerText()).includes("Stress echo"), "plan missing");

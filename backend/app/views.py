@@ -119,7 +119,14 @@ def referral_card(ref: Referral, patients: dict[str, dict], today: date, reroute
                           for b in ref.barriers if b.status == "open"],
         "stuck": [f.to_dict() for f in flags],
         "can_call": bool(flags) and ref.stage in ("sent", "received"),
+        # Who reviews a returned plan (coordinators see "Waiting for Dr. {name} to review").
+        "reviewer": reviewer_name(ref.requester.clinician) if ref.stage == "plan_returned" else None,
     }
+
+
+def reviewer_name(clinician: str) -> str:
+    name = clinician.strip()
+    return name if name.lower().startswith("dr.") or not name else f"Dr. {name}"
 
 
 def dashboard_view(referrals: list[Referral], patients: dict[str, dict], today: date) -> dict:

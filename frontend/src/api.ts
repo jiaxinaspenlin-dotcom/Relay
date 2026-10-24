@@ -49,6 +49,7 @@ export type Card = {
   open_barriers: { type: string; label: string; opened: string }[];
   stuck: StuckFlag[];
   can_call: boolean;
+  reviewer: string | null;
 };
 
 export type Dashboard = {

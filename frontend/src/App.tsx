@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Inbox, LayoutGrid, LogOut, SlidersHorizontal, type LucideIcon } from "lucide-react";
+import { FilePlus2, Inbox, LayoutGrid, LogOut, SlidersHorizontal, type LucideIcon } from "lucide-react";
 import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { LIVE, api } from "./api";
 import { copy } from "./copy";
@@ -65,6 +65,7 @@ function Shell() {
   if (me.isLoading) return <Loading />;
   if (me.error || !me.data) return <Navigate to="/sign-in" replace state={{ from: loc.pathname }} />;
   const user = me.data.user;
+  const clinician = user.role === "clinician";
   return (
     <div className="min-h-screen min-[860px]:flex">
       {/* The rail stretches to the page height; its contents stay pinned while the page scrolls. */}
@@ -73,8 +74,17 @@ function Shell() {
         <div className="flex items-center justify-between gap-3 px-4 py-3 min-[860px]:block min-[860px]:px-4 min-[860px]:py-7">
           <div className="min-[860px]:mb-8 min-[860px]:px-3"><Wordmark /></div>
           <nav aria-label={copy.nav.label} className="flex gap-1 min-[860px]:flex-col">
-            <RailLink to="/" end icon={LayoutGrid} label={copy.nav.dashboard} count={d.data?.summary.stuck} />
-            <RailLink to="/inbox" icon={Inbox} label={copy.nav.inbox} count={d.data?.summary.unread_plans} />
+            {clinician ? (
+              <>
+                <RailLink to="/inbox" icon={Inbox} label={copy.nav.inbox} count={d.data?.summary.unread_plans} />
+                <RailLink to="/" end icon={LayoutGrid} label={copy.nav.referrals} />
+              </>
+            ) : (
+              <>
+                <RailLink to="/" end icon={LayoutGrid} label={copy.nav.dashboard} count={d.data?.summary.stuck} />
+                <RailLink to="/new" icon={FilePlus2} label={copy.nav.newReferral} />
+              </>
+            )}
             <RailLink to="/settings" icon={SlidersHorizontal} label={copy.nav.settings} />
             <span className="min-[860px]:hidden"><SignOut compact /></span>
           </nav>
@@ -82,6 +92,7 @@ function Shell() {
         <div className="mt-auto hidden px-4 pb-7 min-[860px]:block">
           <div className="mb-2 px-3 text-caption text-white/75">
             <div className="font-semibold text-white" data-testid="signed-in-as">{user.name}</div>
+            <div data-testid="signed-in-role">{clinician ? copy.nav.roleClinician : copy.nav.roleCoordinator}</div>
             <div>{s.data?.practice.practice ?? user.practice}</div>
           </div>
           <SignOut />

@@ -12,6 +12,7 @@ import { copyText } from "../components/sendActions";
 import { ErrorNote, Loading } from "../components/Status";
 import { Timeline } from "../components/Timeline";
 import { Button, Chip, Field, Muted, Panel, SampleTag, btn, inputCls } from "../components/ui";
+import { useMe } from "../components/useMe";
 
 function SendPanel({ d }: { d: Detail }) {
   const qc = useQueryClient();
@@ -127,6 +128,8 @@ export default function ReferralDetail() {
   const [drawer, setDrawer] = useState<DrawerState>(null);
   const [barrier, setBarrier] = useState(false);
   const callKind = useCallKind();
+  // Clinicians read; coordinators do the logistics (the server enforces the same split).
+  const coordinator = useMe()?.role !== "clinician";
   if (q.isLoading) return <Loading />;
   if (q.error) return <ErrorNote error={q.error} />;
   const d = q.data!;
@@ -163,7 +166,7 @@ export default function ReferralDetail() {
             <SampleTag show={c.sample} />
           </div>
         </div>
-        {c.can_call && (
+        {coordinator && c.can_call && (
           <button type="button" className={btn("primary")} onClick={() => setDrawer({ kind: callKind, rid })}>
             {callKind === "call" ? t.callAi : t.logUpdate}
           </button>
@@ -173,7 +176,7 @@ export default function ReferralDetail() {
       <Panel>
         <RouteTrack steps={c.stepper} flags={c.stuck} labels />
         <p className={`mt-4 ${flag ? (failure ? "text-rust" : "text-amber") : "text-muted"} font-semibold`} data-testid="status-line">
-          {flag ? `${flag.message}. ${t.limit(flag.threshold, unit(flag))}` : c.status_label}
+          {flag ? `${flag.message}. ${t.limit(flag.threshold, unit(flag))}` : coordinator && c.reviewer ? copy.dashboard.waitingReview(c.reviewer) : c.status_label}
         </p>
         {c.stuck.length > 1 && (
           <ul className="mt-1 text-caption text-muted">
@@ -182,16 +185,17 @@ export default function ReferralDetail() {
         )}
       </Panel>
 
-      {c.stage === "draft" && <SendPanel d={d} />}
+      {coordinator && c.stage === "draft" && <SendPanel d={d} />}
 
       <div className="grid items-start gap-6 min-[860px]:grid-cols-[1.3fr_1fr]">
         <div className="space-y-6">
           <Panel title={t.timeline} id="tl-h" actions={<a href={api.fhirUrl(rid)} download className="inline-flex min-h-[40px] items-center text-hemlock hover:underline">{t.downloadFhir}</a>}>
             <Timeline items={d.timeline} />
           </Panel>
-          {d.can_send && c.stage !== "draft" && <SendPanel d={d} />}
+          {coordinator && d.can_send && c.stage !== "draft" && <SendPanel d={d} />}
         </div>
         <div className="space-y-6">
+          {coordinator ? (
           <Panel title={t.nextStep} id="next-h">
             <div className="space-y-2">
               {d.update_actions.length > 0 && <Button className="w-full" onClick={() => setDrawer({ kind: "update", rid })}>{t.logUpdate}</Button>}
@@ -205,7 +209,12 @@ export default function ReferralDetail() {
             </div>
             {c.stage !== "draft" && <div className="mt-4"><OfficeLink path={d.office_path} /></div>}
           </Panel>
-          <Transport d={d} />
+          ) : c.stage === "plan_returned" && (
+            <Panel title={t.nextStep} id="next-h">
+              <Link to="/inbox" className={btn("primary", "w-full")}>{t.reviewPlan}</Link>
+            </Panel>
+          )}
+          {coordinator && <Transport d={d} />}
           <Panel title={t.hintTitle} id="hint-h"><p data-testid="referral-hint">{d.hint}</p></Panel>
           <County d={d} />
         </div>

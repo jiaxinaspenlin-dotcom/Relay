@@ -11,7 +11,10 @@ export const copy = {
   delivery: "Relay records what you send. It doesn't send email or fax by itself. Production delivery is Mass HIway (the state's health information exchange) Direct messaging.",
   practiceSetting: "Practice setting",
 
-  nav: { dashboard: "Dashboard", inbox: "Inbox", settings: "Settings", label: "Main", signOut: "Sign out" },
+  nav: {
+    dashboard: "Dashboard", inbox: "Inbox", referrals: "Referrals", newReferral: "New referral", settings: "Settings",
+    label: "Main", signOut: "Sign out", roleCoordinator: "Coordinator", roleClinician: "Clinician",
+  },
 
   signIn: {
     title: "Sign in to Relay",
@@ -52,6 +55,7 @@ export const copy = {
       open: "Open",
     } as Record<string, string>,
     rowLabel: (name: string) => `Open referral for ${name}`,
+    waitingReview: (reviewer: string) => `Waiting for ${reviewer} to review`,
   },
 
   track: { label: "Referral progress", waiting: (days: number, limit: number, unit: string) => `${days} ${unit} waiting, limit ${limit}` },
@@ -139,6 +143,7 @@ export const copy = {
     callAi: "Call office (AI)",
     timeline: "Timeline",
     nextStep: "Next step",
+    reviewPlan: "Review plan in Inbox",
     logUpdate: "Log update",
     messagePatient: "Message patient",
     followUp: "Follow up",
@@ -242,6 +247,7 @@ export const copy = {
 
   inbox: {
     title: "Inbox",
+    toReview: (n: number) => `${n} ${n === 1 ? "plan" : "plans"} to review`,
     clinicianOnly: "Only a clinician can acknowledge and close.",
     empty: "No returned plans are waiting.",
     question: "Original question",

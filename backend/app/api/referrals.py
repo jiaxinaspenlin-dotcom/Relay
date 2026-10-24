@@ -96,7 +96,7 @@ class NewReferral(BaseModel):
 
 @router.post("/referrals", status_code=201)
 def create_referral(body: NewReferral, request: Request) -> dict:
-    user = current_user(request)
+    user = require_role(request, "coordinator", "create referrals")
     repo = get_repo()
     p = repo.patient(body.patient_id)
     if p is None:
@@ -152,7 +152,7 @@ class SendReferral(BaseModel):
 @router.post("/referrals/{rid}/send")
 def send_referral(rid: str, body: SendReferral, request: Request) -> dict:
     """Record that a person sent the referral. The first send moves Draft to Sent."""
-    user = current_user(request)
+    user = require_role(request, "coordinator", "send referrals")
     repo = get_repo()
     ref = _get(rid)
     if ref.stage in ("closed", "cancelled", "declined"):
@@ -174,7 +174,7 @@ class LogUpdate(UpdateBody):
 
 @router.post("/referrals/{rid}/updates")
 def log_update(rid: str, body: LogUpdate, request: Request) -> dict:
-    user = current_user(request)
+    user = require_role(request, "coordinator", "log updates")
     repo = get_repo()
     try:
         new = apply_update(_get(rid), body, actor=_actor(user), source=body.source, today=clock.today(repo),
@@ -195,7 +195,7 @@ class BarrierBody(BaseModel):
 
 @router.post("/referrals/{rid}/barriers", status_code=201)
 def add_barrier(rid: str, body: BarrierBody, request: Request) -> dict:
-    user = current_user(request)
+    user = require_role(request, "coordinator", "log barriers")
     repo = get_repo()
     ref = _get(rid)
     today = clock.today(repo)
@@ -209,7 +209,7 @@ def add_barrier(rid: str, body: BarrierBody, request: Request) -> dict:
 
 @router.post("/referrals/{rid}/barriers/{btype}/address")
 def address_barrier(rid: str, btype: BarrierType, request: Request) -> dict:
-    user = current_user(request)
+    user = require_role(request, "coordinator", "update barriers")
     repo = get_repo()
     ref = _get(rid)
     today = clock.today(repo)
@@ -234,7 +234,7 @@ PT1_LABELS = {"not_started": "not started", "requested": "requested", "confirmed
 
 @router.post("/referrals/{rid}/transport")
 def set_transport(rid: str, body: TransportBody, request: Request) -> dict:
-    user = current_user(request)
+    user = require_role(request, "coordinator", "update transportation")
     repo = get_repo()
     ref = _get(rid)
     notes = []
@@ -259,7 +259,7 @@ class PhoneBody(BaseModel):
 
 @router.post("/referrals/{rid}/office-phone")
 def set_office_phone(rid: str, body: PhoneBody, request: Request) -> dict:
-    user = current_user(request)
+    user = require_role(request, "coordinator", "update the office phone")
     repo = get_repo()
     ref = _get(rid)
     new = record_field_update(ref, "phone", at=clock.today(repo), actor=_actor(user), by=user.name,
@@ -300,7 +300,7 @@ class SendMessage(BaseModel):
 
 @router.post("/referrals/{rid}/communications", status_code=201)
 def send_message(rid: str, body: SendMessage, request: Request) -> dict:
-    user = current_user(request)
+    user = require_role(request, "coordinator", "send messages")
     ref = _get(rid)
     new = _comm(ref, user, recipient=body.recipient, text=body.text, kind=body.kind, channel=body.channel,
                 rule=body.rule,

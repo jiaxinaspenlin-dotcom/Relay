@@ -131,3 +131,38 @@ def test_acting_user_recorded_everywhere(client, clinician):
     assert ev[-1] == ("closed", "stage", CLIN["name"], None)
     assert all(c["sent_by"] == COORD["name"] for c in ref["referral"]["communications"])
     assert ref["referral"]["closure"]["by"] == CLIN["name"]
+
+
+def test_clinicians_cannot_do_logistics(client, clinician):
+    """Coordinators do the logistics; clinicians get 403 on every logistics write."""
+    client.post("/api/sample-data")
+    pid = client.post("/api/patients", json={"name": "Ana Cruz", "town": "Orange", "coverage": "dual"}).json()["id"]
+    f = client.get("/api/finder", params={"specialty": "Cardiology", "patient_id": pid}).json()
+    new_ref = {"patient_id": pid, "specialty": "Cardiology", "practice_id": f["results"][0]["id"],
+               "reason_text": "Evaluate.", "priority": "routine", "condition_text": "Chest pain"}
+    writes = [
+        ("post", "/api/patients", {"name": "X", "town": "Orange"}),
+        ("post", "/api/referrals", new_ref),
+        ("post", "/api/referrals/R-101/send", {"channel": "copy"}),
+        ("post", "/api/referrals/R-102/updates", {"action": "patient_contacted", "source": "phone", "contact_mode": "office_called"}),
+        ("post", "/api/referrals/R-102/barriers", {"type": "cost", "note": "x"}),
+        ("post", "/api/referrals/R-103/transport", {"pt1_status": "requested"}),
+        ("post", "/api/referrals/R-102/office-phone", {"phone": "413-555-0100"}),
+        ("post", "/api/referrals/R-102/communications", {"recipient": "patient", "text": "Hi"}),
+        ("post", "/api/referrals/R-102/call-session", None),
+    ]
+    for method, path, body in writes:
+        r = getattr(clinician, method)(path, json=body) if body is not None else getattr(clinician, method)(path)
+        assert r.status_code == 403, (path, r.status_code, r.text)
+    # Clinicians can read everything
+    for path in ("/api/dashboard", "/api/referrals/R-102", "/api/inbox", "/api/referrals/R-102/fhir"):
+        assert clinician.get(path).status_code == 200, path
+    # Coordinators can do the logistics, but can't close
+    assert client.post("/api/referrals/R-102/barriers", json={"type": "cost", "note": "x"}).status_code == 201
+    assert client.post("/api/referrals/R-105/close", json={}).status_code == 403
+
+
+def test_returned_plan_names_the_reviewer(client):
+    client.post("/api/sample-data")
+    assert client.get("/api/referrals/R-105").json()["card"]["reviewer"] == "Dr. Avery Lin"
+    assert client.get("/api/referrals/R-102").json()["card"]["reviewer"] is None
