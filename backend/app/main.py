@@ -11,11 +11,11 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from app import clock
-from app.api import dashboard, finder, inbox, office, referrals
+from app.api import call, dashboard, finder, inbox, office, referrals
 from app.store import get_repo
 
 app = FastAPI(title="Relay")
-for module in (dashboard, finder, inbox, referrals, office):
+for module in (dashboard, finder, inbox, referrals, office, call):
     app.include_router(module.router)
 
 

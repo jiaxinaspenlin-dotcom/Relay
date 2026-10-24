@@ -62,3 +62,11 @@
   missing right after an office update. Cause: one sqlite3 connection shared across FastAPI's
   threadpool, with writes locked but reads not. Every read now takes the same lock; 8 of 8 runs
   pass and `test_concurrent_reads_and_writes_stay_consistent` guards it.
+- 2026-10-24 — AI call assistant (E): a real test call (docs/sample_call_transcript.txt) showed
+  two things the extraction had to handle. (1) Voice tags such as "[happy]" and "[slow]" in the
+  agent's turns, stripped with `\[[a-z ]+\]` before anything else. (2) The same phone number said
+  two ways, "413-555-0142" by the office and "four one three, five five five, zero one four two"
+  in the agent's read-back. Validation normalizes spoken digit words and written digits into one
+  digit stream, so the number is confirmed either way; a number in neither form is nulled with
+  an error. Tests mock the LLM; with no LLM key, a deterministic extractor gives the same result
+  on the fixture. Suggestions are never applied: the coordinator saves them in Log update.
