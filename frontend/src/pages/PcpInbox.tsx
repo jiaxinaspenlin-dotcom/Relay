@@ -25,8 +25,10 @@ function Item({ item }: { item: InboxItem }) {
   return (
     <article data-testid={`inbox-${item.card.id}`} className="max-w-[72ch] space-y-6 rounded-panel border border-line bg-surface p-8">
       <header className="flex flex-wrap items-center gap-2">
-        <h2 className="text-section font-bold"><Link to={`/referrals/${item.card.id}`} className="hover:text-hemlock hover:underline">{item.card.patient.name}</Link></h2>
-        <SampleTag show={item.card.sample} />
+        <h2 className="flex flex-wrap items-center gap-2 text-section font-bold">
+          <Link to={`/referrals/${item.card.id}`} className="hover:text-hemlock hover:underline">{item.card.patient.name}</Link>
+          <SampleTag show={item.card.sample} />
+        </h2>
         <Muted className="w-full">{item.card.specialty}, received {shortDate(p.returned_on)}</Muted>
       </header>
       <section>

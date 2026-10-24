@@ -33,9 +33,17 @@ export function Panel({ title, children, actions, id, className = "" }: { title?
   );
 }
 
+/** Small inline label that sits after a name ("Sample"). The one tag style used everywhere. */
+export function Tag({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-flex shrink-0 items-center self-center rounded-[6px] border border-[#DDE3E0] bg-[#F6F8F7] px-[8px] py-[2px] align-middle text-[12px] font-normal leading-[16px] text-muted">
+      {children}
+    </span>
+  );
+}
+
 export function SampleTag({ show }: { show: boolean }) {
-  if (!show) return null;
-  return <span className="rounded-full border border-line px-2 text-caption text-muted">{copy.sampleTag}</span>;
+  return show ? <Tag>{copy.sampleTag}</Tag> : null;
 }
 
 export function Chip({ children }: { children: ReactNode }) {

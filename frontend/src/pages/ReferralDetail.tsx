@@ -162,7 +162,7 @@ export default function ReferralDetail() {
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-3">
           <div>
-            <h1 className="text-page font-bold">{c.patient.name}</h1>
+            <h1 className="flex flex-wrap items-center gap-2 text-page font-bold">{c.patient.name}<SampleTag show={c.sample} /></h1>
             <p className="text-muted">
               {t.at(c.specialty, c.performer.name)}
               {c.performer.fictional && <> {copy.fictional}</>}
@@ -172,7 +172,6 @@ export default function ReferralDetail() {
             <Chip>{route}</Chip>
             <Chip>{c.patient.coverage_label}</Chip>
             {c.authorization !== "not_set" && <Chip>{t.authorization}: {c.authorization_label.toLowerCase()}</Chip>}
-            <SampleTag show={c.sample} />
           </div>
         </div>
         {coordinator && ringing && (
