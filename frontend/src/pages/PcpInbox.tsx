@@ -35,7 +35,7 @@ function Item({ item }: { item: InboxItem }) {
         <h3 className="text-caption text-muted">{t.question}</h3>
         <p data-testid="original-reason" className="mt-1">{item.reason_text}</p>
       </section>
-      <section className="space-y-4 border-t border-line pt-5">
+      <section className="space-y-4 border-t border-line pt-4">
         <h3 className="text-caption text-muted">{t.plan}</h3>
         {sections.map(([k, v]) => (
           <div key={k}>
@@ -45,13 +45,13 @@ function Item({ item }: { item: InboxItem }) {
         ))}
       </section>
       {me?.role === "clinician" ? (
-        <div className="space-y-3 border-t border-line pt-5">
+        <div className="space-y-3 border-t border-line pt-4">
           <Field label={t.note}><input className={inputCls} value={note} onChange={(e) => setNote(e.target.value)} /></Field>
           <Button variant="primary" onClick={() => close.mutate()} disabled={close.isPending}>{t.acknowledge}</Button>
           {close.error && <ErrorNote error={close.error} />}
         </div>
       ) : (
-        <p className="border-t border-line pt-5 font-semibold text-amber" data-testid="waiting-review">
+        <p className="border-t border-line pt-4 font-semibold text-amber" data-testid="waiting-review">
           {item.card.reviewer ? copy.dashboard.waitingReview(item.card.reviewer) : t.clinicianOnly}
         </p>
       )}

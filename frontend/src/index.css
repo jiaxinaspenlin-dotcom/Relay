@@ -4,7 +4,7 @@
 
 @layer base {
   /* Every number uses tabular figures (design.md). */
-  body { font-variant-numeric: tabular-nums; }
+  body { font-variant-numeric: tabular-nums; background: #F6F8F7; color: #1C2B33; }
   :focus-visible { outline: 2px solid #1F5F5B; outline-offset: 2px; }
 }
 
@@ -22,3 +22,7 @@
   .slide-in { animation: none; }
   * { transition-duration: 0s !important; animation-duration: 0s !important; }
 }
+
+/* Skeleton loading bars; static under reduced motion. */
+.skeleton { background: linear-gradient(90deg, #EEF2F0 0%, #F6F8F7 50%, #EEF2F0 100%); background-size: 200% 100%; animation: skeleton 1.2s ease-in-out infinite; }
+@keyframes skeleton { from { background-position: 100% 0; } to { background-position: -100% 0; } }

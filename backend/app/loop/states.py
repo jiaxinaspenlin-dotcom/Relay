@@ -41,7 +41,7 @@ STAGE_LABELS: dict[str, str] = {
     "scheduled": "Scheduled",
     "no_show": "No-show",
     "seen": "Seen",
-    "plan_returned": "Plan returned",
+    "plan_returned": "Plan back",
     "closed": "Closed",
     "declined": "Declined",
     "patient_barrier": "Patient barrier",

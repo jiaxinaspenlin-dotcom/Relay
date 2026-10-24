@@ -31,7 +31,7 @@ export default function OfficePage() {
 
   const shell = (body: ReactNode) => (
     <div className="min-h-screen bg-paper">
-      <main className="mx-auto max-w-md space-y-6 px-5 py-8">
+      <main className="mx-auto max-w-md space-y-6 px-6 py-8">
         <Wordmark color="#1F5F5B" />
         {body}
       </main>
@@ -50,7 +50,7 @@ export default function OfficePage() {
         {v.sample && <p className="mt-1 text-caption text-muted">{t.sample}</p>}
       </div>
 
-      <dl className="space-y-2 rounded-panel border border-line bg-surface p-5">
+      <dl className="space-y-2 rounded-panel border border-line bg-surface p-6">
         <div className="flex justify-between gap-3"><dt className="text-muted">{t.patient}</dt><dd className="text-right font-semibold">{v.patient.name}</dd></div>
         {v.patient.dob && <div className="flex justify-between gap-3"><dt className="text-muted">{t.dob}</dt><dd>{shortDate(v.patient.dob)}, {v.patient.dob.slice(0, 4)}</dd></div>}
         <div className="flex justify-between gap-3"><dt className="text-muted">{t.reason}</dt><dd className="text-right">{v.reason_text}</dd></div>

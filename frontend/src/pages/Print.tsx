@@ -25,7 +25,7 @@ export default function PrintPage() {
   const re = `${comm.kind === "referral" ? "Referral" : "Follow-up"}: ${q.data.card.specialty}, ${q.data.card.patient.name}`;
 
   return (
-    <div className="mx-auto max-w-[8.5in] bg-white p-10 text-[14px] text-black print:p-0">
+    <div className="mx-auto max-w-[8.5in] bg-white p-12 text-[14px] text-black print:p-0">
       <div className="mb-6 flex justify-between print:hidden">
         <Link to={`/referrals/${rid}`} className="text-hemlock underline">{t.back}</Link>
         <button type="button" onClick={() => window.print()} className="min-h-[40px] rounded-control bg-hemlock px-4 font-semibold text-white">{t.printNow}</button>
@@ -48,7 +48,7 @@ export default function PrintPage() {
         </tbody>
       </table>
       <pre className="mt-6 whitespace-pre-wrap font-sans leading-relaxed">{comm.text}</pre>
-      <p className="mt-10 border-t border-black/40 pt-2 text-[12px]">{t.confidential}</p>
+      <p className="mt-12 border-t border-black/40 pt-2 text-[12px]">{t.confidential}</p>
     </div>
   );
 }

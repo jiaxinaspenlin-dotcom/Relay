@@ -99,7 +99,7 @@ export default function NewReferral() {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
       <div>
         <Link to="/" className="inline-flex min-h-[40px] items-center gap-1 text-hemlock hover:underline"><ChevronLeft size={18} strokeWidth={1.8} aria-hidden="true" />{copy.detail.back}</Link>
         <h1 className="mt-2 text-page font-bold">{t.title}</h1>
@@ -113,13 +113,13 @@ export default function NewReferral() {
               {matches.slice(0, 6).map((p) => (
                 <li key={p.id} className="border-b border-line last:border-b-0">
                   <button type="button" onClick={() => choose(p.id)} aria-pressed={pid === p.id}
-                    className={`flex min-h-[48px] w-full items-center justify-between gap-3 px-5 text-left ${pid === p.id ? "bg-hemlock-tint" : "hover:bg-paper"}`}>
+                    className={`flex min-h-[48px] w-full items-center justify-between gap-3 px-6 text-left ${pid === p.id ? "bg-hemlock-tint" : "hover:bg-paper"}`}>
                     <span><span className="font-semibold">{p.name}</span> <span className="text-caption text-muted">{p.town}</span></span>
                     <span className="flex items-center gap-2 text-caption text-muted">{p.coverage_label}<SampleTag show={p.sample} /></span>
                   </button>
                 </li>
               ))}
-              {matches.length === 0 && <li className="px-5 py-3 text-muted">{t.noMatch}</li>}
+              {matches.length === 0 && <li className="px-6 py-3 text-muted">{t.noMatch}</li>}
             </ul>
           </div>
         )}
@@ -150,7 +150,7 @@ export default function NewReferral() {
       {pid && specialty && !adding && (
         <Step n={3} title={t.step3}>
           <p className="text-caption text-muted">{t.sortNote} {t.telehealth}</p>
-          <div className="flex flex-wrap items-center gap-5" role="group" aria-label="Filters">
+          <div className="flex flex-wrap items-center gap-4" role="group" aria-label="Filters">
             <label className="flex items-center gap-2">
               <span className="font-semibold">{t.within}</span>
               <select className="min-h-[40px] rounded-control border border-line bg-surface px-3" value={maxMiles ?? ""} onChange={(e) => { setMaxMiles(e.target.value ? Number(e.target.value) : null); setLimit(PAGE); }}>
@@ -171,7 +171,7 @@ export default function NewReferral() {
               <div className="space-y-4">
                 {groups.map((g) => (
                   <section key={g.key} aria-label={g.town} data-testid="town-group" className="overflow-hidden rounded-panel border border-line bg-surface">
-                    <div className="border-b border-line px-5 py-3">
+                    <div className="border-b border-line px-6 py-3">
                       <h3 className="font-semibold">{g.label === `In ${g.town}` ? g.label : `${g.town}, ${g.label}`}</h3>
                       {g.hospital && <div className="text-caption text-muted"><HospitalLine h={g.hospital} /></div>}
                     </div>

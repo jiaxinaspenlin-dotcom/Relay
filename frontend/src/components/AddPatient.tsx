@@ -22,7 +22,7 @@ export function AddPatient({ onAdded, onCancel }: { onAdded: (p: PatientBrief) =
   });
 
   return (
-    <form aria-label={t.title} className="space-y-4 rounded-panel border border-line bg-paper p-5"
+    <form aria-label={t.title} className="space-y-4 rounded-panel border border-line bg-surface p-6"
       onSubmit={(e) => { e.preventDefault(); if (name.trim() && validTown) add.mutate(); }}>
       <h3 className="font-semibold">{t.title}</h3>
       <Field label={t.name}><input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} required autoComplete="off" /></Field>

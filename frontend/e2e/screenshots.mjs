@@ -7,7 +7,7 @@ import path from "node:path";
 
 const WEB = process.env.WEB_URL ?? "http://127.0.0.1:5173";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const OUT = path.join(ROOT, "docs", "screenshots");
+const OUT = path.join(ROOT, "docs", "screenshots", process.env.SHOT_DIR ?? "");
 mkdirSync(OUT, { recursive: true });
 
 const browser = await chromium.launch({ channel: "chrome", headless: true });

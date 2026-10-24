@@ -145,7 +145,7 @@ export function UpdateForm({ rid, actions, prefill, officePhone, onDone }: {
       {source === "ai_call" ? null : (
         <fieldset>
           <legend className="font-semibold">{t.source}</legend>
-          <div className="flex flex-wrap gap-x-5">
+          <div className="flex flex-wrap gap-x-6">
             {Object.entries(t.sources).map(([k, label]) => (
               <label key={k} className="flex min-h-[40px] items-center gap-2">
                 <input type="radio" name="source" className="h-4 w-4 accent-hemlock" checked={source === k} onChange={() => setSource(k)} />

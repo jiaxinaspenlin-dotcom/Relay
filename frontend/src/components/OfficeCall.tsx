@@ -112,7 +112,7 @@ export function CallPanel({ d, onEdit, onPatientMessage }: {
         {r.validation_errors.length > 0 && (
           <div className="rounded-control bg-amber-tint px-3 py-2 text-caption">
             <div className="font-semibold text-amber">{t.checks}</div>
-            <ul className="list-disc pl-5">{r.validation_errors.map((e) => <li key={e}>{e}</li>)}</ul>
+            <ul className="list-disc pl-6">{r.validation_errors.map((e) => <li key={e}>{e}</li>)}</ul>
           </div>
         )}
         <div className="flex flex-wrap gap-2">

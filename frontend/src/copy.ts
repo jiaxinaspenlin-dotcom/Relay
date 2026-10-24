@@ -160,7 +160,7 @@ export const copy = {
   detail: {
     back: "Dashboard",
     at: (specialty: string, practice: string) => `${specialty} at ${practice}`,
-    callAi: "Call office (AI)",
+    callAi: "Call office",
     timeline: "Timeline",
     nextStep: "Next step",
     reviewPlan: "Review plan in Inbox",
@@ -203,7 +203,7 @@ export const copy = {
   timeline: {
     stage: {
       sent: "Sent", received: "Received", patient_contacted: "Patient contacted", scheduled: "Scheduled",
-      no_show: "No-show", seen: "Seen", plan_returned: "Plan returned", closed: "Closed", declined: "Declined",
+      no_show: "No-show", seen: "Seen", plan_returned: "Plan back", closed: "Closed", declined: "Declined",
       patient_barrier: "Patient barrier", cancelled: "Cancelled",
     } as Record<string, string>,
     source: { phone: "phone", fax: "fax", portal: "portal", link: "office link", email: "email", ai_call: "AI call", other: "other" } as Record<string, string>,
@@ -269,9 +269,9 @@ export const copy = {
     title: "Inbox",
     toReview: (n: number) => `${n} ${n === 1 ? "plan" : "plans"} to review`,
     clinicianOnly: "Only a clinician can acknowledge and close.",
-    empty: "No returned plans are waiting.",
+    empty: "No plans back to review.",
     question: "Original question",
-    plan: "Returned plan",
+    plan: "Plan back",
     from: "From",
     visitDate: "Visit date",
     assessment: "Assessment",

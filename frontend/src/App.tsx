@@ -71,7 +71,7 @@ function Shell() {
       {/* The rail stretches to the page height; its contents stay pinned while the page scrolls. */}
       <aside className="bg-hemlock min-[860px]:w-[216px] min-[860px]:shrink-0">
         <div className="min-[860px]:sticky min-[860px]:top-0 min-[860px]:flex min-[860px]:h-screen min-[860px]:flex-col">
-        <div className="flex items-center justify-between gap-3 px-4 py-3 min-[860px]:block min-[860px]:px-4 min-[860px]:py-7">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 min-[860px]:block min-[860px]:px-4 min-[860px]:py-8">
           <div className="min-[860px]:mb-8 min-[860px]:px-3"><Wordmark /></div>
           <nav aria-label={copy.nav.label} className="flex gap-1 min-[860px]:flex-col">
             {clinician ? (
@@ -89,7 +89,7 @@ function Shell() {
             <span className="min-[860px]:hidden"><SignOut compact /></span>
           </nav>
         </div>
-        <div className="mt-auto hidden px-4 pb-7 min-[860px]:block">
+        <div className="mt-auto hidden px-4 pb-8 min-[860px]:block">
           <div className="mb-2 px-3 text-caption text-white/75">
             <div className="font-semibold text-white" data-testid="signed-in-as">{user.name}</div>
             <div data-testid="signed-in-role">{clinician ? copy.nav.roleClinician : copy.nav.roleCoordinator}</div>
@@ -100,7 +100,8 @@ function Shell() {
         </div>
       </aside>
       <div className="relative min-w-0 flex-1 overflow-x-hidden bg-paper">
-        <main className="relative mx-auto max-w-[1000px] px-12 py-10 max-[859px]:px-5 max-[859px]:py-6">
+        {/* Content sits 56px from the rail, up to 1000px wide, left-aligned on wide screens. */}
+        <main className="relative max-w-[1112px] px-14 py-12 max-[859px]:px-4 max-[859px]:py-6">
           <Outlet />
         </main>
       </div>

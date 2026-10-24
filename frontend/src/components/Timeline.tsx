@@ -27,7 +27,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function Timeline({ items }: { items: TimelineItem[] }) {
   return (
-    <ol className="space-y-5" data-testid="timeline">
+    <ol className="space-y-4" data-testid="timeline">
       {[...items].reverse().map((it, i) => {
         const { what, meta } = describe(it);
         return (
@@ -41,7 +41,7 @@ export function Timeline({ items }: { items: TimelineItem[] }) {
               {it.kind === "communication" && (
                 <details className="mt-1">
                   <summary className="cursor-pointer text-caption text-hemlock">Show message</summary>
-                  <pre className="mt-1 whitespace-pre-wrap rounded-control bg-paper p-3 font-sans text-caption">{it.text}</pre>
+                  <pre className="mt-1 whitespace-pre-wrap rounded-control border border-line bg-surface p-3 font-sans text-caption">{it.text}</pre>
                 </details>
               )}
             </div>

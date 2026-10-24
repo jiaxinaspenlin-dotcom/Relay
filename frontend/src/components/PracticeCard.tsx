@@ -15,7 +15,7 @@ export function PracticeRow({ p, chosen, onChoose, medicareProminent }: {
   p: Practice; chosen: boolean; onChoose: () => void; medicareProminent: boolean;
 }) {
   return (
-    <li data-testid="practice-card" className={`flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4 last:border-b-0 ${chosen ? "bg-hemlock-tint" : "bg-surface"}`}>
+    <li data-testid="practice-card" className={`flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-4 last:border-b-0 ${chosen ? "bg-hemlock-tint" : "bg-surface"}`}>
       <div className="min-w-0">
         <div className="font-semibold">{p.label}</div>
         <div className="text-caption text-muted">{p.address}. {p.clinician_label}.</div>

@@ -21,7 +21,7 @@ export function plural(n: number, one: string, many = `${one}s`): string {
 export function time12(hhmm: string | null | undefined): string {
   if (!hhmm) return "";
   const [h, m] = hhmm.split(":").map(Number);
-  const suffix = h >= 12 ? "pm" : "am";
+  const suffix = h >= 12 ? "PM" : "AM";
   return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${suffix}`;
 }
 
