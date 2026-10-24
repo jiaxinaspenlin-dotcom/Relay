@@ -48,7 +48,9 @@ function Shell() {
   const d = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard });
   return (
     <div className="min-h-screen min-[860px]:flex">
-      <aside className="bg-hemlock min-[860px]:sticky min-[860px]:top-0 min-[860px]:flex min-[860px]:h-screen min-[860px]:w-[216px] min-[860px]:shrink-0 min-[860px]:flex-col">
+      {/* The rail stretches to the page height; its contents stay pinned while the page scrolls. */}
+      <aside className="bg-hemlock min-[860px]:w-[216px] min-[860px]:shrink-0">
+        <div className="min-[860px]:sticky min-[860px]:top-0 min-[860px]:flex min-[860px]:h-screen min-[860px]:flex-col">
         <div className="flex items-center justify-between gap-3 px-4 py-3 min-[860px]:block min-[860px]:px-4 min-[860px]:py-7">
           <div className="min-[860px]:mb-8 min-[860px]:px-3"><Wordmark /></div>
           <nav aria-label={copy.nav.label} className="flex gap-1 min-[860px]:flex-col">
@@ -58,6 +60,7 @@ function Shell() {
           </nav>
         </div>
         <div className="mt-auto hidden px-7 pb-7 text-caption text-white/75 min-[860px]:block">{s.data?.practice.practice}</div>
+        </div>
       </aside>
       <div className="relative min-w-0 flex-1 overflow-x-hidden bg-paper">
         {s.data?.clock.demo_mode && (

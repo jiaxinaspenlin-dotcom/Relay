@@ -52,14 +52,16 @@ ones first, so that nothing falls through.
    allowed transitions in design.md §3. Invalid transitions SHALL be rejected.
 2. THE SYSTEM SHALL record a timestamped event for every transition, with actor and note.
 3. THE SYSTEM SHALL flag a referral as stuck when it matches a rule in design.md §4, including:
-   accepted with no appointment after N days (**challenge failure 1**), and seen with no plan returned
-   after N days (**challenge failure 2**).
+   received with no patient contact or schedule after N days (**challenge failure 1**), and seen
+   with no plan returned after N days (**challenge failure 2**). Stages follow the U.S. referral
+   workflow in design.md §3: Sent → Received (complete / incomplete) → Patient contacted →
+   Scheduled → Seen → Plan returned → Closed; authorization is a field, not a stage.
 4. Rule thresholds SHALL be practice settings, shown in the UI as "Practice setting", and never
    presented as clinical standards.
-5. **Log update (primary real-world input path).** THE SYSTEM SHALL let the coordinator log what the
-   specialist office reported: accepted, declined, scheduled (+ appointment date), seen, no-show, or
-   plan received (care-update-shaped form, R7.2), with source (phone, fax, portal, other) and a
-   note. Each update SHALL go through the design.md §3 transitions and be dated by the demo clock.
+5. **Log update.** THE SYSTEM SHALL let the coordinator log what the office reported (received,
+   something missing, authorization status, patient contacted, scheduled with date and time, seen,
+   no-show, declined with reason, plan returned) with source phone, fax, or other. A confirmed AI
+   call suggestion is saved the same way with source "AI call". Every update goes through design.md §3.
 
 ## R3 — New referral with specialist finder (MUST)
 **User story:** As a PCP and coordinator, we want to see which practices offer the needed specialty,
@@ -125,7 +127,7 @@ for likely barriers. It is never a judgment about the patient.
    "what this can't tell you" note.
 3. Context SHALL never appear in messages to specialists or patients.
 
-## R7 — Plan back (MUST) and Specialist office (simulated portal) (DEFERRED)
+## R7 — Office update link and plan back (MUST)
 1. THE SYSTEM SHALL create an unguessable office update link (/office/{token}) per referral. The
    page (no login) shows the referral summary and lets the office accept, decline (reason required),
    schedule (date and time), mark seen or no-show, and return the plan. Each action goes through
@@ -135,6 +137,25 @@ for likely barriers. It is never a judgment about the patient.
    ACCESS-specific fields (track, OAP measures) are omitted and the omission is noted.
 3. Assessment and Plan SHALL be written by the specialist (entered as reported, or simulated).
    Relay never drafts them.
+5. AFTER the office confirms receipt THE SYSTEM SHALL draft a patient next-step message ("Your
+   referral to {practice} was received. Please call {phone} to schedule.") using the CMS practice
+   phone, or a phone the coordinator enters. Sending records a Communication to the patient.
+6. Insurance types are Massachusetts-specific (Original Medicare, Medicare Advantage, MassHealth
+   PCC Plan, Primary Care ACO, Accountable Care Partnership Plan, MCO, Dual eligible, Commercial
+   HMO, Commercial PPO/other, Unknown). Referral detail SHALL show the referral-requirement hint
+   (design.md §4) and, for MassHealth members with an open transportation barrier, "Request a
+   MassHealth ride (PT-1)" with status not started / requested / ride confirmed.
+7. Production delivery is Mass HIway Direct messaging; the office link is for offices not yet on
+   Mass HIway. Sending offers Copy text, Open in email, and Print (fax-ready), each recorded as a
+   Communication.
+
+## R13 — AI call assistant (SHOULD)
+1. FOR referrals stuck at Sent or Received THE SYSTEM SHALL offer "Call office" with an AI voice
+   assistant when voice is configured, and Log update otherwise.
+2. The call transcript SHALL be cleaned of voice tags, extracted (LLM at temperature 0, or
+   deterministic rules), validated against the transcript (phone and hours must appear; spoken and
+   written digits count as the same number), and checked against design.md §3. It SHALL never be
+   applied: the coordinator confirms it in Log update.
 4. Every simulated action SHALL be labeled "Simulated response".
 
 ## R8 — PCP inbox and loop closure (MUST)

@@ -38,6 +38,16 @@ Deferred until all five pass: patient view, map, LLM, readmissions drawer, Speci
 - [x] P5 design.md applied to shell, dashboard route track, new referral, detail, inbox, office, print
 - [x] M1–M5 rerun in real mode (`make dev-api-e2e` + `make e2e`): all pass
 
+## Real U.S. workflow + Massachusetts (final instructions)
+- [x] W1 Stages Sent → Received (complete/incomplete) → Patient contacted → Scheduled → Seen → Plan returned → Closed; authorization field; FHIR mapping
+- [x] W2 Stuck rules (design.md §4), sample scenarios R-101…R-109 incl. dual-eligible + transportation barrier
+- [x] W3 Office link actions (actor=office, source=link); patient next-step message with practice phone
+- [x] W4 MA insurance types, referral hint, PT-1 for MassHealth + transportation barrier, Mass HIway copy, docs/SOURCES.md
+- [x] W5 Copy guard: booking claims and referral-requirement facts blocked
+- [x] D1–D5 acceptance tests from an empty app (`make e2e`): all pass
+- [x] E AI call assistant backend (`/call-session`, `/call-transcript`) + wiring; tests with mocked LLM
+- [x] F design.md updated; screenshots at 1440 and 390 in docs/screenshots/
+
 ## Block 1 — Data (0:00–1:00)
 - [x] 1.1 Scaffold the repo per structure.md: FastAPI, Vite React TS + Tailwind, Makefile (`setup`,
   `data`, `dev`, `test`, `check-copy`), with the copy guard in `make test`. Set `DEMO_TODAY` in config.

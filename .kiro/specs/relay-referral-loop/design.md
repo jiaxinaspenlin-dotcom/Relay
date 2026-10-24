@@ -63,36 +63,59 @@ rural health page and the MassGIS layer page in the README; don't republish them
 The live demo creates one new referral through the finder (real practices, simulated responses).
 
 ## 3. Loop states (`loop/states.py`)
-Modeled on HL7 BSeR: a `ServiceRequest` (the referral) plus a `Task` that tracks fulfillment.
-`Task.status` uses FHIR codes, and `Task.businessStatus` uses a local CodeSystem for finer stages.
+How U.S. referrals actually move: the referral is sent as paperwork; the office confirms receipt
+(complete, or incomplete with missing items); scheduling happens between the patient and the
+office (the office calls, or tells the patient to call). Modeled on HL7 BSeR's ServiceRequest +
+Task pattern. Authorization is a per-referral field (not set / not required / pending / approved /
+denied), shown as a chip and exported as a Task input, never a stage.
 
 | Stage | Task.status | businessStatus | Allowed next |
 |---|---|---|---|
-| Draft | draft | — | Sent, Cancelled |
-| Sent | requested | sent | Accepted, Declined, Cancelled |
-| Accepted | accepted | accepted | Scheduled, Patient barrier, Cancelled |
-| Scheduled | in-progress | scheduled (+ `Appointment` booked) | Seen, No-show, Patient barrier, Cancelled |
-| No-show | in-progress | no-show (Appointment noshow) | Scheduled, Patient barrier, Cancelled |
-| Seen | in-progress | visit-completed (Appointment fulfilled) | Plan returned |
-| Plan returned | completed | plan-returned (`Task.output` → Composition) | Closed |
+| Draft | draft | draft | Sent, Cancelled |
+| Sent | requested | sent | Received, Declined, Cancelled |
+| Received | received | received-complete / received-incomplete (+ missing: records, insurance authorization, test results, other; note) | Received (completeness update), Patient contacted, Scheduled, Declined, Patient barrier, Cancelled |
+| Patient contacted | accepted | patient-contacted (office called / patient told to call) | Scheduled, Patient barrier, Cancelled |
+| Scheduled | in-progress | scheduled (Appointment booked, date + time) | Scheduled, Seen, No-show, Patient barrier, Cancelled |
+| No-show | in-progress | no-show | Patient contacted, Scheduled, Patient barrier, Cancelled |
+| Seen | in-progress | visit-completed | Plan returned |
+| Plan returned | completed | plan-returned (Task.output → Composition) | Closed |
 | Closed | completed | closed-by-referrer | — |
-| Declined | rejected | declined | (re-route = new referral linked via `replaces`) |
+| Declined (reason required) | rejected | declined | re-route = new referral (`replaces`) |
 | Patient barrier | on-hold | patient-barrier | previous stage |
 | Cancelled | cancelled | cancelled | — |
 
-## 4. Stuck rules (`loop/stuck.py`, practice settings in `config.py`)
-| Rule | Default | Message (template) | Challenge link |
-|---|---|---|---|
-| Sent, no response | 3 business days | "Sent {n} business days ago — no response from {org}" | |
-| Accepted, no appointment | 7 days | "Accepted {n} days ago — no appointment yet" | failure 1 |
-| Appointment passed, not marked seen | 2 days | "Appointment was {date} — visit not confirmed" | |
-| No-show | immediate | "Missed appointment on {date}" | |
-| Seen, no plan | 7 days | "Seen {n} days ago — plan not received" | failure 2 |
-| Plan not acknowledged | 3 days | "Plan received {n} days ago — not yet reviewed by PCP" | failure 2 |
-| Declined, not re-routed | 2 days | "Declined {n} days ago — no new referral" | |
-| Barrier open | 7 days | "{barrier} barrier open {n} days" | |
+Every update, whoever reports it, goes through one path (`app/updates.py`): the office link
+(actor = office, source = link), or the coordinator's Log update (phone / fax / other, or a
+confirmed AI call suggestion, source = ai_call). Non-stage updates (authorization, barriers,
+transport, office phone) are timeline events with their own `kind`.
 
-The UI labels these defaults "Practice setting". Tests cover each rule boundary (n−1, n).
+FHIR: Task.status / businessStatus as above; Task.statusReason lists missing items; Task.input
+carries authorization, patient-contact mode, and transportation; a Coverage resource carries the
+MA insurance type and is referenced from ServiceRequest.insurance.
+
+## 4. Stuck rules (`loop/stuck.py`, practice settings in `config.py`)
+| Rule | Default | Detail message | Dashboard status | Row action |
+|---|---|---|---|---|
+| Sent, no receipt | 2 business days | "Sent {n} business days ago, not confirmed received" | "Not confirmed received, {n} business days" | Call office |
+| Received incomplete | immediate | "Received incomplete, missing {items}" | "Missing {items}" | Send records / Follow up |
+| Authorization pending | more than 5 business days | "Authorization pending for {n} business days" | same, short | Follow up |
+| Received, not contacted or scheduled (**challenge failure 1**) | 7 days from receipt | "Received {n} days ago, patient not contacted" | "Not scheduled, {n} days" | Call office (Message patient once contacted) |
+| Seen, no plan (**challenge failure 2**) | 7 days | "Seen {n} days ago, plan not received" | "No plan back, {n} days" | Follow up |
+| Plan not acknowledged | 3 days | "Plan received {n} days ago, not yet reviewed by PCP" | "Plan not reviewed, {n} days" | Follow up |
+| Declined, not re-routed | 2 days | "Declined {n} days ago, no new referral" | "Declined, not re-routed" | Follow up |
+| No-show | immediate | "Missed appointment on {date}" | "Missed appointment" | Message patient |
+| MassHealth ride not requested | appointment within 3 business days | "Appointment on {date}, MassHealth ride (PT-1) not requested" | "Ride not requested" | Open |
+
+The PT-1 rule applies to MassHealth and dual-eligible patients with an open transportation barrier
+(not every member needs a ride). Only the two challenge failures are rust; everything else is
+amber. Tests cover each boundary (n−1, n). Dates in UI copy are "Oct 15"; text that leaves Relay
+uses "Oct 15, 2026".
+
+**Referral-requirement hint** (a hint, never a decision): Original Medicare → "Original Medicare
+generally doesn't require a referral to see a specialist." PCC Plan / Primary Care ACO →
+"MassHealth requires referrals for certain specialty services (130 CMR 450.118(J)). Primary Care
+ACOs may have a Referral Circle. Confirm for this service." Others → "Referral and authorization
+rules depend on the plan. Check with the plan." The coordinator sets the authorization field.
 
 ## 5. Specialist finder (`finder/`)
 Source file: `clinicians_ma.csv` (CMS `mj5m-pzi6`). Columns read: `npi` (count only, never

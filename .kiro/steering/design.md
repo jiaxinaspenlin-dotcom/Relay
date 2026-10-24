@@ -5,111 +5,90 @@ fileMatchPattern: ["frontend/**/*.tsx", "frontend/**/*.ts", "frontend/**/*.css",
 
 # Design system: Relay
 
-**Idea:** a referral is a route between two places. The UI's one memorable element is the
-**route track**, a horizontal line of stage nodes for each referral, where a stalled stage shows how
-long it has been waiting against its limit. Everything around it stays quiet: white surfaces, one
-green-teal, plain sentences.
+**Idea:** minimal words, lots of space, one action per row. A calm white workspace framed by one
+bold element, the green rail. A referral is a route; its signature is the **route track**.
 
-## Tokens (tailwind.config: extend colors / fontFamily)
+## Tokens (tailwind.config: extend colors / fontFamily / borderRadius)
 | Token | Hex | Use |
 |---|---|---|
-| `ink` | #1C2B33 | primary text, headings |
-| `muted` | #5B6B70 | secondary text, captions |
-| `line` | #DDE3E0 | borders, future track segments |
-| `paper` | #F6F8F7 | app background (cool, not cream) |
+| `ink` | #1C2B33 | text |
+| `muted` | #5B6B70 | secondary text, captions, section headings |
+| `line` | #DDE3E0 | 1px borders, future track |
+| `paper` | #F6F8F7 | page background |
 | `surface` | #FFFFFF | panels, rows |
-| `hemlock` | #1F5F5B | primary actions, completed track, links |
-| `hemlock-tint` | #E3EFEC | selected row, current-stage fill |
-| `amber` | #9A5208 | overdue text and icons (stuck) |
-| `amber-tint` | #FBEFD9 | overdue elapsed bar background |
-| `rust` | #A3302A | the two challenge failures only (never scheduled, plan never returned) |
-| `rust-tint` | #F8E3E0 | their elapsed bar |
+| `hemlock` | #1F5F5B | accent: rail, primary buttons, completed track, links |
+| `hemlock-tint` | #E3EFEC | selected row |
+| `amber` / `amber-tint` | #9A5208 / #FBEFD9 | waiting |
+| `rust` / `rust-tint` | #A3302A / #F8E3E0 | only the two challenge failures (not scheduled, no plan back) |
 
-Color always pairs with a text label or icon. Red is reserved for the two challenge failures.
-Everything else that's stuck is amber.
+**Type:** Public Sans (Google Fonts) 400/600/700, tabular numbers everywhere, sentence case.
+28px page headings, 20px section, 15px body, 13px captions. No all-caps, no middle-dot strings,
+no arrows in buttons. **Shape:** 8px radius on buttons, 12px on panels, 1px borders, no shadows.
+Content max-width 1000px, padding 40px 48px (20px on phones).
 
-**Type:** Public Sans (the U.S. Web Design System typeface, loaded from Google Fonts), weights 400,
-600, 700. Use `font-variant-numeric: tabular-nums` for every number. **No monospace** except the
-FHIR JSON viewer. Scale: 28/36 page sentence · 20/28 section · 15/22 body · 13/18 caption.
-Sentence case everywhere. No all-caps labels, no letter-spaced eyebrows, no middle-dot meta strings,
-no "→" in button text.
+**Icons:** lucide-react. LayoutGrid (Dashboard), Inbox (Inbox), SlidersHorizontal (Settings),
+ChevronLeft (back links), Stethoscope (dashboard background). Stroke 1.8 at 18px in the rail.
 
-**Shape:** radius 6px on controls, 10px on panels. Borders, not shadows. A single subtle shadow
-only on popovers and drawers.
-
-## App shell
-```
-┌──────────────┬───────────────────────────────────────────────────────────────┐
-│ Relay        │ Demo with synthetic patients. Specialist replies are simulated │  ← thin banner, muted
-│              ├───────────────────────────────────────────────────────────────┤
-│ Needs        │ Quabbin Hills Family Medicine          Demo date Oct 24 [+1d][+7d][Reset] │
-│  attention   │                                                               │
-│ New referral │   (content, max-width 1180px, left-aligned)                   │
-│ Inbox        │                                                               │
-│ Specialist   │                                                               │
-│  portal      │                                                               │
-│  (simulated) │                                                               │
-└──────────────┴───────────────────────────────────────────────────────────────┘
-```
-Left rail 220px (collapses to a top bar under 900px). The wordmark "Relay" is set in Public Sans 700
-with a small route glyph (two dots joined by a line), not a stock icon.
+## Left rail (216px)
+Solid hemlock. "Relay" wordmark in white, 20px bold, with a glyph: filled dot, short line, ring
+dot. Nav items: icon + label, white at 82% opacity; active item has a white 16% background and
+full white text; hover white 8%. White pill badges with hemlock text: Dashboard = referrals
+needing attention, Inbox = unread plans. Practice name at the bottom, 13px, white at 75%.
+No drawing in the rail. The rail stretches to the page height; its contents stay pinned.
+Under 860px wide it becomes a top bar with icons only.
 
 ## Dashboard
-The headline is a sentence built from computed counts, with the numbers in 700 weight:
-> **7** open referrals. **5** need attention, including **1** never scheduled and **1** plan never returned.
+Headline "{n} referrals need attention" (28px bold), "{n} open" muted below, filled hemlock
+"New referral" top right (the page's only filled button). Sections with small muted 15px headings:
+"Lost in the handoff" (rust), "Waiting" (amber), then "On track" (no action). Each section is one
+white panel; rows separated by 1px lines. Row grid 1fr / 1.5fr / 160px:
+- patient name (600, Synthea digits stripped), "{specialty}, {miles} mi" in 13px muted;
+- route track, then a short status in 13px bold rust or amber ("Not scheduled, 14 days",
+  "No plan back, 12 days", "Not confirmed received, 5 business days", "Missing records",
+  "Missed appointment");
+- one outlined hemlock button, right-aligned: Call office / Follow up / Send records / Message patient.
+The whole row opens referral detail; the button is its own action above the row link. Row hover:
+very light background.
 
-No big-number KPI tiles. Median days sent to scheduled goes in a muted caption under the sentence.
+**Background stethoscope (dashboard only):** lucide Stethoscope about 800px wide, hemlock at about
+8% opacity, stroke 0.5, rotated -24deg, from the top right of the content down, partly off the
+right edge, behind everything, pointer-events none. Hidden under 860px.
 
-Then two groups, in this order, each with a plain heading:
-1. **Never scheduled or plan never returned** (the challenge failures, rust)
-2. **Other referrals waiting** (amber)
+## Route track (the signature)
+7 equal columns (Sent, Received, Contacted, Scheduled, Seen, Plan back, Closed), a 12px dot
+centered in each, joined by a 2px gray line. Completed dots: filled hemlock with a hemlock line.
+Current dot: a 3px ring, rust or amber when stuck. Future: white with a gray border. When stuck, a
+6px bar (tinted fill, 1px colored border) starts at the current dot's center, length =
+(days waiting / limit) x one column, capped at 2 columns, with a thin dark tick at the limit.
+No labels on the dashboard; on referral detail, 13px stage labels and 12px muted dates under
+each dot. Authorization is a chip, not a node.
 
-Each item is a **row**, not a card:
-```
-┌───────────────────────────────────────────────────────────────────────────────────────┐
-│ Lajuana Wilkinson            ●━━━━━●━━━━━━━━━━━━━━━━━━━━━━━━○─────○─────○─────○        │
-│ Great Barrington to Worcester  Sent  Accepted  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░  Scheduled  Seen …    │
-│ 78 mi straight-line, R-102           14 days waiting, limit 7                          │
-│ Nephrology                                                                             │
-│ Accepted 14 days ago, no appointment yet.  [Transportation barrier]   [Draft follow-up]│
-└───────────────────────────────────────────────────────────────────────────────────────┘
-```
-- **Route track (the signature):** filled hemlock nodes for completed stages, a ring for the current
-  stage, `line` gray for future stages. On a stuck referral, the segment after the current node
-  becomes an **elapsed bar**: its length is days waiting ÷ limit, capped at 2×, with a tick at the limit
-  and the caption "14 days waiting, limit 7". Use amber, or rust for the two challenge failures.
-  Stage names sit under the nodes in 13px muted text.
-- **Names:** strip Synthea's digits for display ("Lajuana164 Wilkinson796" → "Lajuana Wilkinson").
-  Keep IDs in the data.
-- **Route line:** "{patient town} to {practice town}, {n} mi straight-line".
-- **Dates:** "Oct 15", never ISO.
-- **Practice setting:** shown only as "limit 7" in the track caption, with the full "Practice setting" text in a
-  tooltip.
-- **Actions:** one per row. "Draft follow-up" is an outlined hemlock button. Filled hemlock is used
-  only for the page's single primary action (for example, "New referral" in the header).
-- Fictional practices show "(fictional)" in muted text after the name.
+## Referral detail
+"Dashboard" back link with a chevron. Patient name 28px; "{specialty} at {practice}" muted;
+chips (white pill, 1px border): "{town} to {practice town}, {miles} mi", insurance, authorization.
+Primary "Call office (AI)" top right (only when stuck at Sent or Received). A white panel with the
+large track and one status line ("Received 14 days ago, patient not contacted. Limit 7 days.").
+Then two columns (1.3fr / 1fr): left Timeline (date column, what happened, source muted: fax,
+office link, email, AI call); right stacked panels: Next step (full-width outlined buttons: Log
+update, Message patient, Follow up, Log a barrier; office link), Transportation (PT-1 checkbox
+with "At least 3 business days before the visit" for MassHealth members with a transportation
+barrier; free-text plan otherwise), Referral rules (the insurance hint), {County} County
+(shortage area, routine checkup rate, "HRSA, CDC PLACES. About the area, not this patient.").
 
-**All open referrals:** replace the 9-column kanban with
-(a) one horizontal stacked bar of counts by stage, labeled, and (b) a compact table: patient,
-specialty, route, stage, days in stage (sortable). Clicking a row opens referral detail.
+## Office link page
+No rail or app chrome; designed for a phone. Title "{Specialty} referral", "From {practice}"
+muted, a summary card, then full-width white buttons (10px radius, 14px padding): Received,
+Something is missing (checklist), Authorization status, Patient contacted, Scheduled (date and
+time), Seen, No-show, Declined (reason), Return plan. A filled "Send update" button. A one-line
+confirmation after each action.
 
-## Motion (one moment only)
-When the demo clock advances, elapsed bars grow to their new length (300 ms ease-out), and a referral
-that crosses its limit moves into "Needs attention" with a brief highlight. That moment shows the
-rules are computed live. No other ambient animation. Respect `prefers-reduced-motion` (no growth
-animation; just update).
+## Inbox
+Reading layout, max 72 characters per line: the original question, the returned plan in
+template sections, then "Acknowledge and close".
 
-## Other screens (same system)
-- **Referral detail:** route track large at top; left column timeline of events (date, actor, source:
-  phone/fax/portal), right column "Log update", barriers, and place context. Place-context items are
-  small definition lists with a source link and a muted "What this can't tell you" line.
-- **New referral:** form on the left; practice results as rows (name, town, miles, Medicare assignment
-  label, nearest acute hospital and its beds); the selected practice gets a hemlock-tint row.
-- **Inbox (PCP):** reading layout, max 72ch: original reason, then the returned plan in template
-  sections, then "Acknowledge and close".
-- **Empty states** give direction: "No referrals need attention. Next check: tomorrow's demo date."
-- **Errors** say what happened and what to do, with no apology.
-
-## Quality floor
-Visible focus ring (2px hemlock, offset 2px), 40px minimum hit targets, WCAG AA contrast (all token
-pairs above pass on white), works at 375px width, `prefers-reduced-motion` respected.
+## Writing, motion, quality
+Short sentences. Dates as "Oct 15". Empty states give direction ("No referrals need
+attention."). Errors say what happened and what to do. Motion only when Demo mode advances the
+clock: waiting bars grow (300ms ease-out) and a newly stuck row highlights. Respect reduced motion.
+Visible 2px hemlock focus rings, 40px minimum targets, WCAG AA contrast, works at 390px.
+Screenshots of every screen at 1440px and 390px live in docs/screenshots/.
