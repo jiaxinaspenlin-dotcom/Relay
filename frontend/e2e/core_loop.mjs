@@ -124,7 +124,7 @@ await step("Acknowledge and close → timeline Closed", async () => {
   await coord.getByTestId(`inbox-${rid}`).getByRole("button", { name: "Acknowledge and close" }).click();
   await coord.getByTestId(`inbox-${rid}`).waitFor({ state: "detached", timeout: T });
   await coord.goto(`${WEB}/referrals/${rid}`);
-  await coord.getByTestId("timeline").getByText("Closed", { exact: true }).waitFor({ timeout: T });
+  await coord.getByTestId("timeline").getByText("Closed by Dr. Avery Lin", { exact: true }).waitFor({ timeout: T });
 });
 await step("FHIR export validates", async () => {
   const [dl] = await Promise.all([coord.waitForEvent("download", { timeout: T }), coord.getByRole("link", { name: "Download FHIR" }).click()]);
