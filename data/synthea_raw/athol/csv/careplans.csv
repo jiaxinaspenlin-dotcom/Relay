@@ -1,0 +1,52 @@
+Id,START,STOP,PATIENT,ENCOUNTER,CODE,DESCRIPTION,REASONCODE,REASONDESCRIPTION
+aa616abe-1761-0c9a-cf47-758949568cf8,1957-03-07,,aa616abe-1761-0c9a-7959-07544679dafd,aa616abe-1761-0c9a-071a-26824b9cb2b2,718361005,Weight management program (regime/therapy),,
+aa616abe-1761-0c9a-4760-e1cd8a206427,1978-08-17,,aa616abe-1761-0c9a-7959-07544679dafd,aa616abe-1761-0c9a-43d1-e98902944b6e,134435003,Routine antenatal care (regime/therapy),,
+aa616abe-1761-0c9a-fe31-c4683690b46d,1981-04-30,,aa616abe-1761-0c9a-7959-07544679dafd,aa616abe-1761-0c9a-5374-96a45cf6b7b0,735985000,Diabetes self management plan (record artifact),714628002,Prediabetes (finding)
+5e688e99-61b3-5c88-86b1-fa33626fbedc,2000-03-03,,5e688e99-61b3-5c88-3f60-21df8aaced27,5e688e99-61b3-5c88-0af0-eb4013e4fb2a,408869004,Musculoskeletal care (regime/therapy),239872002,Osteoarthritis of hip (disorder)
+5e688e99-61b3-5c88-3937-01992227eaac,2003-08-03,,5e688e99-61b3-5c88-3f60-21df8aaced27,5e688e99-61b3-5c88-f118-976b052254ba,734163000,Care plan (record artifact),,
+46976cf7-b0bf-be20-570c-8853b9fbd263,1980-05-08,,46976cf7-b0bf-be20-39a5-9f425a52886d,46976cf7-b0bf-be20-7144-ce89b9762a7d,718361005,Weight management program (regime/therapy),,
+46976cf7-b0bf-be20-750d-5ac2aeefe38a,2009-04-23,,46976cf7-b0bf-be20-39a5-9f425a52886d,46976cf7-b0bf-be20-1d3c-96c260e95f34,735985000,Diabetes self management plan (record artifact),714628002,Prediabetes (finding)
+46976cf7-b0bf-be20-5c67-a6a9157165fe,2015-05-28,,46976cf7-b0bf-be20-39a5-9f425a52886d,46976cf7-b0bf-be20-4590-1a19c71f7d07,736285004,Hyperlipidemia clinical management plan (record artifact),55822004,Hyperlipidemia (disorder)
+46ee9d82-b52c-856d-31a4-7c995c6240fa,1943-11-29,,46ee9d82-b52c-856d-069b-5064ff052225,46ee9d82-b52c-856d-beec-09194366ff16,699728000,Asthma self management (regime/therapy),233678006,Childhood asthma (disorder)
+46ee9d82-b52c-856d-c607-9805bbb3211c,1970-02-24,,46ee9d82-b52c-856d-069b-5064ff052225,46ee9d82-b52c-856d-6597-6b6bace7da60,735985000,Diabetes self management plan (record artifact),714628002,Prediabetes (finding)
+ba419d35-0dfe-8af7-fe69-d1cd047d882f,2016-10-05,,ba419d35-0dfe-8af7-347c-eebf02485a56,ba419d35-0dfe-8af7-2573-9d3c49ec7bc2,736285004,Hyperlipidemia clinical management plan (record artifact),55822004,Hyperlipidemia (disorder)
+ba419d35-0dfe-8af7-28eb-c2545d219ace,2017-09-20,,ba419d35-0dfe-8af7-347c-eebf02485a56,ba419d35-0dfe-8af7-18f5-c86a39b27d55,735985000,Diabetes self management plan (record artifact),714628002,Prediabetes (finding)
+ba419d35-0dfe-8af7-dea2-727819b78652,2017-09-23,2017-10-09,ba419d35-0dfe-8af7-347c-eebf02485a56,ba419d35-0dfe-8af7-2ea8-a4a94635fc37,53950000,Respiratory therapy (procedure),,
+76b20010-c318-5754-c226-6b10c143fc25,1972-10-19,,76b20010-c318-5754-8c85-983aa538522f,76b20010-c318-5754-98e1-03949c9db83b,735985000,Diabetes self management plan (record artifact),714628002,Prediabetes (finding)
+76b20010-c318-5754-1c86-e8ad9d524f74,2001-10-04,,76b20010-c318-5754-8c85-983aa538522f,76b20010-c318-5754-bc2b-09aef9dfb4ae,443402002,Lifestyle education regarding hypertension (procedure),59621000,Essential hypertension (disorder)
+76b20010-c318-5754-f88c-3d1ee9e87a29,2009-09-17,,76b20010-c318-5754-8c85-983aa538522f,76b20010-c318-5754-69d0-586ae6c14f83,408869004,Musculoskeletal care (regime/therapy),239873007,Osteoarthritis of knee (disorder)
+76b20010-c318-5754-2d65-cc8f0ac7b667,2014-04-02,,76b20010-c318-5754-8c85-983aa538522f,76b20010-c318-5754-b5eb-d24764873acc,276239002,Therapy (regime/therapy),,
+46976cf7-b0bf-be20-7145-d470755d8073,2019-07-11,2019-08-02,46976cf7-b0bf-be20-39a5-9f425a52886d,46976cf7-b0bf-be20-36ff-bbb60b2e3892,773513001,Physiotherapy care plan (record artifact),70704007,Sprain of wrist (disorder)
+46ee9d82-b52c-856d-041d-b812e5db63e6,2017-11-14,2017-12-05,46ee9d82-b52c-856d-069b-5064ff052225,46ee9d82-b52c-856d-616b-01e67f52b790,53950000,Respiratory therapy (procedure),,
+ba419d35-0dfe-8af7-e1c7-db45d5be3651,2022-05-17,2022-07-30,ba419d35-0dfe-8af7-347c-eebf02485a56,ba419d35-0dfe-8af7-61c0-04d7237ad10b,47387005,Head injury rehabilitation (regime/therapy),62564004,Concussion with loss of consciousness (disorder)
+ba419d35-0dfe-8af7-44f7-c703d7aff685,2024-08-22,,ba419d35-0dfe-8af7-347c-eebf02485a56,ba419d35-0dfe-8af7-5906-f600e95b8807,408869004,Musculoskeletal care (regime/therapy),239873007,Osteoarthritis of knee (disorder)
+76b20010-c318-5754-1b9d-2013da809852,2024-11-10,2025-02-23,76b20010-c318-5754-8c85-983aa538522f,76b20010-c318-5754-6f71-ce9cf96ec917,385691007,Fracture care (regime/therapy),65966004,Fracture of forearm (disorder)
+46ee9d82-b52c-856d-9e25-73529b8aeb69,2026-01-23,2026-02-12,46ee9d82-b52c-856d-069b-5064ff052225,46ee9d82-b52c-856d-3241-b34aa72177c2,225358003,Wound care (regime/therapy),284549007,Laceration of hand (disorder)
+dfd3b28c-4c06-95f7-341d-a8c66d74244e,1986-07-05,,dfd3b28c-4c06-95f7-e4eb-bee2b0ee2060,dfd3b28c-4c06-95f7-3103-d6f588ac36b4,735985000,Diabetes self management plan (record artifact),714628002,Prediabetes (finding)
+dfd3b28c-4c06-95f7-f0db-e087bed8c24a,1990-10-15,,dfd3b28c-4c06-95f7-e4eb-bee2b0ee2060,dfd3b28c-4c06-95f7-c362-249ac8d73a84,734163000,Care plan (record artifact),,
+dfd3b28c-4c06-95f7-4047-6aec67ed790a,2014-05-24,,dfd3b28c-4c06-95f7-e4eb-bee2b0ee2060,dfd3b28c-4c06-95f7-b4ec-5592491f2a9c,736285004,Hyperlipidemia clinical management plan (record artifact),55822004,Hyperlipidemia (disorder)
+2256d4ea-bced-66a5-3f9e-a0ef777c99a4,1942-07-04,,2256d4ea-bced-66a5-4c23-50cbdca2708e,2256d4ea-bced-66a5-047c-04efa6c1d10b,699728000,Asthma self management (regime/therapy),233678006,Childhood asthma (disorder)
+2256d4ea-bced-66a5-f2fe-e9ce8040f91e,1978-09-11,,2256d4ea-bced-66a5-4c23-50cbdca2708e,2256d4ea-bced-66a5-cabd-ef6c3f5d362e,408869004,Musculoskeletal care (regime/therapy),239873007,Osteoarthritis of knee (disorder)
+2256d4ea-bced-66a5-25f2-955f23ad8c70,2001-10-15,,2256d4ea-bced-66a5-4c23-50cbdca2708e,2256d4ea-bced-66a5-75fa-f2560e5d1961,736285004,Hyperlipidemia clinical management plan (record artifact),55822004,Hyperlipidemia (disorder)
+2256d4ea-bced-66a5-e43b-47aea402201a,2016-11-15,2016-11-30,2256d4ea-bced-66a5-4c23-50cbdca2708e,2256d4ea-bced-66a5-7791-716685074c2f,53950000,Respiratory therapy (procedure),,
+dfd3b28c-4c06-95f7-8dcf-407bdcd109ea,2019-09-14,2019-10-02,dfd3b28c-4c06-95f7-e4eb-bee2b0ee2060,dfd3b28c-4c06-95f7-f1f6-5a0d97bf8908,53950000,Respiratory therapy (procedure),,
+2256d4ea-bced-66a5-4879-035ad3217fad,2019-11-13,,2256d4ea-bced-66a5-4c23-50cbdca2708e,2256d4ea-bced-66a5-2f97-05eaef3c2523,734163000,Care plan (record artifact),60573004,Aortic valve stenosis (disorder)
+dfd3b28c-4c06-95f7-24d0-47661f268e94,2019-11-23,2020-06-06,dfd3b28c-4c06-95f7-e4eb-bee2b0ee2060,dfd3b28c-4c06-95f7-9231-830a74a0a8c8,53950000,Respiratory therapy (procedure),,
+2256d4ea-bced-66a5-c0e8-cca122cc0d79,2021-06-03,,2256d4ea-bced-66a5-4c23-50cbdca2708e,2256d4ea-bced-66a5-e59c-7ee5ab9d5c6c,386257007,Dementia management (regime/therapy),26929004,Alzheimer's disease (disorder)
+dfd3b28c-4c06-95f7-63b5-aff3683cf542,2021-08-21,2022-06-18,dfd3b28c-4c06-95f7-e4eb-bee2b0ee2060,dfd3b28c-4c06-95f7-27e8-2bbe619cf499,53950000,Respiratory therapy (procedure),,
+6c82ee38-33d8-5667-6ff1-dae201364535,1964-11-24,,6c82ee38-33d8-5667-c9c7-a4c869857230,6c82ee38-33d8-5667-44dd-113d59299ba9,735985000,Diabetes self management plan (record artifact),714628002,Prediabetes (finding)
+6c82ee38-33d8-5667-9094-5183e751c406,1992-10-06,,6c82ee38-33d8-5667-c9c7-a4c869857230,6c82ee38-33d8-5667-bf64-7cf9e1a07ad2,443402002,Lifestyle education regarding hypertension (procedure),59621000,Essential hypertension (disorder)
+6c82ee38-33d8-5667-d9de-fb1ccd4e597a,1997-10-14,,6c82ee38-33d8-5667-c9c7-a4c869857230,6c82ee38-33d8-5667-b2b6-76aab473635b,734163000,Care plan (record artifact),78275009,Obstructive sleep apnea syndrome (disorder)
+6c82ee38-33d8-5667-0990-a666f54334f8,1998-12-01,,6c82ee38-33d8-5667-c9c7-a4c869857230,6c82ee38-33d8-5667-2b7f-882ea83f83ac,736285004,Hyperlipidemia clinical management plan (record artifact),55822004,Hyperlipidemia (disorder)
+6c82ee38-33d8-5667-e753-be3621cf5aca,2012-10-27,,6c82ee38-33d8-5667-c9c7-a4c869857230,6c82ee38-33d8-5667-4a5b-8c42875d1005,736372004,Discharge care plan (record artifact),,
+6c82ee38-33d8-5667-9dc9-ebc20fc42f88,2022-09-20,2023-04-11,6c82ee38-33d8-5667-c9c7-a4c869857230,6c82ee38-33d8-5667-8e75-fdad129d83ca,53950000,Respiratory therapy (procedure),,
+6c82ee38-33d8-5667-672f-b9e475296202,2023-10-22,2023-11-14,6c82ee38-33d8-5667-c9c7-a4c869857230,6c82ee38-33d8-5667-f8e7-8bf70dc82a36,225358003,Wound care (regime/therapy),284549007,Laceration of hand (disorder)
+6c82ee38-33d8-5667-e725-f81094dd0797,2024-10-31,2025-01-27,6c82ee38-33d8-5667-c9c7-a4c869857230,6c82ee38-33d8-5667-19e9-b0770d68e459,47387005,Head injury rehabilitation (regime/therapy),62564004,Concussion with loss of consciousness (disorder)
+ce7aeb3e-aa97-1f22-5f21-86de88b605d5,1985-10-19,,ce7aeb3e-aa97-1f22-9c9c-9eb766a16175,ce7aeb3e-aa97-1f22-4eca-e48c857e9a1e,735985000,Diabetes self management plan (record artifact),714628002,Prediabetes (finding)
+ce7aeb3e-aa97-1f22-7e3b-741e40260fe2,1998-08-01,,ce7aeb3e-aa97-1f22-9c9c-9eb766a16175,ce7aeb3e-aa97-1f22-2d27-f9aa227dc078,443402002,Lifestyle education regarding hypertension (procedure),59621000,Essential hypertension (disorder)
+ce7aeb3e-aa97-1f22-fa17-58dffa204540,2008-10-18,,ce7aeb3e-aa97-1f22-9c9c-9eb766a16175,ce7aeb3e-aa97-1f22-1a24-2a044a3212ec,408869004,Musculoskeletal care (regime/therapy),239873007,Osteoarthritis of knee (disorder)
+ce7aeb3e-aa97-1f22-f99b-93af70dcbb5e,2016-12-03,,ce7aeb3e-aa97-1f22-9c9c-9eb766a16175,ce7aeb3e-aa97-1f22-fa67-bff029a834c8,736690008,Dialysis care plan (record artifact),,
+ce7aeb3e-aa97-1f22-a112-ab5fb32fd315,2017-04-12,2017-05-08,ce7aeb3e-aa97-1f22-9c9c-9eb766a16175,ce7aeb3e-aa97-1f22-4a1f-611f01cc3c91,773513001,Physiotherapy care plan (record artifact),70704007,Sprain of wrist (disorder)
+ce7aeb3e-aa97-1f22-f44e-cdff279130e8,2018-05-08,2018-05-17,ce7aeb3e-aa97-1f22-9c9c-9eb766a16175,ce7aeb3e-aa97-1f22-90ac-efc953db0e80,53950000,Respiratory therapy (procedure),,
+ce7aeb3e-aa97-1f22-b99a-66da1f4f57ae,2022-03-19,,ce7aeb3e-aa97-1f22-9c9c-9eb766a16175,ce7aeb3e-aa97-1f22-da02-a6a1c4e7a3b9,734163000,Care plan (record artifact),,
+ce7aeb3e-aa97-1f22-e1be-64482a481ef0,2024-11-13,2024-12-01,ce7aeb3e-aa97-1f22-9c9c-9eb766a16175,ce7aeb3e-aa97-1f22-4c40-bbd1fe0a1dde,53950000,Respiratory therapy (procedure),,

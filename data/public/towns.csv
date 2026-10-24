@@ -1,0 +1,435 @@
+town,county,lat,lon,pop_2015,point_method
+Abington,Plymouth,42.119967,-70.957211,16227,town-level point
+Acton,Middlesex,42.483953,-71.438495,23549,town-level point
+Acushnet,Bristol,41.718217,-70.901151,10477,town-level point
+Acushnet Center,Bristol,41.684996,-70.906686,3136,town-level point
+Adams,Berkshire,42.62556,-73.119828,8187,town-level point
+Agawam,Hampden,42.064731,-72.653477,28839,town-level point
+Alford,Berkshire,42.254399,-73.42904,495,town-level point
+Amesbury,Essex,42.851293,-70.95581,17414,town-level point
+Amherst,Hampshire,42.363534,-72.507291,39833,town-level point
+Amherst Center,Hampshire,42.37528,-72.517884,20253,town-level point
+Andover,Essex,42.648044,-71.161751,35299,town-level point
+Aquinnah,Dukes,41.334,-70.823432,328,town-level point
+Arlington,Middlesex,42.418722,-71.163912,44815,town-level point
+Ashburnham,Worcester,42.648697,-71.919896,6209,town-level point
+Ashby,Middlesex,42.676293,-71.832523,3226,town-level point
+Ashfield,Franklin,42.520324,-72.805606,1723,town-level point
+Ashland,Middlesex,42.257755,-71.473526,17573,town-level point
+Athol,Worcester,42.575924,-72.229618,11654,town-level point
+Attleboro,Bristol,41.931653,-71.294503,44284,town-level point
+Auburn,Worcester,42.198708,-71.846006,16516,town-level point
+Avon,Norfolk,42.132461,-71.054013,4498,town-level point
+Ayer,Middlesex,42.566573,-71.575135,8001,town-level point
+Baldwinville,Worcester,42.602059,-72.087015,1894,mean of ZCTA points
+Barnstable,Barnstable,41.661478,-70.356951,44331,town-level point
+Barre,Worcester,42.418848,-72.106598,5496,town-level point
+Becket,Berkshire,42.294853,-73.08847,1762,town-level point
+Bedford,Middlesex,42.499332,-71.281901,14171,mean of ZCTA points
+Belchertown,Hampshire,42.27901,-72.400468,14929,town-level point
+Bellingham,Norfolk,42.076682,-71.47449,16891,town-level point
+Belmont,Middlesex,42.395317,-71.180284,25584,town-level point
+Berkley,Bristol,41.838061,-71.077615,6658,town-level point
+Berlin,Worcester,42.384929,-71.633889,3020,town-level point
+Bernardston,Franklin,42.691844,-72.559861,2101,town-level point
+Beverly,Essex,42.556659,-70.84496,41186,town-level point
+Billerica,Middlesex,42.559673,-71.260947,42683,town-level point
+Blackstone,Worcester,42.039991,-71.532406,9104,town-level point
+Blandford,Hampden,42.190191,-72.954263,1259,town-level point
+Bliss Corner,Bristol,41.605131,-70.942369,5137,town-level point
+Bolton,Worcester,42.439941,-71.601879,5180,town-level point
+Boston,Suffolk,42.338551,-71.018253,667137,town-level point
+Bourne,Barnstable,41.71746,-70.591824,19681,town-level point
+Boxborough,Middlesex,42.485985,-71.520985,5206,town-level point
+Boxford,Essex,42.683108,-71.01833,8253,town-level point
+Boylston,Worcester,42.355049,-71.716157,4534,town-level point
+Braintree,Norfolk,42.206188,-71.00232,37497,town-level point
+Brewster,Barnstable,41.747513,-70.066223,9918,town-level point
+Bridgewater,Plymouth,41.972376,-70.978773,27628,town-level point
+Brimfield,Hampden,42.128176,-72.205352,3741,town-level point
+Brockton,Plymouth,42.082543,-71.024638,95314,town-level point
+Brookfield,Worcester,42.180788,-72.107891,3411,town-level point
+Brookline,Norfolk,42.323853,-71.142003,59195,town-level point
+Buckland,Franklin,42.592092,-72.788606,1864,town-level point
+Burlington,Middlesex,42.503227,-71.201713,25920,town-level point
+Buzzards Bay,Barnstable,41.751759,-70.597552,3431,mean of ZCTA points
+Cambridge,Middlesex,42.376043,-71.11868,110402,town-level point
+Canton,Norfolk,42.175737,-71.125385,22817,town-level point
+Carlisle,Middlesex,42.53662,-71.361832,5245,town-level point
+Carver,Plymouth,41.875179,-70.746715,11629,town-level point
+Charlemont,Franklin,42.63313,-72.854712,1234,town-level point
+Charlton,Worcester,42.133935,-71.968025,13406,town-level point
+Chatham,Barnstable,41.621629,-69.981956,6143,town-level point
+Chelmsford,Middlesex,42.597055,-71.3697,35149,town-level point
+Chelsea,Suffolk,42.396824,-71.031348,39398,town-level point
+Cheshire,Berkshire,42.565107,-73.149142,3158,town-level point
+Chester,Hampden,42.274187,-72.943384,1372,town-level point
+Chesterfield,Hampshire,42.377852,-72.841984,1249,town-level point
+Chicopee,Hampden,42.175668,-72.572257,56741,town-level point
+Chilmark,Dukes,41.303014,-70.778694,916,town-level point
+Clarksburg,Berkshire,42.72272,-73.105818,1659,town-level point
+Clinton,Worcester,42.411887,-71.690005,13805,town-level point
+Cochituate,Middlesex,42.327726,-71.352313,6942,town-level point
+Cohasset,Norfolk,42.262428,-70.798883,8393,town-level point
+Colrain,Franklin,42.694731,-72.710956,1647,town-level point
+Concord,Middlesex,42.462911,-71.364496,19830,town-level point
+Conway,Franklin,42.508567,-72.707159,1881,town-level point
+Cordaville,Worcester,42.272062,-71.522795,2905,town-level point
+Cummington,Hampshire,42.465495,-72.918267,871,town-level point
+Dalton,Berkshire,42.479819,-73.153776,6661,town-level point
+Danvers,Essex,42.574174,-70.950516,27849,town-level point
+Dartmouth,Bristol,41.56651,-70.958229,34715,town-level point
+Dedham,Norfolk,42.246872,-71.179462,25397,town-level point
+Deerfield,Franklin,42.517967,-72.613139,5015,town-level point
+Dennis,Barnstable,41.706123,-70.164823,14005,town-level point
+Dennis Port,Barnstable,41.668067,-70.136979,3373,mean of ZCTA points
+Devens,Middlesex,42.538903,-71.612027,1913,mean of ZCTA points
+Dighton,Bristol,41.829173,-71.152042,7399,town-level point
+Douglas,Worcester,42.053072,-71.752241,8728,town-level point
+Dover,Norfolk,42.23416,-71.291167,5961,town-level point
+Dracut,Middlesex,42.679723,-71.30068,31352,town-level point
+Dudley,Worcester,42.053778,-71.935075,11587,town-level point
+Dunstable,Middlesex,42.676149,-71.499772,3435,town-level point
+Duxbury,Plymouth,42.044307,-70.706045,15483,town-level point
+East Bridgewater,Plymouth,42.037278,-70.940459,14343,town-level point
+East Brookfield,Worcester,42.209682,-72.040178,2187,town-level point
+East Dennis,Barnstable,41.751246,-70.153472,2366,mean of ZCTA points
+East Douglas,Worcester,42.053072,-71.752241,2908,mean of ZCTA points
+East Falmouth,Barnstable,41.596305,-70.567467,5782,mean of ZCTA points
+East Harwich,Barnstable,41.711052,-70.057609,4859,mean of ZCTA points
+East Longmeadow,Hampden,42.062378,-72.498111,16213,town-level point
+East Pepperell,Middlesex,42.662502,-71.562073,1592,town-level point
+East Sandwich,Barnstable,41.728418,-70.435812,3478,mean of ZCTA points
+Eastham,Barnstable,41.841572,-69.988926,4915,town-level point
+Easthampton,Hampshire,42.265435,-72.670813,16030,town-level point
+Easton,Bristol,42.040515,-71.109329,23908,town-level point
+Edgartown,Dukes,41.37295,-70.482349,4306,town-level point
+Egremont,Berkshire,42.173533,-73.444931,1210,town-level point
+Erving,Franklin,42.613418,-72.426428,1776,town-level point
+Essex,Essex,42.64042,-70.771172,3661,town-level point
+Everett,Middlesex,42.405938,-71.054649,46050,town-level point
+Fairhaven,Bristol,41.633619,-70.871306,16140,town-level point
+Fall River,Bristol,41.725351,-71.094162,88777,town-level point
+Falmouth,Barnstable,41.594939,-70.599243,31524,town-level point
+Fiskdale,Worcester,42.127477,-72.118818,3166,mean of ZCTA points
+Fitchburg,Worcester,42.601977,-71.81587,40545,town-level point
+Florida,Berkshire,42.680041,-73.015814,730,town-level point
+Forestdale,Barnstable,41.683488,-70.510786,4403,mean of ZCTA points
+Foxborough,Norfolk,42.061338,-71.245802,17456,town-level point
+Framingham,Middlesex,42.307905,-71.436196,71209,town-level point
+Franklin,Norfolk,42.084858,-71.410571,33147,town-level point
+Freetown,Bristol,41.77938,-71.019526,9179,town-level point
+Gardner,Worcester,42.584206,-71.988737,20333,town-level point
+Georgetown,Essex,42.726188,-70.983328,8584,town-level point
+Gill,Franklin,42.624101,-72.508607,1492,town-level point
+Gloucester,Essex,42.62885,-70.685875,29781,town-level point
+Goshen,Hampshire,42.437627,-72.811141,1070,town-level point
+Gosnold,Dukes,41.439722,-70.867682,77,town-level point
+Grafton,Worcester,42.209151,-71.683644,18540,town-level point
+Granby,Hampshire,42.244949,-72.500143,6352,town-level point
+Granville,Hampden,42.087356,-72.90835,1622,town-level point
+Great Barrington,Berkshire,42.221851,-73.333044,6907,town-level point
+Green Harbor-Cedar Crest,Plymouth,42.076977,-70.656699,2565,town-level point
+Greenfield,Franklin,42.614671,-72.597063,17450,town-level point
+Groton,Middlesex,42.61176,-71.565269,11296,town-level point
+Groveland,Essex,42.7539,-71.015935,6750,town-level point
+Hadley,Hampshire,42.356491,-72.568632,5352,town-level point
+Halifax,Plymouth,42.002634,-70.863706,7834,town-level point
+Hamilton,Essex,42.626223,-70.85723,8179,town-level point
+Hampden,Hampden,42.071188,-72.417718,5223,town-level point
+Hancock,Berkshire,42.524696,-73.323177,710,town-level point
+Hanover,Plymouth,42.122956,-70.85631,14424,town-level point
+Hanson,Plymouth,42.050239,-70.867359,10630,town-level point
+Hardwick,Worcester,42.353221,-72.217113,3008,town-level point
+Harvard,Worcester,42.504256,-71.588513,6573,town-level point
+Harwich,Barnstable,41.696512,-70.070113,12180,town-level point
+Harwich Center,Barnstable,41.692084,-70.066316,1511,town-level point
+Harwich Port,Barnstable,41.670596,-70.071449,1739,mean of ZCTA points
+Hatfield,Hampshire,42.389402,-72.616806,3298,town-level point
+Haverhill,Essex,42.782945,-71.087436,62765,town-level point
+Hawley,Franklin,42.575572,-72.900789,331,town-level point
+Heath,Franklin,42.693268,-72.823116,693,town-level point
+Hingham,Plymouth,42.224319,-70.880673,23120,town-level point
+Hinsdale,Berkshire,42.435827,-73.112812,1959,town-level point
+Holbrook,Norfolk,42.140346,-70.997861,11050,town-level point
+Holden,Worcester,42.355801,-71.862574,18645,town-level point
+Holland,Hampden,42.046813,-72.180135,2506,town-level point
+Holliston,Middlesex,42.195951,-71.45343,14525,town-level point
+Holyoke,Hampden,42.211656,-72.642448,40684,town-level point
+Hopedale,Worcester,42.123007,-71.531404,5955,town-level point
+Hopkinton,Middlesex,42.224096,-71.540489,16674,town-level point
+Housatonic,Berkshire,42.266496,-73.378393,656,mean of ZCTA points
+Hubbardston,Worcester,42.489598,-72.002878,4596,town-level point
+Hudson,Middlesex,42.389071,-71.545864,19864,town-level point
+Hull,Plymouth,42.340233,-70.883301,10491,town-level point
+Huntington,Hampshire,42.281802,-72.862632,2181,town-level point
+Ipswich,Essex,42.695981,-70.835648,13804,town-level point
+Kingston,Plymouth,41.987196,-70.741942,13301,town-level point
+Lakeville,Plymouth,41.834412,-70.957166,11338,town-level point
+Lancaster,Worcester,42.483569,-71.675585,8166,town-level point
+Lanesborough,Berkshire,42.535857,-73.241133,2991,town-level point
+Lawrence,Essex,42.700273,-71.161357,80231,town-level point
+Lee,Berkshire,42.303174,-73.233924,5816,town-level point
+Leicester,Worcester,42.238427,-71.91234,11334,town-level point
+Lenox,Berkshire,42.367858,-73.269763,4988,town-level point
+Leominster,Worcester,42.520876,-71.770611,41569,town-level point
+Leverett,Franklin,42.468898,-72.484579,1845,town-level point
+Lexington,Middlesex,42.445222,-71.230015,33394,town-level point
+Leyden,Franklin,42.697576,-72.627606,713,town-level point
+Lincoln,Middlesex,42.425506,-71.310812,7491,town-level point
+Littleton,Middlesex,42.535931,-71.490569,9912,town-level point
+Littleton Common,Middlesex,42.534482,-71.472129,3402,town-level point
+Longmeadow,Hampden,42.047565,-72.57113,15898,town-level point
+Lowell,Middlesex,42.63898,-71.321141,110699,town-level point
+Ludlow,Hampden,42.183577,-72.457812,21472,town-level point
+Lunenburg,Worcester,42.582607,-71.720464,11241,town-level point
+Lynn,Essex,42.474862,-70.962185,92457,town-level point
+Lynnfield,Essex,42.534146,-71.038333,12761,town-level point
+Madaket,Nantucket,41.282385,-70.183306,276,town-level point
+Malden,Middlesex,42.42938,-71.058706,61068,town-level point
+Manchester-by-the-Sea,Essex,42.562321,-70.760282,5366,town-level point
+Mansfield,Bristol,42.017302,-71.21641,23687,town-level point
+Mansfield Center,Bristol,42.02196,-71.217844,7892,town-level point
+Marblehead,Essex,42.495629,-70.83582,20517,town-level point
+Marion,Plymouth,41.706839,-70.75096,5086,town-level point
+Marion Center,Plymouth,41.701074,-70.758167,1070,town-level point
+Marlborough,Middlesex,42.349617,-71.547214,39818,town-level point
+Marshfield,Plymouth,42.115139,-70.710331,25709,town-level point
+Marshfield Hills,Plymouth,42.143314,-70.729075,2337,mean of ZCTA points
+Mashpee,Barnstable,41.617623,-70.492713,14154,town-level point
+Mashpee Neck,Barnstable,41.612716,-70.467933,988,town-level point
+Mattapoisett,Plymouth,41.661363,-70.812024,6267,town-level point
+Mattapoisett Center,Plymouth,41.666564,-70.805387,3594,town-level point
+Maynard,Middlesex,42.425955,-71.456256,10676,town-level point
+Medfield,Norfolk,42.184599,-71.305307,12718,town-level point
+Medford,Middlesex,42.423844,-71.109231,57403,town-level point
+Medway,Norfolk,42.156203,-71.430345,13253,town-level point
+Melrose,Middlesex,42.455723,-71.059019,27997,town-level point
+Mendon,Worcester,42.09387,-71.544519,6024,town-level point
+Merrimac,Essex,42.838603,-71.011997,6800,town-level point
+Methuen,Essex,42.742526,-71.179149,49660,town-level point
+Middleborough,Plymouth,41.878004,-70.869267,24350,town-level point
+Middleborough Center,Plymouth,41.894223,-70.925689,7333,town-level point
+Middlefield,Hampshire,42.367352,-73.023989,527,town-level point
+Middleton,Essex,42.610513,-71.007118,9738,town-level point
+Milford,Worcester,42.158692,-71.521419,28614,town-level point
+Millbury,Worcester,42.192246,-71.777649,13537,town-level point
+Millers Falls,Franklin,42.563061,-72.482122,1239,mean of ZCTA points
+Millis,Norfolk,42.173103,-71.363756,8169,town-level point
+Millis-Clicquot,Norfolk,42.166821,-71.34923,4350,town-level point
+Millville,Worcester,42.036642,-71.578779,3234,town-level point
+Milton,Norfolk,42.241557,-71.082432,27374,town-level point
+Monomoscoy Island,Barnstable,41.575946,-70.499206,112,town-level point
+Monroe,Franklin,42.727772,-72.985346,120,town-level point
+Monson,Hampden,42.093596,-72.321494,8789,town-level point
+Monson Center,Hampden,42.097854,-72.296139,1811,town-level point
+Montague,Franklin,42.556617,-72.517075,8272,town-level point
+Monterey,Berkshire,42.186893,-73.223105,948,town-level point
+Montgomery,Hampden,42.220395,-72.834999,859,town-level point
+Monument Beach,Barnstable,41.711561,-70.622853,2984,mean of ZCTA points
+Mount Washington,Berkshire,42.09092,-73.470197,163,town-level point
+Nahant,Essex,42.419279,-70.930091,3485,town-level point
+Nantucket,Nantucket,41.293416,-70.102169,10925,town-level point
+Natick,Middlesex,42.284822,-71.348811,36262,town-level point
+Needham,Norfolk,42.281593,-71.242414,30564,town-level point
+New Ashford,Berkshire,42.610717,-73.225328,225,town-level point
+New Bedford,Bristol,41.661303,-70.937913,94958,town-level point
+New Braintree,Worcester,42.319125,-72.130814,1022,town-level point
+New Marlborough,Berkshire,42.098436,-73.241978,1478,town-level point
+New Salem,Franklin,42.458551,-72.327191,999,town-level point
+New Seabury,Barnstable,41.574852,-70.479032,774,town-level point
+Newbury,Essex,42.770406,-70.872417,6971,town-level point
+Newburyport,Essex,42.812141,-70.886646,17982,town-level point
+Newton,Middlesex,42.331876,-71.208402,88817,town-level point
+Norfolk,Norfolk,42.116244,-71.329274,11908,town-level point
+North Adams,Berkshire,42.675551,-73.118109,13263,town-level point
+North Amherst,Hampshire,42.404157,-72.522635,6891,mean of ZCTA points
+North Andover,Essex,42.673909,-71.091334,29721,town-level point
+North Attleborough,Bristol,41.970454,-71.33493,29071,town-level point
+North Brookfield,Worcester,42.267564,-72.066876,4749,town-level point
+North Eastham,Barnstable,41.874985,-70.003492,1548,mean of ZCTA points
+North Falmouth,Barnstable,41.639445,-70.624515,2698,mean of ZCTA points
+North Lakeville,Plymouth,41.86001,-70.939271,2936,town-level point
+North Pembroke,Plymouth,42.097738,-70.783273,3255,mean of ZCTA points
+North Plymouth,Plymouth,41.9753,-70.68064,3787,town-level point
+North Reading,Middlesex,42.578222,-71.084398,15636,town-level point
+North Scituate,Plymouth,42.212807,-70.766295,4804,mean of ZCTA points
+North Seekonk,Bristol,41.884648,-71.330363,2534,town-level point
+North Westport,Bristol,41.673107,-71.111141,4515,town-level point
+Northampton,Hampshire,42.327044,-72.67463,28540,town-level point
+Northborough,Worcester,42.323342,-71.646236,15042,town-level point
+Northbridge,Worcester,42.128937,-71.655787,16544,town-level point
+Northfield,Franklin,42.677091,-72.453876,2992,town-level point
+Northwest Harwich,Barnstable,41.693625,-70.105289,4033,town-level point
+Norton,Bristol,41.965341,-71.18178,19468,town-level point
+Norton Center,Bristol,41.974456,-71.188548,2879,town-level point
+Norwell,Plymouth,42.164569,-70.818844,10984,town-level point
+Norwood,Norfolk,42.187364,-71.195971,29095,town-level point
+Oak Bluffs,Dukes,41.45716,-70.556101,4677,town-level point
+Oakham,Worcester,42.350862,-72.044248,1929,town-level point
+Ocean Bluff-Brant Rock,Plymouth,42.10221,-70.657581,5190,town-level point
+Ocean Grove,Bristol,41.728811,-71.209192,2963,town-level point
+Onset,Plymouth,41.745017,-70.653513,824,mean of ZCTA points
+Orange,Franklin,42.605437,-72.292074,7651,town-level point
+Orleans,Barnstable,41.76935,-69.969034,5846,town-level point
+Otis,Berkshire,42.204346,-73.084962,1576,town-level point
+Oxford,Worcester,42.12826,-71.8671,13916,town-level point
+Palmer,Hampden,42.188862,-72.30648,12191,town-level point
+Paxton,Worcester,42.311693,-71.940282,4884,town-level point
+Peabody,Essex,42.534279,-70.969782,52504,town-level point
+Pelham,Hampshire,42.371648,-72.412488,1330,town-level point
+Pembroke,Plymouth,42.067804,-70.805713,18273,town-level point
+Pepperell,Middlesex,42.670643,-71.602858,12165,town-level point
+Peru,Berkshire,42.408169,-73.03534,845,town-level point
+Petersham,Worcester,42.459222,-72.216335,1246,town-level point
+Phillipston,Worcester,42.555948,-72.150888,1747,town-level point
+Pinehurst,Middlesex,42.533516,-71.233491,7275,mean of ZCTA points
+Pittsfield,Berkshire,42.45184,-73.260685,43303,town-level point
+Plainfield,Hampshire,42.512353,-72.918666,652,town-level point
+Plainville,Norfolk,42.012797,-71.336578,9057,town-level point
+Plymouth,Plymouth,41.897892,-70.62403,58890,town-level point
+Plympton,Plymouth,41.9591,-70.802753,2917,town-level point
+Pocasset,Barnstable,41.690243,-70.616283,3069,mean of ZCTA points
+Popponesset,Barnstable,41.573602,-70.463407,184,town-level point
+Popponesset Island,Barnstable,41.583856,-70.46014,8,town-level point
+Princeton,Worcester,42.454125,-71.87754,3470,town-level point
+Provincetown,Barnstable,42.056913,-70.190488,2968,town-level point
+Quincy,Norfolk,42.261006,-71.008988,93618,town-level point
+Randolph,Norfolk,42.178993,-71.052654,33699,town-level point
+Raynham,Bristol,41.930477,-71.046214,13797,town-level point
+Raynham Center,Bristol,41.93048,-71.046214,4522,mean of ZCTA points
+Reading,Middlesex,42.535183,-71.105423,25704,town-level point
+Rehoboth,Bristol,41.846878,-71.24487,12008,town-level point
+Revere,Suffolk,42.421005,-70.99036,53422,town-level point
+Richmond,Berkshire,42.383497,-73.359187,1429,town-level point
+Rochester,Plymouth,41.760864,-70.838956,5494,town-level point
+Rockland,Plymouth,42.129251,-70.908736,17832,town-level point
+Rockport,Essex,42.656952,-70.60463,7206,town-level point
+Rowe,Franklin,42.695532,-72.909148,383,town-level point
+Rowley,Essex,42.721495,-70.886637,6285,town-level point
+Royalston,Worcester,42.688972,-72.185327,1274,town-level point
+Russell,Hampden,42.161251,-72.853806,1787,town-level point
+Rutland,Worcester,42.388285,-71.969865,8527,town-level point
+Sagamore,Barnstable,41.766737,-70.540595,3673,mean of ZCTA points
+Salem,Essex,42.499248,-70.898204,42869,town-level point
+Salisbury,Essex,42.844794,-70.841499,9261,town-level point
+Sandisfield,Berkshire,42.107496,-73.118607,910,town-level point
+Sandwich,Barnstable,41.7132,-70.485737,20445,town-level point
+Saugus,Essex,42.468432,-71.013946,27994,town-level point
+Savoy,Berkshire,42.594166,-73.02232,677,town-level point
+Scituate,Plymouth,42.205062,-70.742978,18478,town-level point
+Seabrook,Barnstable,41.585381,-70.497953,445,town-level point
+Seconsett Island,Barnstable,41.566793,-70.512224,17,town-level point
+Seekonk,Bristol,41.839798,-71.318047,14968,town-level point
+Sharon,Norfolk,42.108463,-71.185182,18173,town-level point
+Sheffield,Berkshire,42.10365,-73.359887,3191,town-level point
+Shelburne,Franklin,42.61865,-72.679279,1848,town-level point
+Shelburne Falls,Franklin,42.593338,-72.726941,1756,mean of ZCTA points
+Sherborn,Middlesex,42.231947,-71.372963,4300,town-level point
+Shirley,Middlesex,42.573654,-71.640986,7400,town-level point
+Shrewsbury,Worcester,42.284767,-71.714228,36805,town-level point
+Shutesbury,Franklin,42.456968,-72.417244,1764,town-level point
+Siasconset,Nantucket,41.271979,-69.984406,96,mean of ZCTA points
+Smith Mills,Bristol,41.646744,-70.998368,4717,town-level point
+Somerset,Bristol,41.738479,-71.165065,18288,town-level point
+Somerville,Middlesex,42.390445,-71.101033,80318,town-level point
+South Amherst,Hampshire,42.337427,-72.517499,5527,town-level point
+South Ashburnham,Worcester,42.621064,-71.943433,917,town-level point
+South Deerfield,Franklin,42.475481,-72.615403,1859,mean of ZCTA points
+South Dennis,Barnstable,41.707699,-70.15856,3684,mean of ZCTA points
+South Duxbury,Plymouth,42.018108,-70.689652,3613,town-level point
+South Hadley,Hampshire,42.256208,-72.58103,17743,town-level point
+South Lancaster,Worcester,42.44397,-71.685583,1588,mean of ZCTA points
+South Yarmouth,Barnstable,41.674727,-70.195648,11624,mean of ZCTA points
+Southampton,Hampshire,42.226949,-72.741588,6152,town-level point
+Southborough,Worcester,42.299625,-71.528427,10038,town-level point
+Southbridge,Worcester,42.059737,-72.033908,16865,town-level point
+Southwick,Hampden,42.05257,-72.777353,9737,town-level point
+Spencer,Worcester,42.247211,-71.991867,11810,town-level point
+Springfield,Hampden,42.115454,-72.539978,154341,town-level point
+Sterling,Worcester,42.447924,-71.776045,7992,town-level point
+Stockbridge,Berkshire,42.301969,-73.323024,1938,town-level point
+Stoneham,Middlesex,42.474208,-71.097665,22002,town-level point
+Stoughton,Norfolk,42.119006,-71.10365,28431,town-level point
+Stow,Middlesex,42.429688,-71.512514,7125,town-level point
+Sturbridge,Worcester,42.10481,-72.08774,9514,town-level point
+Sudbury,Middlesex,42.383367,-71.42107,18874,town-level point
+Sunderland,Franklin,42.466691,-72.546751,3657,town-level point
+Sutton,Worcester,42.132051,-71.750318,9272,town-level point
+Swampscott,Essex,42.468059,-70.89126,14477,town-level point
+Swansea,Bristol,41.758163,-71.214181,16387,town-level point
+Taunton,Bristol,41.903324,-71.094987,56789,town-level point
+Teaticket,Barnstable,41.596305,-70.567467,1597,mean of ZCTA points
+Templeton,Worcester,42.563482,-72.075472,8176,town-level point
+Tewksbury,Middlesex,42.612088,-71.227845,30915,town-level point
+The Pinehills,Plymouth,41.888191,-70.599966,1350,town-level point
+Tisbury,Dukes,41.473071,-70.617422,4099,town-level point
+Tolland,Hampden,42.102146,-73.034555,496,town-level point
+Topsfield,Essex,42.641379,-70.94344,6529,town-level point
+Townsend,Middlesex,42.66495,-71.712025,9515,town-level point
+Truro,Barnstable,42.01356,-70.064152,2007,town-level point
+Turners Falls,Franklin,42.59528,-72.555002,4100,mean of ZCTA points
+Tyngsborough,Middlesex,42.667762,-71.42882,12267,town-level point
+Tyringham,Berkshire,42.240876,-73.181328,325,town-level point
+Upton,Worcester,42.176526,-71.603588,7725,town-level point
+Uxbridge,Worcester,42.061166,-71.643628,13892,town-level point
+Vineyard Haven,Dukes,41.458608,-70.613479,1887,mean of ZCTA points
+Wakefield,Middlesex,42.50436,-71.064061,26847,town-level point
+Wales,Hampden,42.061313,-72.234411,1899,town-level point
+Walpole,Norfolk,42.146286,-71.255604,25102,town-level point
+Waltham,Middlesex,42.388921,-71.242268,63378,town-level point
+Ware,Hampshire,42.275462,-72.280158,9888,town-level point
+Wareham,Plymouth,41.76104,-70.701779,22408,town-level point
+Wareham Center,Plymouth,41.752852,-70.725471,3690,town-level point
+Warren,Worcester,42.20015,-72.199808,5189,town-level point
+Warwick,Franklin,42.679971,-72.339882,762,town-level point
+Washington,Berkshire,42.369768,-73.15517,535,town-level point
+Watertown,Middlesex,42.369451,-71.177925,34319,town-level point
+Wayland,Middlesex,42.360427,-71.361099,13684,town-level point
+Webster,Worcester,42.047075,-71.845805,16893,town-level point
+Wellesley,Norfolk,42.305932,-71.282917,29000,town-level point
+Wellfleet,Barnstable,41.916805,-70.0271,2749,town-level point
+Wendell,Franklin,42.55631,-72.407148,870,town-level point
+Wenham,Essex,42.600633,-70.883303,5163,town-level point
+West Boylston,Worcester,42.369417,-71.785036,7894,town-level point
+West Bridgewater,Plymouth,42.021617,-71.026717,7094,town-level point
+West Brookfield,Worcester,42.256691,-72.158169,3780,town-level point
+West Chatham,Barnstable,41.666693,-69.989716,1272,mean of ZCTA points
+West Concord,Middlesex,42.451857,-71.403179,7402,town-level point
+West Dennis,Barnstable,41.660113,-70.170678,2179,mean of ZCTA points
+West Falmouth,Barnstable,41.601499,-70.639319,1835,mean of ZCTA points
+West Newbury,Essex,42.799565,-70.964428,4541,town-level point
+West Springfield,Hampden,42.125451,-72.649734,28693,town-level point
+West Stockbridge,Berkshire,42.312354,-73.388044,1274,town-level point
+West Tisbury,Dukes,41.394406,-70.656447,2896,town-level point
+West Wareham,Plymouth,41.772221,-70.762948,2173,mean of ZCTA points
+West Yarmouth,Barnstable,41.655712,-70.247044,5271,mean of ZCTA points
+Westborough,Worcester,42.268426,-71.613309,18934,town-level point
+Westfield,Hampden,42.138838,-72.755911,41690,town-level point
+Westford,Middlesex,42.585541,-71.44025,23831,town-level point
+Westhampton,Hampshire,42.314078,-72.777977,1638,town-level point
+Westminster,Worcester,42.5546,-71.90544,7570,town-level point
+Weston,Middlesex,42.360502,-71.303433,12057,town-level point
+Westport,Bristol,41.579794,-71.081822,15814,town-level point
+Westwood,Norfolk,42.219645,-71.216768,16055,town-level point
+Weweantic,Plymouth,41.747597,-70.740024,1880,town-level point
+Weymouth,Norfolk,42.206676,-70.945845,55957,town-level point
+Whately,Franklin,42.430995,-72.642437,1518,town-level point
+White Island Shores,Plymouth,41.797819,-70.637167,2322,town-level point
+Whitinsville,Worcester,42.118794,-71.672494,6941,mean of ZCTA points
+Whitman,Plymouth,42.078974,-70.93939,14849,town-level point
+Wilbraham,Hampden,42.126883,-72.430952,14638,town-level point
+Williamsburg,Hampshire,42.405414,-72.726043,2469,town-level point
+Williamstown,Berkshire,42.695743,-73.222118,7620,town-level point
+Wilmington,Middlesex,42.564647,-71.164516,23534,town-level point
+Winchendon,Worcester,42.66816,-72.055644,10698,town-level point
+Winchester,Middlesex,42.452752,-71.144319,22417,town-level point
+Windsor,Berkshire,42.519837,-73.04969,895,town-level point
+Winthrop,Suffolk,42.375541,-70.970646,18164,town-level point
+Woburn,Middlesex,42.488769,-71.154438,39555,town-level point
+Woods Hole,Barnstable,41.478974,-70.766911,883,mean of ZCTA points
+Worcester,Worcester,42.269478,-71.807783,184815,town-level point
+Worthington,Hampshire,42.397559,-72.943392,1188,town-level point
+Wrentham,Norfolk,42.052671,-71.356858,11548,town-level point
+Yarmouth,Barnstable,41.674949,-70.226014,23467,town-level point
+Yarmouth Port,Barnstable,41.704155,-70.231801,5045,mean of ZCTA points

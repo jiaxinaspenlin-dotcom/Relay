@@ -1,0 +1,343 @@
+Warning: Synthea is configured to export FHIR transaction bundles for generated patients but not to export the practitioners and organizations that the patient bundle entries will reference. See https://github.com/synthetichealth/synthea/wiki/FHIR-Transaction-Bundles for more information.
+SLF4J: No SLF4J providers were found.
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#noProviders for further details.
+Scanned 90 modules and 157 submodules.
+Loading submodule modules/allergies/allergy_panel.json
+Loading submodule modules/allergies/drug_allergy_incidence.json
+Loading submodule modules/allergies/environmental_allergy_incidence.json
+Loading submodule modules/allergies/food_allergy_incidence.json
+Loading submodule modules/allergies/immunotherapy.json
+Loading submodule modules/allergies/outgrow_env_allergies.json
+Loading submodule modules/allergies/outgrow_food_allergies.json
+Loading submodule modules/allergies/severe_allergic_reaction.json
+Loading submodule modules/anemia/anemia_sub.json
+Loading submodule modules/breast_cancer/chemotherapy_breast.json
+Loading submodule modules/breast_cancer/hormone_diagnosis.json
+Loading submodule modules/breast_cancer/hormonetherapy_breast.json
+Loading submodule modules/breast_cancer/surgery_therapy_breast.json
+Loading submodule modules/breast_cancer/tnm_diagnosis.json
+Loading submodule modules/contraceptives/clear_contraceptive.json
+Loading submodule modules/contraceptives/female_sterilization.json
+Loading submodule modules/contraceptives/implant_contraceptive.json
+Loading submodule modules/contraceptives/injectable_contraceptive.json
+Loading submodule modules/contraceptives/intrauterine_device.json
+Loading submodule modules/contraceptives/male_sterilization.json
+Loading submodule modules/contraceptives/oral_contraceptive.json
+Loading submodule modules/contraceptives/patch_contraceptive.json
+Loading submodule modules/contraceptives/ring_contraceptive.json
+Loading submodule modules/covid19/admission.json
+Loading submodule modules/covid19/determine_risk.json
+Loading Lookup Table: covid-19-severity-outcomes.csv
+Loading Lookup Table: covid-19-survival-outcomes.csv
+Loading submodule modules/covid19/diagnose_bacterial_infection.json
+Loading submodule modules/covid19/diagnose_blood_clot.json
+Loading submodule modules/covid19/end_outcomes.json
+Loading submodule modules/covid19/end_symptoms.json
+Loading submodule modules/covid19/infection.json
+Loading submodule modules/covid19/measurements_daily.json
+Loading submodule modules/covid19/measurements_frequent.json
+Loading submodule modules/covid19/measurements_vitals.json
+Loading submodule modules/covid19/medications.json
+Loading submodule modules/covid19/nonsurvivor_lab_values.json
+Loading submodule modules/covid19/outcomes.json
+Loading submodule modules/covid19/supplies_hospitalization.json
+Loading submodule modules/covid19/supplies_icu.json
+Loading submodule modules/covid19/supplies_intubation.json
+Loading submodule modules/covid19/survivor_lab_values.json
+Loading submodule modules/covid19/symptoms.json
+Loading submodule modules/covid19/treat_blood_clot.json
+Loading submodule modules/dermatitis/early_moderate_eczema_obs.json
+Loading submodule modules/dermatitis/early_severe_eczema_obs.json
+Loading submodule modules/dermatitis/mid_moderate_eczema_obs.json
+Loading submodule modules/dermatitis/mid_severe_eczema_obs.json
+Loading submodule modules/dermatitis/moderate_cd_obs.json
+Loading submodule modules/dermatitis/severe_cd_obs.json
+Loading submodule modules/dme/wheelchair.json
+Loading submodule modules/dme/wheelchair_end.json
+Loading submodule modules/encounter/anxiety_screening.json
+Loading submodule modules/encounter/depression_screening.json
+Loading submodule modules/encounter/fall_risk_screening.json
+Loading submodule modules/encounter/hark_screening.json
+Loading submodule modules/encounter/hospital_basic_labs.json
+Loading submodule modules/encounter/sdoh_hrsn.json
+Loading submodule modules/encounter/substance_use_screening.json
+Loading submodule modules/encounter/vitals.json
+Loading submodule modules/eye/intraocular_pressure.json
+Loading submodule modules/eye/ophthalmic_progression.json
+Loading submodule modules/eye/ophthalmic_tomography.json
+Loading submodule modules/eye/visual_acuity.json
+Loading submodule modules/heart/acs_anticoagulant.json
+Loading submodule modules/heart/acs_antiplatelet.json
+Loading submodule modules/heart/acs_arrival_medications.json
+Loading submodule modules/heart/acs_discharge_meds.json
+Loading submodule modules/heart/avrr/antithrombotic.json
+Loading submodule modules/heart/avrr/avrr_referral.json
+Loading submodule modules/heart/avrr/intraop_meds_blood.json
+Loading submodule modules/heart/avrr/outcomes.json
+Loading submodule modules/heart/avrr/preoperative.json
+Loading submodule modules/heart/avrr/savrr_operation.json
+Loading submodule modules/heart/avrr/savrr_postop.json
+Loading submodule modules/heart/avrr/sequence.json
+Loading submodule modules/heart/cabg/cabg_referral.json
+Loading submodule modules/heart/cabg/details.json
+Loading Lookup Table: cabg_details_operative_approach.csv
+Loading Lookup Table: cabg_details_num_grafts.csv
+Loading Lookup Table: cabg_details_num_art_cond.csv
+Loading submodule modules/heart/cabg/icu_meds_devices.json
+Loading submodule modules/heart/cabg/labs_common.json
+Loading submodule modules/heart/cabg/operation.json
+Loading submodule modules/heart/cabg/or_intraop.json
+Loading submodule modules/heart/cabg/or_labs_meds.json
+Loading submodule modules/heart/cabg/outcomes.json
+Loading submodule modules/heart/cabg/postop.json
+Loading submodule modules/heart/cabg/postop_blood.json
+Loading submodule modules/heart/cabg/preoperative.json
+Loading submodule modules/heart/cabg_sequence.json
+Loading submodule modules/heart/cardiac_labs.json
+Loading submodule modules/heart/chf_lab_work.json
+Loading submodule modules/heart/chf_lvad.json
+Loading submodule modules/heart/chf_meds.json
+Loading submodule modules/heart/chf_meds_hfmef.json
+Loading submodule modules/heart/chf_meds_hfref_nyha2.json
+Loading submodule modules/heart/chf_meds_hfref_nyha3.json
+Loading submodule modules/heart/chf_meds_hfref_nyha4.json
+Loading submodule modules/heart/chf_nyha_panel.json
+Loading submodule modules/heart/chf_transplant.json
+Loading submodule modules/heart/nsteacs_pathway.json
+Loading submodule modules/heart/operative_status.json
+Loading submodule modules/heart/or_blood.json
+Loading Lookup Table: or_blood_anemia_check.csv
+Loading Lookup Table: or_blood_platelet_check.csv
+Loading Lookup Table: or_blood_plasma_check.csv
+Loading submodule modules/heart/savrepair/operative_status.json
+Loading submodule modules/heart/savreplace/operative_status.json
+Loading submodule modules/heart/stemi_fibrinolytic.json
+Loading submodule modules/heart/stemi_pathway.json
+Loading submodule modules/heart/tavr/alt_access.json
+Loading submodule modules/heart/tavr/operation.json
+Loading submodule modules/heart/tavr/operative_status.json
+Loading submodule modules/heart/tavr/outcomes.json
+Loading submodule modules/heart/tavr/postop.json
+Loading submodule modules/heart/vhd_risks.json
+Loading submodule modules/hiv/art_sequence.json
+Loading submodule modules/hiv/art_sequence_1987_1994.json
+Loading submodule modules/hiv/art_sequence_1995_1996.json
+Loading submodule modules/hiv/art_sequence_1997_2002.json
+Loading submodule modules/hiv/art_sequence_2003_2005.json
+Loading submodule modules/hiv/art_sequence_2006_2014.json
+Loading submodule modules/hiv/art_sequence_2015.json
+Loading submodule modules/hiv/hiv_baseline.json
+Loading submodule modules/hiv/hiv_cd4.json
+Loading Lookup Table: hiv_stage.csv
+Loading submodule modules/hiv/hiv_oi_prophylaxis.json
+Loading submodule modules/hiv/hiv_screening.json
+Loading submodule modules/hiv/hiv_viral_load.json
+Loading submodule modules/hiv/stop_all_art_meds.json
+Loading submodule modules/injuries/broken_jaw.json
+Loading submodule modules/lung_cancer/lung_cancer_probabilities.json
+Loading submodule modules/medications/ace_arb.json
+Loading Lookup Table: ace_arb_ingredient_distribution.csv
+Loading Lookup Table: ace_arb_amlodipine_benazepril_product_distribution.csv
+Loading Lookup Table: ace_arb_benazepril_product_distribution.csv
+Loading Lookup Table: ace_arb_benazepril_hydrochlorothiazide_product_distribution.csv
+Loading Lookup Table: ace_arb_enalapril_product_distribution.csv
+Loading Lookup Table: ace_arb_hydrochlorothiazide_lisinopril_product_distribution.csv
+Loading Lookup Table: ace_arb_hydrochlorothiazide_losartan_product_distribution.csv
+Loading Lookup Table: ace_arb_hydrochlorothiazide_valsartan_product_distribution.csv
+Loading Lookup Table: ace_arb_irbesartan_product_distribution.csv
+Loading Lookup Table: ace_arb_lisinopril_product_distribution.csv
+Loading Lookup Table: ace_arb_losartan_product_distribution.csv
+Loading Lookup Table: ace_arb_quinapril_product_distribution.csv
+Loading Lookup Table: ace_arb_ramipril_product_distribution.csv
+Loading Lookup Table: ace_arb_sacubitril_valsartan_product_distribution.csv
+Loading Lookup Table: ace_arb_telmisartan_product_distribution.csv
+Loading Lookup Table: ace_arb_valsartan_product_distribution.csv
+Loading submodule modules/medications/beta_blocker.json
+Loading Lookup Table: beta_blocker_ingredient_distribution.csv
+Loading Lookup Table: beta_blocker_atenolol_product_distribution.csv
+Loading Lookup Table: beta_blocker_bisoprolol_product_distribution.csv
+Loading Lookup Table: beta_blocker_bisoprolol_hydrochlorothiazide_product_distribution.csv
+Loading Lookup Table: beta_blocker_carvedilol_product_distribution.csv
+Loading Lookup Table: beta_blocker_labetalol_product_distribution.csv
+Loading Lookup Table: beta_blocker_metoprolol_product_distribution.csv
+Loading Lookup Table: beta_blocker_nebivolol_product_distribution.csv
+Loading Lookup Table: beta_blocker_propranolol_product_distribution.csv
+Loading submodule modules/medications/ear_infection_antibiotic.json
+Loading submodule modules/medications/emergency_inhaler.json
+Loading Lookup Table: emergency_inhaler_ingredient_distribution.csv
+Loading Lookup Table: emergency_inhaler_albuterol_product_distribution.csv
+Loading Lookup Table: emergency_inhaler_levalbuterol_product_distribution.csv
+Loading submodule modules/medications/hypertension_medication.json
+Loading submodule modules/medications/maintenance_inhaler.json
+Loading Lookup Table: maintenance_inhaler_ingredient_distribution.csv
+Loading Lookup Table: maintenance_inhaler_beclomethasone_product_distribution.csv
+Loading Lookup Table: maintenance_inhaler_budesonide_product_distribution.csv
+Loading Lookup Table: maintenance_inhaler_fluticasone_product_distribution.csv
+Loading Lookup Table: maintenance_inhaler_mometasone_product_distribution.csv
+Loading submodule modules/medications/moderate_opioid_pain_reliever.json
+Loading submodule modules/medications/otc_antihistamine.json
+Loading submodule modules/medications/otc_pain_reliever.json
+Loading submodule modules/medications/statin.json
+Loading Lookup Table: statin_ingredient_distribution.csv
+Loading Lookup Table: statin_atorvastatin_product_distribution.csv
+Loading Lookup Table: statin_ezetimibe_simvastatin_product_distribution.csv
+Loading Lookup Table: statin_lovastatin_product_distribution.csv
+Loading Lookup Table: statin_pitavastatin_product_distribution.csv
+Loading Lookup Table: statin_pravastatin_product_distribution.csv
+Loading Lookup Table: statin_rosuvastatin_product_distribution.csv
+Loading Lookup Table: statin_simvastatin_product_distribution.csv
+Loading submodule modules/medications/strong_opioid_pain_reliever.json
+Loading submodule modules/metabolic_syndrome/amputations.json
+Loading submodule modules/metabolic_syndrome/diabetic_retinopathy_diagnoses.json
+Loading submodule modules/metabolic_syndrome/diabetic_retinopathy_progression.json
+Loading submodule modules/metabolic_syndrome/dme_supplies.json
+Loading submodule modules/metabolic_syndrome/kidney_conditions.json
+Loading submodule modules/metabolic_syndrome/medications.json
+Loading submodule modules/snf/skilled_nursing_facility.json
+Loading submodule modules/surgery/general_anesthesia.json
+Loading submodule modules/total_joint_replacement/functional_status_assessments.json
+Loading submodule modules/uti/abx_tx.json
+Loading submodule modules/uti/ambulatory_eval.json
+Loading submodule modules/uti/ambulatory_path.json
+Loading submodule modules/uti/ed_bundle.json
+Loading submodule modules/uti/ed_eval.json
+Loading submodule modules/uti/ed_path.json
+Loading submodule modules/uti/gu_pregnancy_check.json
+Loading submodule modules/uti/hpi.json
+Loading submodule modules/uti/lab_follow_up.json
+Loading submodule modules/uti/labs.json
+Loading submodule modules/uti/telemed_path.json
+Loading submodule modules/veterans/veteran_suicide_probabilities.json
+Loading submodule modules/weight_loss/mend_week.json
+Loading module modules/AIS_From_School_Screening_to_SOSORT_Recommendations.json
+Loading module modules/acute_myeloid_leukemia.json
+Loading Lookup Table: AML.csv
+Loading module modules/allergic_rhinitis.json
+Loading module modules/allergies.json
+Loading module modules/anemia___unknown_etiology.json
+Loading module modules/appendicitis.json
+Loading module modules/asthma.json
+Loading module modules/atopy.json
+Loading module modules/atrial_fibrillation.json
+Loading module modules/attention_deficit_disorder.json
+Loading module modules/bone_marrow_transplant.json
+Loading module modules/breast_cancer.json
+Loading module modules/bronchitis.json
+Loading module modules/cerebral_palsy.json
+Loading module modules/chronic_kidney_disease.json
+Loading module modules/colorectal_cancer.json
+Loading module modules/congestive_heart_failure.json
+Loading module modules/contraceptive_maintenance.json
+Loading module modules/contraceptives.json
+Loading module modules/copd.json
+Loading module modules/covid19.json
+Loading Lookup Table: covid19_prob.csv
+Loading module modules/cystic_fibrosis.json
+Loading module modules/dementia.json
+Loading module modules/dental_and_oral_examination.json
+Loading module modules/dentures.json
+Loading module modules/dermatitis.json
+Loading module modules/diabetic_retinopathy_treatment.json
+Loading Lookup Table: diabetic_retinopathy_followup.csv
+Loading module modules/dialysis.json
+Loading module modules/ear_infections.json
+Loading module modules/epilepsy.json
+Loading module modules/female_reproduction.json
+Loading module modules/fibromyalgia.json
+Loading module modules/food_allergies.json
+Loading module modules/gallstones.json
+Loading module modules/gout.json
+Loading module modules/hiv_care.json
+Loading Lookup Table: hiv_care.csv
+Loading module modules/hiv_diagnosis.json
+Loading Lookup Table: hiv_mortality_later.csv
+Loading Lookup Table: hiv_mortality_early.csv
+Loading Lookup Table: hiv_mortality_very_early.csv
+Loading Lookup Table: hiv_diagnosis_early.csv
+Loading Lookup Table: hiv_diagnosis_later.csv
+Loading module modules/home_health_treatment.json
+Loading module modules/home_hospice_snf.json
+Loading module modules/homelessness.json
+Loading module modules/hospice_treatment.json
+Loading module modules/hypertension.json
+Loading module modules/hypothyroidism.json
+Loading module modules/injuries.json
+Loading module modules/kidney_transplant.json
+Loading module modules/lung_cancer.json
+Loading module modules/lupus.json
+Loading module modules/mTBI.json
+Loading module modules/med_rec.json
+Loading module modules/mend_program.json
+Loading module modules/metabolic_syndrome_care.json
+Loading module modules/metabolic_syndrome_disease.json
+Loading module modules/myocardial_infarction.json
+Loading module modules/opioid_addiction.json
+Loading module modules/osteoarthritis.json
+Loading module modules/osteoporosis.json
+Loading module modules/pregnancy.json
+Loading module modules/prescribing_opioids_for_chronic_pain_and_treatment_of_oud.json
+Loading module modules/rheumatoid_arthritis.json
+Loading module modules/self_harm.json
+Loading module modules/sepsis.json
+Loading module modules/sexual_activity.json
+Loading module modules/sinusitis.json
+Loading module modules/sleep_apnea.json
+Loading module modules/sore_throat.json
+Loading module modules/spina_bifida.json
+Loading module modules/stable_ischemic_heart_disease.json
+Loading module modules/stroke.json
+Loading module modules/total_joint_replacement.json
+Loading module modules/trigger_bone_marrow_transplant.json
+Loading module modules/urinary_tract_infections.json
+Loading Lookup Table: uti.csv
+Loading Lookup Table: uti_recurrence.csv
+Loading module modules/veteran.json
+Loading module modules/veteran_hyperlipidemia.json
+Loading module modules/veteran_lung_cancer.json
+Loading module modules/veteran_mdd.json
+Loading module modules/veteran_prostate_cancer.json
+Loading module modules/veteran_ptsd.json
+Loading module modules/veteran_self_harm.json
+Loading module modules/veteran_substance_abuse_conditions.json
+Loading module modules/veteran_substance_abuse_treatment.json
+Loading module modules/vhd_aortic.json
+Loading Lookup Table: vhd_as.csv
+Loading Lookup Table: vhd_ar.csv
+Loading module modules/vhd_mitral.json
+Loading Lookup Table: vhd_mr.csv
+Loading Lookup Table: vhd_ms.csv
+Loading module modules/vhd_pulmonic.json
+Loading Lookup Table: vhd_ps.csv
+Loading Lookup Table: vhd_pr.csv
+Loading module modules/vhd_tricuspid.json
+Loading Lookup Table: vhd_tr.csv
+Loading Lookup Table: vhd_ts.csv
+Loading module modules/wellness_encounters.json
+Running with options:
+Population: 10
+Seed: 42
+Provider Seed:1792857327523
+Reference Time: 1792800000000
+Location: North Adams, Massachusetts
+Min Age: 45
+Max Age: 90
+8 -- Lindsay928 Deja232 Wiegand701 (59 y/o F) North Adams, Massachusetts  (82027)
+1 -- Corie618 Jast432 (61 y/o F) North Adams, Massachusetts  (84916)
+2 -- Dierdre747 Fritsch593 (62 y/o F) North Adams, Massachusetts  (87612)
+5 -- Jona712 Bonnie873 Fahey393 (82 y/o F) North Adams, Massachusetts  (114073)
+3 -- Ashleigh941 Berenice603 Schuster709 (78 y/o F) North Adams, Massachusetts  (107771)
+WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
+4 -- Shalanda398 Kelsie51 Dicki44 (85 y/o F) North Adams, Massachusetts  (125260)
+7 -- Irving123 Kiehn525 (64 y/o M) North Adams, Massachusetts  (88753)
+9 -- Shondra529 Kyra237 Kovacek682 (76 y/o F) North Adams, Massachusetts  (136653)
+10 -- Herschel574 Greenfelder433 (87 y/o M) North Adams, Massachusetts  (171923)
+6 -- Bobette685 Jones311 (86 y/o F) North Adams, Massachusetts  (121166)
+Records: total=10, alive=10, dead=0
+RNG=10
+Clinician RNG=5645
+
+[32mYou've just generated 10 patients![0m We're happy to know Synthea is helping you with your project.
+Like what we're doing? Synthea is an open-source project, and your support helps us keep building.
+Please consider [34m]8;;https://github.com/sponsors/synthetichealthmaking a donation]8;;[0m (https://github.com/sponsors/synthetichealth).
+

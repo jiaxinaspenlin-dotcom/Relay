@@ -1,0 +1,6 @@
+START,STOP,PATIENT,ENCOUNTER,CODE,SYSTEM,DESCRIPTION,TYPE,CATEGORY,REACTION1,DESCRIPTION1,SEVERITY1,REACTION2,DESCRIPTION2,SEVERITY2
+1988-02-28,,ba419d35-0dfe-8af7-347c-eebf02485a56,ba419d35-0dfe-8af7-d286-acacba1fde6d,609328004,Unknown,Allergic disposition (finding),allergy,environment,,,,,,
+1965-08-08,,03213776-9106-f1c0-fa74-4b53259f0ec5,03213776-9106-f1c0-369c-243450cb190d,609328004,Unknown,Allergic disposition (finding),allergy,environment,,,,,,
+1965-08-08,,03213776-9106-f1c0-fa74-4b53259f0ec5,03213776-9106-f1c0-369c-243450cb190d,84489001,Unknown,Mold (organism),allergy,environment,21626009,Cutaneous hypersensitivity (disorder),MILD,,,
+1965-08-08,,03213776-9106-f1c0-fa74-4b53259f0ec5,03213776-9106-f1c0-369c-243450cb190d,264287008,Unknown,Animal dander (substance),allergy,environment,878820003,Rhinoconjunctivitis (disorder),MODERATE,49727002,Cough (finding),MODERATE
+1965-08-08,,03213776-9106-f1c0-fa74-4b53259f0ec5,03213776-9106-f1c0-369c-243450cb190d,3718001,Unknown,Cow's milk (substance),allergy,food,,,,,,

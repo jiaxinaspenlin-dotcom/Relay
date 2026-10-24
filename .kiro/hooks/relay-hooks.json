@@ -1,0 +1,56 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "copy-guard",
+      "description": "Block clinical-decision, travel-time, coverage, and person-scoring language in copy and templates.",
+      "trigger": "PostFileSave",
+      "matcher": "(frontend/src/copy\\.ts|backend/app/drafting/templates\\.py|docs/PITCH\\.md)$",
+      "action": { "type": "command", "command": "python scripts/check_copy.py" },
+      "timeout": 30
+    },
+    {
+      "name": "loop-rules-tests",
+      "description": "State transitions, stuck rules, distance, and ranking are the product's core; re-test on every change.",
+      "trigger": "PostFileSave",
+      "matcher": "backend/app/(loop|finder)/.*\\.py$",
+      "action": { "type": "command", "command": "pytest -q backend/tests/test_loop.py backend/tests/test_finder.py" },
+      "timeout": 90
+    },
+    {
+      "name": "verify-drafting",
+      "description": "Any change to drafting re-runs citation/number/copy verification, including adversarial cases.",
+      "trigger": "PostFileSave",
+      "matcher": "backend/app/drafting/.*\\.py$",
+      "action": { "type": "command", "command": "pytest -q backend/tests/test_verify.py" },
+      "timeout": 90
+    },
+    {
+      "name": "fhir-validate",
+      "description": "Re-validate referral FHIR bundles when export or models change.",
+      "trigger": "PostFileSave",
+      "matcher": "backend/app/(export/fhir\\.py|models\\.py)$",
+      "action": { "type": "command", "command": "pytest -q backend/tests/test_fhir.py" },
+      "timeout": 90
+    },
+    {
+      "name": "sources-check",
+      "description": "Public data snapshots must stay documented.",
+      "trigger": "PostFileSave",
+      "matcher": "data/public/.*\\.(csv|json)$",
+      "action": {
+        "type": "agent",
+        "prompt": "A public data snapshot changed. Check that data/public/SOURCES.md lists this file with its source URL, agency, retrieval date, and filters. Add or fix the entry if needed. Do not modify the data file."
+      }
+    },
+    {
+      "name": "spec-sync-on-stop",
+      "description": "Keep tasks.md and docs/KIRO.md honest at the end of each agent turn.",
+      "trigger": "Stop",
+      "action": {
+        "type": "agent",
+        "prompt": "Compare the work just finished with .kiro/specs/relay-referral-loop/tasks.md. Tick only tasks whose tests pass. If a hook failed and was fixed this turn, or the implementation deviated from requirements.md/design.md, add a dated one-line entry to docs/KIRO.md saying what happened and why."
+      }
+    }
+  ]
+}

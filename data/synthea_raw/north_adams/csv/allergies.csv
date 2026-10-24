@@ -1,0 +1,6 @@
+START,STOP,PATIENT,ENCOUNTER,CODE,SYSTEM,DESCRIPTION,TYPE,CATEGORY,REACTION1,DESCRIPTION1,SEVERITY1,REACTION2,DESCRIPTION2,SEVERITY2
+1983-08-16,,4f083ce3-f12b-bb4b-7353-e17f0cd55b0a,4f083ce3-f12b-bb4b-e536-ee7649581038,609328004,Unknown,Allergic disposition (finding),allergy,environment,,,,,,
+1983-08-16,,4f083ce3-f12b-bb4b-7353-e17f0cd55b0a,4f083ce3-f12b-bb4b-e536-ee7649581038,84489001,Unknown,Mold (organism),allergy,environment,21626009,Cutaneous hypersensitivity (disorder),MILD,267101005,Nasal discharge present (situation),MILD
+1983-08-16,,4f083ce3-f12b-bb4b-7353-e17f0cd55b0a,4f083ce3-f12b-bb4b-e536-ee7649581038,1191,Unknown,Aspirin,allergy,medication,,,,,,
+1983-08-16,,4f083ce3-f12b-bb4b-7353-e17f0cd55b0a,4f083ce3-f12b-bb4b-e536-ee7649581038,7984,Unknown,Penicillin V,allergy,medication,,,,,,
+1945-02-16,,c86c400e-ff88-a1e3-2e23-caa4d8311f47,c86c400e-ff88-a1e3-ac58-6beea5b6015c,609328004,Unknown,Allergic disposition (finding),allergy,environment,,,,,,
