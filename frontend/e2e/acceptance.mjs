@@ -26,9 +26,10 @@ async function wipe(page) {
 
 async function skipDays(page, days) {
   await page.goto(`${WEB}/settings`);
-  if (await page.getByRole("button", { name: "Turn on demo mode" }).count()) {
-    await page.getByRole("button", { name: "Turn on demo mode" }).click();
-  }
+  // Wait for Settings to load before deciding (checking too early raced the query).
+  const toggle = page.getByRole("button", { name: /^Turn (on|off) demo mode$/ });
+  await toggle.waitFor({ timeout: T });
+  if ((await toggle.innerText()) === "Turn on demo mode") await toggle.click();
   await page.getByTestId("demo-banner").waitFor({ timeout: T });
   for (let i = 0; i < Math.floor(days / 7); i++) {
     const before = await page.getByTestId("demo-today").getAttribute("data-iso");
@@ -102,7 +103,13 @@ const tests = {
     });
     await officePage.getByTestId("office-status").getByText("Missing records").waitFor({ timeout: T });
     await page.goto(`${WEB}/referrals/${ctx.rid}`);
-    await page.getByTestId("status-line").getByText(/Received incomplete, missing records/).waitFor({ timeout: T });
+    try {
+      await page.getByTestId("status-line").getByText(/Received incomplete, missing records/).waitFor({ timeout: T });
+    } catch (e) {
+      const shown = await page.getByTestId("status-line").innerText().catch(() => "(no status line)");
+      const api = await (await page.request.get(`${WEB}/api/referrals/${ctx.rid}`)).json();
+      throw new Error(`status line shows "${shown}"; API stage=${api.card.stage} stuck=${JSON.stringify(api.card.stuck.map((f) => f.rule))} events=${JSON.stringify(api.referral.events.map((x) => [x.stage, x.at]))}`);
+    }
     await page.goto(WEB);
     await page.getByTestId(`row-${ctx.rid}`).getByTestId("row-status").getByText("Missing records").waitFor({ timeout: T });
   },
@@ -207,7 +214,7 @@ for (const name of Object.keys(tests)) {
     await tests[name](page, officePage);
     results[name] = "PASS";
   } catch (e) {
-    results[name] = `FAIL: ${e.message.split("\n")[0]}`;
+    results[name] = `FAIL: ${e.message.split("\n").slice(0, 4).join(" | ")}`;
     await page.screenshot({ path: path.join(ROOT, `.e2e-${name}-failure.png`), fullPage: true }).catch(() => {});
     await officePage.screenshot({ path: path.join(ROOT, `.e2e-${name}-office.png`), fullPage: true }).catch(() => {});
   }

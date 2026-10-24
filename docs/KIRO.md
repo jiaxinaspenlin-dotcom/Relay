@@ -58,3 +58,7 @@
 - 2026-10-24 — D2 first failed with the app rendered unstyled: the Vite dev server kept a stale
   stylesheet after it re-optimized dependencies (lucide-react) mid-session. A dev-server restart
   fixed it; no code change. If the UI looks unstyled during `make dev`, restart `make dev-web`.
+- 2026-10-24 — Intermittent D2 failure (3 of 8 runs): the dashboard row or detail status line was
+  missing right after an office update. Cause: one sqlite3 connection shared across FastAPI's
+  threadpool, with writes locked but reads not. Every read now takes the same lock; 8 of 8 runs
+  pass and `test_concurrent_reads_and_writes_stay_consistent` guards it.

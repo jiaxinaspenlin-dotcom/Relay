@@ -247,3 +247,28 @@ def test_follow_up_draft_verifies(client):
     d = client.get(f"/api/referrals/{rid}/draft").json()
     assert d["verified"], d["problems"]
     assert d["rule"] == "not_scheduled" and f"/office/{token}" in d["text"] and "Mass HIway" in d["text"]
+
+
+def test_concurrent_reads_and_writes_stay_consistent(client):
+    """Regression: one sqlite3 connection is shared by FastAPI's threadpool. Unlocked reads
+    interleaved with writes returned missing rows (found as an intermittent e2e failure)."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    client.post("/api/sample-data")
+    ids = [f"R-10{i}" for i in range(1, 10)]
+
+    def read(i):
+        d = client.get("/api/dashboard").json()
+        assert d["total"] == 9, d.get("total")
+        r = client.get(f"/api/referrals/{ids[i % 9]}")
+        assert r.status_code == 200
+        return True
+
+    def write(i):
+        rid = "R-102"
+        return client.post(f"/api/referrals/{rid}/barriers",
+                           json={"type": "other", "note": f"n{i}"}).status_code in (201, 409)
+
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        futures = [ex.submit(read if i % 3 else write, i) for i in range(60)]
+        assert all(f.result() for f in futures)

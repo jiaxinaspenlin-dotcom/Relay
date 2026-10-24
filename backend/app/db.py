@@ -63,9 +63,20 @@ class Repo:
         self.conn.executescript(SCHEMA)
         self.conn.commit()
 
+    # ------------------------------------------------------------ locked reads
+    # One sqlite3 connection is shared by FastAPI's threadpool. Concurrent use of one connection is
+    # not safe (reads can interleave and return missing rows), so every read takes the lock too.
+    def _one(self, sql: str, args: tuple = ()):
+        with self._lock:
+            return self.conn.execute(sql, args).fetchone()
+
+    def _all(self, sql: str, args: tuple = ()):
+        with self._lock:
+            return self.conn.execute(sql, args).fetchall()
+
     # ------------------------------------------------------------ settings
     def setting(self, key: str) -> Any:
-        row = self.conn.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
+        row = self._one("SELECT value FROM settings WHERE key = ?", (key,))
         return json.loads(row["value"]) if row else DEFAULT_SETTINGS.get(key)
 
     def set_setting(self, key: str, value: Any) -> None:
@@ -77,7 +88,7 @@ class Repo:
 
     # ------------------------------------------------------------ patients
     def patients(self) -> dict[str, dict]:
-        rows = self.conn.execute("SELECT data FROM patients ORDER BY created_seq").fetchall()
+        rows = self._all("SELECT data FROM patients ORDER BY created_seq")
         out = {}
         for r in rows:
             p = json.loads(r["data"])
@@ -85,7 +96,7 @@ class Repo:
         return out
 
     def patient(self, pid: str) -> Optional[dict]:
-        row = self.conn.execute("SELECT data FROM patients WHERE id = ?", (pid,)).fetchone()
+        row = self._one("SELECT data FROM patients WHERE id = ?", (pid,))
         return json.loads(row["data"]) if row else None
 
     def add_patient(self, p: dict) -> dict:
@@ -93,7 +104,7 @@ class Repo:
              "suggested_condition_code": None, **p}
         p.setdefault("id", f"pt-{uuid.uuid4().hex[:12]}")
         with self._lock:
-            seq = self.conn.execute("SELECT COALESCE(MAX(created_seq), 0) + 1 FROM patients").fetchone()[0]
+            seq = self._one("SELECT COALESCE(MAX(created_seq), 0) + 1 FROM patients")[0]
             self.conn.execute("INSERT INTO patients(id, data, sample, created_seq) VALUES(?, ?, ?, ?)",
                               (p["id"], json.dumps(p), int(bool(p["sample"])), seq))
             self.conn.commit()
@@ -101,14 +112,14 @@ class Repo:
 
     # ------------------------------------------------------------ referrals
     def all(self) -> list[Referral]:
-        rows = self.conn.execute("SELECT data FROM referrals ORDER BY seq").fetchall()
+        rows = self._all("SELECT data FROM referrals ORDER BY seq")
         return [Referral.model_validate_json(r["data"]) for r in rows]
 
     def count(self) -> int:
-        return self.conn.execute("SELECT COUNT(*) FROM referrals").fetchone()[0]
+        return self._one("SELECT COUNT(*) FROM referrals")[0]
 
     def get(self, rid: str) -> Referral:
-        row = self.conn.execute("SELECT data FROM referrals WHERE id = ?", (rid,)).fetchone()
+        row = self._one("SELECT data FROM referrals WHERE id = ?", (rid,))
         if row is None:
             raise KeyError(f"No referral {rid}")
         return Referral.model_validate_json(row["data"])
@@ -116,7 +127,7 @@ class Repo:
     def put(self, ref: Referral) -> Referral:
         data = ref.model_dump_json(by_alias=True)
         with self._lock:
-            exists = self.conn.execute("SELECT 1 FROM referrals WHERE id = ?", (ref.id,)).fetchone()
+            exists = self._one("SELECT 1 FROM referrals WHERE id = ?", (ref.id,))
             if exists:
                 self.conn.execute("UPDATE referrals SET data = ? WHERE id = ?", (data, ref.id))
             else:
@@ -130,18 +141,17 @@ class Repo:
         try:
             return int(rid.split("-")[1])
         except (IndexError, ValueError):
-            return self.conn.execute("SELECT COALESCE(MAX(seq), 100) + 1 FROM referrals").fetchone()[0]
+            return self._one("SELECT COALESCE(MAX(seq), 100) + 1 FROM referrals")[0]
 
     def next_id(self) -> str:
-        n = self.conn.execute("SELECT COALESCE(MAX(seq), 100) + 1 FROM referrals").fetchone()[0]
+        n = self._one("SELECT COALESCE(MAX(seq), 100) + 1 FROM referrals")[0]
         return f"R-{n}"
 
     # ------------------------------------------------------------ office links
     def token_for(self, rid: str) -> str:
         """The referral's office-update token, created on first use (unguessable, 192 bits)."""
         with self._lock:
-            row = self.conn.execute("SELECT token FROM office_tokens WHERE referral_id = ?",
-                                    (rid,)).fetchone()
+            row = self._one("SELECT token FROM office_tokens WHERE referral_id = ?", (rid,))
             if row:
                 return row["token"]
             token = secrets.token_urlsafe(24)
@@ -150,13 +160,12 @@ class Repo:
             return token
 
     def referral_for_token(self, token: str) -> Optional[str]:
-        row = self.conn.execute("SELECT referral_id FROM office_tokens WHERE token = ?",
-                                (token,)).fetchone()
+        row = self._one("SELECT referral_id FROM office_tokens WHERE token = ?", (token,))
         return row["referral_id"] if row else None
 
     # ------------------------------------------------------------ sample data + reset
     def has_sample(self) -> bool:
-        return self.conn.execute("SELECT 1 FROM referrals WHERE sample = 1 LIMIT 1").fetchone() is not None
+        return self._one("SELECT 1 FROM referrals WHERE sample = 1 LIMIT 1") is not None
 
     def load_sample(self, today: date) -> int:
         """Load referrals.json + Synthea patients, shifting dates so the sample reads as of `today`."""
@@ -168,7 +177,7 @@ class Repo:
         for p in load_patients().values():
             if p["id"] not in existing:
                 self.add_patient(p)
-        offset = self.conn.execute("SELECT COALESCE(MAX(seq), 100) FROM referrals").fetchone()[0] - 100
+        offset = self._one("SELECT COALESCE(MAX(seq), 100) FROM referrals")[0] - 100
         id_map = {}
         for r in seed["referrals"]:
             new_id = f"R-{int(r.id.split('-')[1]) + offset}" if offset else r.id
