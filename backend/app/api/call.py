@@ -55,7 +55,17 @@ def call_session(rid: str, request: Request) -> dict:
     except httpx.HTTPError:
         raise HTTPException(502, "Couldn't reach the voice service. Try again.") from None
     if r.status_code != 200 or "token" not in r.json():
-        raise HTTPException(502, f"The voice service refused the session ({r.status_code})")
+        # Pass on ElevenLabs' reason (e.g. a key missing the convai_write permission). Their
+        # error bodies don't echo the key, and we never include it.
+        reason = ""
+        try:
+            detail = r.json().get("detail")
+            reason = detail.get("message", "") if isinstance(detail, dict) else str(detail or "")
+        except ValueError:
+            pass
+        reason = reason.replace(v["api_key"], "").replace(v["agent_id"], "<agent>")[:200]
+        raise HTTPException(502, f"The voice service refused the session ({r.status_code})"
+                                 + (f": {reason}" if reason else ""))
     sent = first_event_date(ref, "sent") or ref.authored_on
     return {
         "conversation_token": r.json()["token"],

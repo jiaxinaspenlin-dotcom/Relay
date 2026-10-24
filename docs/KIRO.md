@@ -81,3 +81,8 @@
   (the specialist office stays the plan's author).
 - 2026-10-24 — A1 first failed because the e2e navigated away before "Load sample data" finished;
   the test now waits for the sample sign-in buttons.
+- 2026-10-24 — "Call office returns 404": the routes exist at POST /api/referrals/{id}/call-session
+  and /call-transcript (test_routes_match_call_assistant_paths checks them against
+  CallAssistant.tsx). The 404 came from an API process started before the call router was added.
+  Through the UI the session request now reaches the route; ElevenLabs answers 401 "API key is
+  missing the permission convai_write", which Relay now passes on (502 with that reason, no key).

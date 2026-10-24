@@ -154,3 +154,27 @@ def test_session_gating_and_variables(sample, monkeypatch):
     # Not stuck at Sent or Received → 403
     for rid in ("R-104", "R-103", "R-106"):
         assert sample.post(f"/api/referrals/{rid}/call-session").status_code == 403
+
+
+def test_session_passes_on_refusal_reason_without_secrets(sample, monkeypatch):
+    monkeypatch.setenv("ELEVENLABS_API_KEY", "sk_secret_value")
+    monkeypatch.setenv("ELEVENLABS_AGENT_ID", "agent_123")
+
+    def fake_get(url, params=None, headers=None, timeout=None):
+        return httpx.Response(401, json={"detail": {"message": "The API key you used is missing the permission convai_write"}})
+    monkeypatch.setattr("app.api.call.httpx.get", fake_get)
+    r = sample.post("/api/referrals/R-102/call-session")
+    assert r.status_code == 502
+    assert "convai_write" in r.json()["detail"] and "sk_secret_value" not in r.text
+
+
+def test_routes_match_call_assistant_paths():
+    """CallAssistant.tsx calls `${apiBase}/referrals/${referralId}/call-session` with apiBase '/api'."""
+    from app.main import app
+    paths = {r.path for r in app.routes}
+    assert "/api/referrals/{rid}/call-session" in paths and "/api/referrals/{rid}/call-transcript" in paths
+    src = (ROOT / "frontend" / "src" / "components" / "CallAssistant.tsx").read_text()
+    assert "/referrals/${encodeURIComponent(referralId)}/call-session" in src
+    assert "/referrals/${encodeURIComponent(referralId)}/call-transcript" in src
+    drawers = (ROOT / "frontend" / "src" / "components" / "ActionDrawers.tsx").read_text()
+    assert "<CallAssistant referralId={rid}" in drawers  # rid is the referral ID, e.g. R-102
