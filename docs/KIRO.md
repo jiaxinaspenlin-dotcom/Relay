@@ -55,3 +55,6 @@
 - 2026-10-24 — Deviation: stuck messages keep "—" in the API (tests, drafts); the UI renders them as
   design.md sentences ("Accepted 7 days ago, no appointment yet."). UI dates are "Oct 15"; text
   that leaves Relay uses "Oct 15, 2026".
+- 2026-10-24 — D2 first failed with the app rendered unstyled: the Vite dev server kept a stale
+  stylesheet after it re-optimized dependencies (lucide-react) mid-session. A dev-server restart
+  fixed it; no code change. If the UI looks unstyled during `make dev`, restart `make dev-web`.
