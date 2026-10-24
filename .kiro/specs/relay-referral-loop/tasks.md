@@ -23,8 +23,8 @@ assignment, simulated specialist and plan back, PCP close, FHIR export, syntheti
 ## MVP — thin end-to-end path (before any polish)
 Deferred until all five pass: patient view, map, LLM, readmissions drawer, Specialist office
 (simulated portal).
-- [ ] M1 Dashboard on the real API: Needs attention (R-102, R-104 messages), pipeline, counts
-- [ ] M2 New referral (North Adams live patient → Cardiology → real practices → Send) shows as Sent
+- [x] M1 Dashboard on the real API: Needs attention (R-102, R-104 messages), pipeline, counts
+- [x] M2 New referral (North Adams live patient → Cardiology → real practices → Send) shows as Sent
 - [ ] M3 Log update (R2.5) + Demo clock (R1.5): accepted (phone) then +7 days → "Accepted 7 days ago — no appointment yet"
 - [ ] M4 Template follow-up with [F#] citations → edit → Send → Communication on the timeline
 - [ ] M5 Log "plan received" → PCP inbox beside reason → Acknowledge & close → FHIR bundle (test_fhir.py)
