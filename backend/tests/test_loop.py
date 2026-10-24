@@ -40,7 +40,7 @@ def _as_draft(ref: Referral) -> Referral:
 
 def test_seed_has_eight_archetypes(refs):
     assert sorted(refs) == [f"R-10{i}" for i in range(1, 9)]
-    assert all(r.synthetic and r.performer.fictional for r in refs.values())
+    assert all(r.sample and r.performer.fictional for r in refs.values())
 
 
 @pytest.mark.parametrize("rid", [f"R-10{i}" for i in range(1, 9)])
@@ -124,9 +124,9 @@ def test_plan_return_requires_plan(refs):
 
 
 def test_close_requires_returned_plan_and_records_closure(refs):
-    out = transition(refs["R-105"], "closed", at=TODAY, actor="pcp", by="Dr. Avery Lin (synthetic)",
+    out = transition(refs["R-105"], "closed", at=TODAY, actor="pcp", by="Dr. Avery Lin",
                      note="Reviewed")
-    assert out.closure.reason == "plan_received" and out.closure.by == "Dr. Avery Lin (synthetic)"
+    assert out.closure.reason == "plan_received" and out.closure.by == "Dr. Avery Lin"
     assert out.closure.at == TODAY and out.business_status == "closed-by-referrer"
 
 
@@ -280,7 +280,6 @@ def test_thresholds_are_practice_settings(refs):
 
 def test_summary_counts(refs):
     s = summary(list(refs.values()), TODAY)
-    assert s["synthetic"] is True
     assert s["open"] == 7            # all but R-106 (closed)
     assert s["stuck"] == 5           # R-101, R-102, R-104, R-107, R-108
     assert s["closed_this_month"] == 1

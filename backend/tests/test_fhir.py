@@ -5,12 +5,11 @@ from __future__ import annotations
 import json
 
 import pytest
-from fastapi.testclient import TestClient
 from fhir.resources.R4B import get_fhir_model_class
 from fhir.resources.R4B.bundle import Bundle
 
 from app.export.fhir import DIRECTORY_TAG, SYNTHETIC_TAG, build_bundle
-from app.main import app
+from app.models import load_patients
 
 from conftest import TODAY
 
@@ -23,14 +22,17 @@ COMM_STATUS = {"preparation", "in-progress", "not-done", "on-hold", "stopped", "
                "entered-in-error", "unknown"}
 
 
-def _validate(bundle: dict) -> dict[str, list[dict]]:
+def _validate(bundle: dict, sample: bool = True) -> dict[str, list[dict]]:
     Bundle.model_validate(bundle)
     by_type: dict[str, list[dict]] = {}
     ids = set()
     for e in bundle["entry"]:
         r = e["resource"]
         get_fhir_model_class(r["resourceType"]).model_validate(r)
-        assert SYNTHETIC_TAG in r["meta"]["tag"], r["resourceType"]
+        if sample:
+            assert SYNTHETIC_TAG in r["meta"]["tag"], r["resourceType"]
+        else:
+            assert SYNTHETIC_TAG not in r.get("meta", {}).get("tag", []), r["resourceType"]
         key = f"{r['resourceType']}/{r['id']}"
         assert key not in ids, f"duplicate {key}"
         ids.add(key)
@@ -56,7 +58,7 @@ def _references(obj):
 @pytest.mark.parametrize("rid", [f"R-10{i}" for i in range(1, 9)])
 def test_archetype_bundle_validates(refs, rid):
     r = refs[rid]
-    b = build_bundle(r, TODAY)
+    b = build_bundle(r, load_patients()[r.patient_id], TODAY)
     t = _validate(b)
     assert b["type"] == "collection"
     task, = t["Task"]
@@ -85,39 +87,40 @@ def test_archetype_bundle_validates(refs, rid):
     assert DIRECTORY_TAG not in org["meta"]["tag"]
 
 
-def test_mvp_referral_bundle_validates():
-    """M2→M5 path through the API: directory org, Communication, Composition, closed Task."""
-    c = TestClient(app)
-    c.post("/api/reset")
-    try:
-        live = "46ee9d82-b52c-856d-069b-5064ff052225"
-        f = c.get("/api/finder", params={"specialty": "Cardiology", "patient_id": live}).json()
-        practice = next(p for p in f["results"] if p["org_pac_id"])
-        rid = c.post("/api/referrals", json={
-            "patient_id": live, "specialty": "Cardiology", "practice_id": practice["id"],
-            "reason_text": "Please evaluate (synthetic).", "priority": "routine",
-            "condition_code": "274531002"}).json()["card"]["id"]
-        for body in ({"action": "accepted", "source": "phone"},
-                     {"action": "scheduled", "source": "portal", "appointment_date": "2026-11-03"},
-                     {"action": "seen", "source": "fax"},
-                     {"action": "plan_received", "source": "fax",
-                      "plan": {"assessment": "A (synthetic).", "plan": "P (synthetic)."}}):
-            assert c.post(f"/api/referrals/{rid}/updates", json=body).status_code == 200
-        c.post(f"/api/referrals/{rid}/communications",
-               json={"recipient": "specialist", "text": "Thanks (synthetic)."})
-        c.post(f"/api/referrals/{rid}/close", json={"note": "Reviewed"})
-        resp = c.get(f"/api/referrals/{rid}/fhir")
-        assert resp.headers["content-type"].startswith("application/fhir+json")
-        b = resp.json()
-        t = _validate(b)
-        org = next(o for o in t["Organization"] if o["id"] != "requester")
-        assert DIRECTORY_TAG in org["meta"]["tag"]
-        assert org["identifier"][0]["value"] == practice["org_pac_id"]
-        assert t["Task"][0]["status"] == "completed"
-        assert t["Task"][0]["businessStatus"]["coding"][0]["code"] == "closed-by-referrer"
-        assert t["Appointment"][0]["status"] == "fulfilled"
-        assert len(t["Communication"]) == 1
-        assert {p["activity"]["text"] for p in t["Provenance"]} >= {"Stage → Accepted (via phone)"}
-        json.dumps(b)
-    finally:
-        c.post("/api/reset")
+def test_real_mode_referral_bundle_validates(client):
+    """Hand-entered patient → office link updates → follow-up → PCP close. Directory org,
+    Communications, Composition, closed Task, appointment time; no synthetic tag."""
+    pid = client.post("/api/patients", json={"name": "Maria Santos", "town": "Athol",
+                                             "coverage": "medicare"}).json()["id"]
+    f = client.get("/api/finder", params={"specialty": "Cardiology", "patient_id": pid}).json()
+    practice = next(p for p in f["results"] if p["org_pac_id"])
+    d = client.post("/api/referrals", json={
+        "patient_id": pid, "specialty": "Cardiology", "practice_id": practice["id"],
+        "reason_text": "Please evaluate.", "priority": "routine",
+        "condition_text": "Chest pain on exertion"}).json()
+    rid, token = d["card"]["id"], d["office_path"].rsplit("/", 1)[1]
+    client.post(f"/api/referrals/{rid}/send", json={"channel": "print"})
+    for body in ({"action": "accepted"},
+                 {"action": "scheduled", "appointment_date": "2026-11-03", "appointment_time": "14:30"},
+                 {"action": "seen"},
+                 {"action": "plan_returned", "plan": {"assessment": "A.", "plan": "P."}}):
+        assert client.post(f"/api/office/{token}", json=body).status_code == 200
+    client.post(f"/api/referrals/{rid}/communications",
+                json={"recipient": "specialist", "text": "Thanks.", "channel": "copy"})
+    client.post(f"/api/referrals/{rid}/close", json={"note": "Reviewed"})
+    resp = client.get(f"/api/referrals/{rid}/fhir")
+    assert resp.headers["content-type"].startswith("application/fhir+json")
+    b = resp.json()
+    t = _validate(b, sample=False)
+    org = next(o for o in t["Organization"] if o["id"] != "requester")
+    assert DIRECTORY_TAG in org["meta"]["tag"]
+    assert org["identifier"][0]["value"] == practice["org_pac_id"]
+    assert t["Task"][0]["status"] == "completed"
+    assert t["Task"][0]["businessStatus"]["coding"][0]["code"] == "closed-by-referrer"
+    appt = t["Appointment"][0]
+    assert appt["status"] == "fulfilled" and appt["start"].startswith("2026-11-03T14:30")
+    assert t["Condition"][0]["code"] == {"text": "Chest pain on exertion"}
+    assert t["Patient"][0]["name"][0]["family"] == "Santos"
+    assert len(t["Communication"]) == 2
+    assert {p["activity"]["text"] for p in t["Provenance"]} >= {"Stage → Accepted (via link)"}
+    json.dumps(b)

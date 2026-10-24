@@ -54,7 +54,8 @@ ELAPSED_PHRASE = {
 }
 
 
-def build_facts(ref: Referral, today: date, flag: StuckFlag | None = None) -> list[Fact]:
+def build_facts(ref: Referral, today: date, flag: StuckFlag | None = None,
+                office_url: str | None = None) -> list[Fact]:
     raw: list[tuple[str, str, str, str]] = []  # key, label, value, source
 
     def add(key, label, value, source):
@@ -87,6 +88,8 @@ def build_facts(ref: Referral, today: date, flag: StuckFlag | None = None) -> li
         unit = unit[:-1] if n == 1 else unit
         add("elapsed", "Elapsed time",
             f"{n} {unit} {ELAPSED_PHRASE[flag.rule]}, as of {today.isoformat()}", "Demo clock")
+    if office_url:
+        add("office_link", "Office update link", office_url, "Relay")
     add("requester", "Referring practice",
         f"{ref.requester.coordinator}, {ref.requester.practice}", "Referral")
 

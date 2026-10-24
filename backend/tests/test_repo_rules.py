@@ -18,14 +18,14 @@ def test_backend_never_reads_the_real_clock():
         for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             if REAL_CLOCK.search(line):
                 offenders.append(f"{path.relative_to(ROOT)}:{n}: {line.strip()}")
-    assert offenders == [], "Use the demo clock (store.today / config.DEMO_TODAY)"
+    assert offenders == [], "Use app.clock.today(repo); only config.py reads the real clock"
 
 
 def test_real_clock_pattern_catches_common_calls():
     for s in ["date.today()", "datetime.now()", "datetime.utcnow()", "time.time()",
               "datetime.datetime.now(tz)"]:
         assert REAL_CLOCK.search(s), s
-    assert not REAL_CLOCK.search("store.today")
+    assert not REAL_CLOCK.search("clock.today(repo)")
 
 
 MOCK_IMPORT = re.compile(r"""(from\s+["'][^"']*\bmock/|import\s*\(\s*["'][^"']*\bmock/|require\(\s*["'][^"']*\bmock/)""")

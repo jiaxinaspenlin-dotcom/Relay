@@ -9,3 +9,5 @@ frontend/dist/
 data/synthea_raw/
 frontend/tsconfig.tsbuildinfo
 .e2e-*
+data/*.db
+data/*.db-*

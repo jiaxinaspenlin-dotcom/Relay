@@ -36,7 +36,7 @@ def timeline(ref: Referral) -> list[dict]:
     items += [
         {"kind": "communication", "at": c.sent, "id": c.id, "recipient": c.recipient,
          "sent_by": c.sent_by, "text": c.text, "ai_drafted": c.ai_drafted, "rule": c.rule,
-         "edited": c.edited}
+         "edited": c.edited, "channel": c.channel, "message_kind": c.kind}
         for c in ref.communications
     ]
     return sorted(items, key=lambda x: (x["at"], 0 if x["kind"] == "event" else 1))

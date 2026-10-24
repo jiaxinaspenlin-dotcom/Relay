@@ -26,6 +26,7 @@ RECIPIENT = {
 }
 
 SIGNATURE = ("— {coordinator}, {practice}", ["requester"])
+OFFICE_LINK = ("You can update the referral status here, no login needed: {office_url}", ["office_link"])
 BARRIER_LINE = ("The patient has an open {barrier_label} barrier: {barrier_note}", ["barrier"])
 # Patient-facing messages address the patient directly.
 PATIENT_BARRIER_LINE = ("We noted a {barrier_label} barrier: {barrier_note}", ["barrier"])
@@ -38,6 +39,7 @@ TEMPLATES: dict[str, list[tuple[str, list[str]]]] = {
         ("Please let us know whether you can accept the referral, or what else you need from us.",
          ["referral"]),
         ("Reason for referral: {reason}", ["reason"]),
+        OFFICE_LINK,
         SIGNATURE,
     ],
     "accepted_no_appointment": [
@@ -48,6 +50,7 @@ TEMPLATES: dict[str, list[tuple[str, list[str]]]] = {
         BARRIER_LINE,
         ("Could you share an appointment date, or tell us what you need from us to schedule?",
          ["stage"]),
+        OFFICE_LINK,
         SIGNATURE,
     ],
     "appointment_not_confirmed": [
@@ -57,6 +60,7 @@ TEMPLATES: dict[str, list[tuple[str, list[str]]]] = {
          ["elapsed"]),
         ("Could you confirm whether the visit happened, and send the plan if it did?",
          ["appointment"]),
+        OFFICE_LINK,
         SIGNATURE,
     ],
     "seen_no_plan": [
@@ -65,6 +69,7 @@ TEMPLATES: dict[str, list[tuple[str, list[str]]]] = {
         ("As of {today}, we have not received the visit plan, {n} {unit} after the visit.",
          ["elapsed"]),
         ("Please send the visit summary and plan to {practice}.", ["requester"]),
+        OFFICE_LINK,
         SIGNATURE,
     ],
     "no_show": [
@@ -132,6 +137,7 @@ def render(ref: Referral, flag: StuckFlag, facts: list[Fact], today: date) -> st
         "barrier_opened": barrier.opened.isoformat() if barrier else "",
         "coordinator": ref.requester.coordinator,
         "practice": ref.requester.practice,
+        "office_url": by_key["office_link"].value if "office_link" in by_key else "",
     }
     lines = []
     for sentence, keys in TEMPLATES[flag.rule]:
@@ -140,3 +146,34 @@ def render(ref: Referral, flag: StuckFlag, facts: list[Fact], today: date) -> st
         cites = "".join(f"[{by_key[k].id}]" for k in keys)
         lines.append(f"{sentence.format(**vars_)} {cites}")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------- referral message (on Send)
+
+def referral_message(ref: Referral, patient: dict, office_url: str) -> dict:
+    """Plain-text referral for Copy / email / fax. Clinical content is the PCP's own words and the
+    linked condition; Relay adds no clinical judgment."""
+    dob = patient.get("dob") or "not recorded"
+    subject = f"Referral: {ref.specialty} for {patient['name']} (DOB {dob})"
+    lines = [
+        f"To: {ref.performer.name}, {ref.performer.address + ', ' if ref.performer.address else ''}{ref.performer.town}",
+        f"From: {ref.requester.clinician}, {ref.requester.practice}",
+        f"Contact: {ref.requester.coordinator}",
+        "",
+        f"Patient: {patient['name']}",
+        f"Date of birth: {dob}",
+        f"Town: {patient['town']}",
+        f"Coverage on file: {patient.get('coverage_label', 'Unknown')}",
+        "",
+        f"Specialty requested: {ref.specialty}",
+        f"Priority (set by the referring clinician): {ref.priority}",
+        f"Condition: {ref.reason_condition.display}",
+        f"Reason for referral: {ref.reason_text}",
+        "",
+        "Please let us know whether you can accept this referral, the appointment date once it is",
+        "set, and the visit plan afterward. You can do all of this at the link below, no login needed:",
+        office_url,
+        "",
+        "Or reply by phone or fax to the contact above.",
+    ]
+    return {"subject": subject, "text": "\n".join(lines)}

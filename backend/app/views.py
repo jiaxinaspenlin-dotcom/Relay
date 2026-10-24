@@ -1,10 +1,8 @@
-"""Response shapes shared by the API (Block 3) and the frontend mock fixtures (task 1.6).
-
-Keep these functions pure so scripts/build_mocks.py and the API produce identical JSON.
-"""
+"""Response shapes shared by the API and scripts/build_mocks.py. Pure functions."""
 from __future__ import annotations
 
 from datetime import date
+from typing import Optional
 
 from app.config import PRACTICE_SETTINGS
 from app.context.place import place_context
@@ -14,7 +12,7 @@ from app.loop.metrics import pipeline, summary
 from app.loop.states import STAGE_LABELS, allowed_next
 from app.loop.stuck import BARRIER_LABELS, needs_attention, stuck_flags
 from app.loop.timeline import timeline
-from app.models import Referral
+from app.models import COVERAGE_LABELS, Referral
 
 # Log update actions (R2.5) -> loop stage.
 LOG_ACTIONS = {"accepted": "accepted", "declined": "declined", "scheduled": "scheduled",
@@ -24,9 +22,22 @@ LOG_ACTIONS = {"accepted": "accepted", "declined": "declined", "scheduled": "sch
 STEPPER = ["sent", "accepted", "scheduled", "seen", "plan_returned", "closed"]
 
 
-def patient_brief(p: dict) -> dict:
-    """Synthetic patient fields safe for screens (no FHIR payload)."""
-    return {k: p.get(k) for k in ("id", "synthetic_name", "town", "county", "age", "sex", "payer")}
+def age_on(dob: Optional[str], today: date) -> Optional[int]:
+    if not dob:
+        return None
+    b = date.fromisoformat(dob)
+    return today.year - b.year - ((today.month, today.day) < (b.month, b.day))
+
+
+def patient_brief(p: dict, today: date) -> dict:
+    """Patient fields for screens (no chart payload)."""
+    return {
+        "id": p["id"], "name": p["name"], "town": p["town"], "county": p.get("county"),
+        "dob": p.get("dob"), "age": age_on(p.get("dob"), today),
+        "coverage": p.get("coverage", "unknown"),
+        "coverage_label": COVERAGE_LABELS.get(p.get("coverage", "unknown"), "Unknown"),
+        "sample": bool(p.get("sample")), "has_chart": bool(p.get("chart_id")),
+    }
 
 
 def referral_distance(ref: Referral) -> int | None:
@@ -46,14 +57,15 @@ def referral_card(ref: Referral, patients: dict[str, dict], today: date,
                   rerouted: set[str]) -> dict:
     return {
         "id": ref.id,
-        "synthetic": True,
-        "patient": patient_brief(patients[ref.patient_id]),
+        "sample": ref.sample,
+        "patient": patient_brief(patients[ref.patient_id], today),
         "specialty": ref.specialty,
         "priority": ref.priority,
         "performer": ref.performer.model_dump(),
         "stage": ref.stage,
         "stage_label": STAGE_LABELS[ref.stage],
         "stepper": stepper(ref),
+        "last_update": ref.events[-1].at.isoformat() if ref.events else ref.authored_on.isoformat(),
         "miles": referral_distance(ref),
         "appointment": ref.appointment.model_dump(mode="json") if ref.appointment else None,
         "open_barriers": [{"type": b.type, "label": BARRIER_LABELS[b.type], "opened": b.opened.isoformat()}
@@ -66,8 +78,9 @@ def dashboard_view(referrals: list[Referral], patients: dict[str, dict], today: 
     rerouted = {r.replaces for r in referrals if r.replaces}
     cards = {r.id: referral_card(r, patients, today, rerouted) for r in referrals}
     return {
-        "synthetic": True,
         "as_of": today.isoformat(),
+        "total": len(referrals),
+        "has_sample": any(r.sample for r in referrals),
         "summary": summary(referrals, today),
         "needs_attention": [{**row, "card": cards[row["referral_id"]]}
                             for row in needs_attention(referrals, today)],
@@ -78,18 +91,18 @@ def dashboard_view(referrals: list[Referral], patients: dict[str, dict], today: 
 
 
 def referral_detail_view(ref: Referral, referrals: list[Referral], patients: dict[str, dict],
-                         today: date) -> dict:
+                         today: date, office_path: Optional[str] = None) -> dict:
     rerouted = {r.replaces for r in referrals if r.replaces}
     return {
-        "synthetic": True,
         "card": referral_card(ref, patients, today, rerouted),
         "referral": ref.model_dump(mode="json", by_alias=True),
         "allowed_next": [{"stage": s, "label": STAGE_LABELS[s]} for s in allowed_next(ref)],
         "timeline": [{**t, "at": t["at"].isoformat()} for t in timeline(ref)],
         "log_update_actions": [a for a, stage in LOG_ACTIONS.items() if stage in allowed_next(ref)],
+        "can_send": ref.stage not in ("closed", "cancelled", "declined"),
         "can_close": "closed" in allowed_next(ref),
+        "office_path": office_path,
         "place_context": place_context(ref.patient_town),
-        "packet": None,  # built in Block 3 (drafting/facts.py)
     }
 
 
@@ -99,7 +112,6 @@ def inbox_view(referrals: list[Referral], patients: dict[str, dict], today: date
     rows = [r for r in referrals if r.stage == "plan_returned" and r.plan is not None]
     rows.sort(key=lambda r: (r.plan.returned_on, r.id))
     return {
-        "synthetic": True,
         "as_of": today.isoformat(),
         "items": [{
             "card": referral_card(r, patients, today, rerouted),
@@ -109,4 +121,32 @@ def inbox_view(referrals: list[Referral], patients: dict[str, dict], today: date
             "plan": r.plan.model_dump(mode="json", by_alias=True),
             "timeline": [{**t, "at": t["at"].isoformat()} for t in timeline(r)],
         } for r in rows],
+    }
+
+
+def office_view(ref: Referral, patient: dict, today: date) -> dict:
+    """What the specialist office sees at its update link: the minimum needed to act."""
+    office_actions = {"accepted": "accepted", "declined": "declined", "scheduled": "scheduled",
+                      "seen": "seen", "no_show": "no_show", "plan_returned": "plan_returned"}
+    nxt = allowed_next(ref)
+    return {
+        "referral_id": ref.id,
+        "sample": ref.sample,
+        "today": today.isoformat(),
+        "stage": ref.stage,
+        "stage_label": STAGE_LABELS[ref.stage],
+        "stepper": stepper(ref),
+        "to": ref.performer.name,
+        "from": {"practice": ref.requester.practice, "clinician": ref.requester.clinician,
+                 "coordinator": ref.requester.coordinator},
+        "patient": {"name": patient["name"], "dob": patient.get("dob"), "town": patient["town"]},
+        "specialty": ref.specialty,
+        "priority": ref.priority,
+        "condition": ref.reason_condition.display,
+        "reason_text": ref.reason_text,
+        "appointment": ref.appointment.model_dump(mode="json") if ref.appointment else None,
+        "plan": ref.plan.model_dump(mode="json", by_alias=True) if ref.plan else None,
+        "actions": [a for a, s in office_actions.items() if s in nxt],
+        "history": [{"at": e.at.isoformat(), "stage": e.stage, "label": STAGE_LABELS.get(e.stage, e.stage)}
+                    for e in ref.events],
     }

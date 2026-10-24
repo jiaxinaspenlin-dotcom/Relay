@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api";
 import { copy } from "../copy";
+import { copyText, openMail, openPrintWindow, printUrl } from "./sendActions";
 import { ErrorNote, Loading } from "./Status";
+import { Button, Field, Panel, inputCls } from "./ui";
 
-// Template draft with [F#] citations → edit → a person presses Send (R4.3, R4.4).
+type Channel = "copy" | "email" | "print";
+
+// Template draft with [F#] citations → edit → a person sends it by copy, email, or fax.
 export function FollowUp({ rid, onClose }: { rid: string; onClose: () => void }) {
   const qc = useQueryClient();
   const draft = useQuery({ queryKey: ["draft", rid], queryFn: () => api.draft(rid) });
@@ -12,71 +16,61 @@ export function FollowUp({ rid, onClose }: { rid: string; onClose: () => void })
   useEffect(() => {
     if (draft.data) setText(draft.data.text);
   }, [draft.data]);
+  const t = copy.followUp;
+
   const send = useMutation({
-    mutationFn: () =>
-      api.send(rid, {
-        recipient: draft.data!.recipient,
-        text,
-        rule: draft.data!.rule,
-        drafted_text: draft.data!.text,
-      }),
+    mutationFn: async ({ channel, win }: { channel: Channel; win: Window | null }) => {
+      const d = draft.data!;
+      if (channel === "copy") await copyText(text);
+      const r = await api.sendFollowUp(rid, { recipient: d.recipient, text, rule: d.rule, drafted_text: d.text, channel });
+      if (channel === "email") openMail(d.subject, text);
+      if (channel === "print") {
+        const url = printUrl(rid, r.communication_id);
+        if (win) win.location.href = url;
+        else window.location.href = url;
+      }
+    },
     onSuccess: () => {
       qc.invalidateQueries();
       onClose();
     },
   });
-  const t = copy.followUp;
+  const go = (channel: Channel) => send.mutate({ channel, win: channel === "print" ? openPrintWindow() : null });
 
   return (
-    <section aria-labelledby="fu-h" className="space-y-3 rounded border border-accent p-3">
-      <div className="flex items-center justify-between">
-        <h2 id="fu-h" className="font-semibold">{t.title}</h2>
-        <button type="button" onClick={onClose} className="text-sm text-slate-600 underline">{t.cancel}</button>
-      </div>
+    <Panel title={t.title} id="fu-h" className="border-accent" actions={<Button variant="quiet" onClick={onClose}>{t.close}</Button>}>
       {draft.isLoading && <Loading />}
       {draft.error && <ErrorNote error={draft.error} />}
       {draft.data && (
-        <>
-          <p className="text-xs text-slate-600">{t.template}</p>
+        <div className="space-y-3">
           <p className="text-sm">
-            {t.to}: <span className="font-medium">{draft.data.recipient_label}</span> · {draft.data.rule_message}
+            {t.to}: <span className="font-medium">{draft.data.recipient_label}</span> ·{" "}
+            <span className="text-amber-800">{draft.data.rule_message}</span>
           </p>
-          <p className={"text-xs " + (draft.data.verified ? "text-emerald-800" : "text-rose-800")}>
+          <p className="text-xs text-slate-500">{t.template}</p>
+          <p className={`text-xs ${draft.data.verified ? "text-emerald-700" : "text-rose-700"}`}>
             {draft.data.verified ? t.verified : `${t.notVerified} ${draft.data.problems.join("; ")}`}
           </p>
-          <label className="block text-sm">
-            {t.message}
-            <textarea
-              data-testid="followup-text"
-              className="mt-1 block w-full rounded border border-slate-300 px-2 py-1 font-mono text-sm"
-              rows={8}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
-          </label>
-          <details className="text-xs">
-            <summary>{t.facts}</summary>
+          <Field label={t.message}>
+            <textarea data-testid="followup-text" className={`${inputCls} font-mono`} rows={9} value={text} onChange={(e) => setText(e.target.value)} />
+          </Field>
+          <details className="text-xs text-slate-600">
+            <summary className="cursor-pointer">{t.facts}</summary>
             <ul className="mt-1 space-y-0.5">
               {draft.data.facts.map((f) => (
-                <li key={f.id}>
-                  <span className="font-mono">[{f.id}]</span> {f.label}: {f.value}{" "}
-                  <span className="text-slate-500">({f.source})</span>
-                </li>
+                <li key={f.id}><span className="font-mono">[{f.id}]</span> {f.label}: {f.value} <span className="text-slate-400">({f.source})</span></li>
               ))}
             </ul>
           </details>
           <p className="text-xs text-slate-500">{t.sentBy} {copy.deliveryNote}</p>
-          <button
-            type="button"
-            onClick={() => send.mutate()}
-            disabled={!text.trim() || send.isPending}
-            className="rounded bg-accent px-3 py-1 text-white disabled:opacity-50"
-          >
-            {t.send}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="primary" onClick={() => go("copy")} disabled={!text.trim() || send.isPending}>{copy.send.copy}</Button>
+            <Button onClick={() => go("email")} disabled={!text.trim() || send.isPending}>{copy.send.email}</Button>
+            <Button onClick={() => go("print")} disabled={!text.trim() || send.isPending}>{copy.send.print}</Button>
+          </div>
           {send.error && <ErrorNote error={send.error} />}
-        </>
+        </div>
       )}
-    </section>
+    </Panel>
   );
 }

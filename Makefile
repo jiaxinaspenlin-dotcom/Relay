@@ -22,6 +22,10 @@ mocks:
 e2e:
 	cd frontend && node e2e/acceptance.mjs
 
+# API on a throwaway database for `make e2e` (the e2e script refuses any other database).
+dev-api-e2e:
+	cd backend && RELAY_DB=../data/relay-e2e.db ../$(PY) -m uvicorn app.main:app --port 8000
+
 dev:
 	$(MAKE) -j2 dev-api dev-web
 

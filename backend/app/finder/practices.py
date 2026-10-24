@@ -14,6 +14,7 @@ import pandas as pd
 
 from app.config import DATA_PUBLIC, FINDER_SPECIALTIES
 from app.finder.hospitals import nearest_hospitals
+from app.finder.names import address_key, org_key, title_case
 from app.finder.towns import Town, _key, resolve_town
 
 # Columns read from clinicians_ma.csv. `telehlth` is deliberately absent. `npi` is used only to
@@ -70,6 +71,9 @@ def _clinicians() -> pd.DataFrame:
     df["zip5"] = df["zip_code"].str[:5]
     for c in ("facility_name", "adr_ln_1"):
         df[c] = df[c].str.strip()
+    # Grouping keys: one card per organization + street address (suite/floor dropped).
+    df["org_key"] = df["facility_name"].map(org_key)
+    df["addr_key"] = df["adr_ln_1"].map(address_key)
     return df
 
 
@@ -86,12 +90,13 @@ def practices_for(pri_spec: str) -> tuple[Practice, ...]:
     df = _clinicians()
     df = df[df["pri_spec"] == pri_spec]
     out = []
-    for (fac, addr, city_key, zip5), g in df.groupby(
-            ["facility_name", "adr_ln_1", "city_key", "zip5"], sort=True):
+    for (okey, addr, city_key, zip5), g in df.groupby(
+            ["org_key", "addr_key", "city_key", "zip5"], sort=True):
         per_clinician = g.drop_duplicates("npi")
+        fac = g["facility_name"].mode().iloc[0] if okey else ""
         town: Optional[Town] = resolve_town(g["city_town"].iloc[0])
         town_name = town.name if town else g["city_town"].iloc[0].strip().title()
-        label = fac or f"Practice at {_title_addr(addr)}, {town_name}"
+        label = title_case(fac) if fac else f"Practice at {_title_addr(addr)}, {town_name}"
         assign = medicare_assignment(per_clinician["ind_assgn"].tolist())
         hospital = None
         if town:
@@ -99,7 +104,7 @@ def practices_for(pri_spec: str) -> tuple[Practice, ...]:
             hospital = h.card(miles)
         pacs = sorted({p for p in g["org_pac_id"] if p})
         out.append(Practice(
-            id=_practice_id(fac, addr, city_key, zip5),
+            id=_practice_id(okey, addr, city_key, zip5),
             specialty=specialty, pri_spec=pri_spec, label=label, facility_name=fac,
             org_pac_id=pacs[0] if len(pacs) == 1 else "",
             address=_title_addr(addr), city_raw=g["city_town"].iloc[0], town=town.name if town else None,

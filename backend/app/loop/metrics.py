@@ -1,4 +1,4 @@
-"""Dashboard aggregates (R1.3). All counts are computed from synthetic referrals."""
+"""Dashboard aggregates (R1.3), computed from the stored referrals."""
 from __future__ import annotations
 
 from datetime import date
@@ -13,7 +13,7 @@ from app.models import Referral
 CLOSED_STAGES = frozenset({"closed", "cancelled"})
 
 # Dashboard pipeline columns (R1.1). Declined and Patient barrier are shown as their own columns.
-PIPELINE = ["sent", "accepted", "scheduled", "no_show", "seen", "plan_returned", "declined",
+PIPELINE = ["draft", "sent", "accepted", "scheduled", "no_show", "seen", "plan_returned", "declined",
             "patient_barrier"]
 
 
@@ -35,7 +35,6 @@ def summary(referrals: list[Referral], today: date) -> dict:
     )
     durations = [d for d in (days_sent_to_scheduled(r) for r in referrals) if d is not None]
     return {
-        "synthetic": True,
         "as_of": today.isoformat(),
         "open": len(open_refs),
         "stuck": len(stuck),

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../api";
@@ -7,81 +6,86 @@ import { FollowUp } from "../components/FollowUp";
 import { LogUpdate } from "../components/LogUpdate";
 import { LoopStepper } from "../components/LoopStepper";
 import { PlaceContext } from "../components/PlaceContext";
-import { StageBadge } from "../components/StageBadge";
+import { SendPanel } from "../components/SendPanel";
 import { ErrorNote, Loading } from "../components/Status";
 import { Timeline } from "../components/Timeline";
+import { Button, Num, Panel, SampleTag, StageBadge } from "../components/ui";
 
 export default function ReferralDetail() {
   const { rid = "" } = useParams();
   const [params, setParams] = useSearchParams();
-  const showFollowUp = params.get("followup") === "1";
-  const [, force] = useState(0);
   const q = useQuery({ queryKey: ["referral", rid], queryFn: () => api.referral(rid) });
   if (q.isLoading) return <Loading />;
-  if (q.error) return <div className="p-6"><ErrorNote error={q.error} /></div>;
+  if (q.error) return <ErrorNote error={q.error} />;
   const d = q.data!;
   const c = d.card;
   const r = d.referral;
-  const toggleFollowUp = (on: boolean) => {
-    setParams(on ? { followup: "1" } : {});
-    force((n) => n + 1);
-  };
+  const stuck = c.stuck.length > 0;
+  const showFollowUp = params.get("followup") === "1" && stuck;
+  const t = copy.detail;
+  const appt = c.appointment;
 
   return (
-    <div className="space-y-6 p-6">
-      <Link to="/" className="text-sm text-accent underline">{copy.detail.back}</Link>
-      <header className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="font-mono text-xl font-semibold">{c.id}</h1>
-          <StageBadge stage={c.stage} label={c.stage_label} />
-          <span>{c.patient.synthetic_name} ({copy.synthetic}) · {c.patient.town} · {c.patient.payer}</span>
+    <div className="space-y-5">
+      <Link to="/" className="text-sm text-accent hover:underline">← {t.back}</Link>
+
+      <header className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl font-semibold"><Num>{c.id}</Num> · {c.patient.name}</h1>
+            <StageBadge stage={c.stage} label={c.stage_label} />
+            <SampleTag show={c.sample} />
+          </div>
+          <div className="text-sm text-slate-600">
+            {c.patient.town} · {c.patient.coverage_label}{c.patient.dob && <> · DOB <Num>{c.patient.dob}</Num></>}
+          </div>
         </div>
-        <LoopStepper steps={c.stepper} />
-        {c.stuck.length > 0 && (
-          <div className="rounded border border-amber-300 bg-amber-50/40 p-2 text-sm" data-testid="stuck-now">
-            <span className="font-medium">{copy.detail.stuckNow}:</span>
+        <LoopStepper steps={c.stepper} stuck={stuck} />
+        {stuck && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm" data-testid="stuck-now">
             <ul>
               {c.stuck.map((f) => (
                 <li key={f.rule + f.message}>
-                  {f.message} <span className="text-xs text-slate-500">({copy.practiceSetting}: {f.threshold} {f.unit})</span>
+                  <span className="font-medium text-amber-900">{f.message}</span>{" "}
+                  <span className="text-xs text-slate-500">({copy.practiceSetting}: {f.threshold} {f.unit})</span>
                 </li>
               ))}
             </ul>
-            {!showFollowUp && (
-              <button type="button" onClick={() => toggleFollowUp(true)} className="mt-1 rounded bg-accent px-2 py-1 text-white">
-                {copy.dashboard.draftFollowUp}
-              </button>
-            )}
+            {!showFollowUp && <Button variant="primary" onClick={() => setParams({ followup: "1" })}>{copy.dashboard.draftFollowUp}</Button>}
           </div>
         )}
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="space-y-6">
-          {showFollowUp && c.stuck.length > 0 && <FollowUp rid={rid} onClose={() => toggleFollowUp(false)} />}
+      <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
+        <div className="space-y-5">
+          {showFollowUp && <FollowUp rid={rid} onClose={() => setParams({})} />}
+          {d.can_send && <SendPanel rid={rid} stage={c.stage} officePath={d.office_path} />}
+
+          <Panel title={t.referral} id="ref-facts-h">
+            <dl className="grid grid-cols-[8rem_1fr] gap-x-3 gap-y-1.5 text-sm">
+              <dt className="text-slate-500">{t.performer}</dt>
+              <dd>
+                {r.performer.name}{r.performer.address ? `, ${r.performer.address}` : ""}, {r.performer.town}
+                {c.miles !== null && <> · {c.miles === 0 ? `in ${c.patient.town}` : <><Num>{c.miles}</Num> {copy.milesUnit} straight-line</>}</>}
+                <span className="ml-1 text-xs text-slate-500">({r.performer.fictional ? copy.fictional : copy.directory})</span>
+              </dd>
+              <dt className="text-slate-500">{t.condition}</dt><dd>{r.reason_condition.display}</dd>
+              <dt className="text-slate-500">{t.reason}</dt><dd>{r.reason_text}</dd>
+              <dt className="text-slate-500">{t.priority}</dt><dd className="capitalize">{r.priority}</dd>
+              {appt && (<><dt className="text-slate-500">{t.appointment}</dt><dd><Num>{appt.start}{appt.time ? ` ${appt.time}` : ""}</Num> ({appt.status})</dd></>)}
+              {c.open_barriers.length > 0 && (<><dt className="text-slate-500">{t.barriers}</dt><dd>{c.open_barriers.map((b) => b.label).join(", ")}</dd></>)}
+            </dl>
+          </Panel>
+
           <LogUpdate rid={rid} actions={d.log_update_actions} />
-          <dl className="grid grid-cols-[10rem_1fr] gap-x-3 gap-y-1 text-sm">
-            <dt className="text-slate-600">{copy.detail.reason}</dt><dd>{r.reason_text}</dd>
-            <dt className="text-slate-600">{copy.detail.condition}</dt><dd>{r.reason_condition.display}</dd>
-            <dt className="text-slate-600">{copy.newReferral.priority}</dt><dd>{r.priority}</dd>
-            <dt className="text-slate-600">{copy.detail.performer}</dt>
-            <dd>
-              {r.performer.name} · {r.performer.town}
-              {c.miles !== null && <> · <span className="font-mono">{c.miles}</span> {copy.milesUnit}</>}
-              <span className="ml-1 text-xs text-slate-500">({r.performer.fictional ? copy.fictional : copy.directory})</span>
-            </dd>
-            {c.appointment && (<><dt className="text-slate-600">{copy.detail.appointment}</dt><dd className="font-mono">{c.appointment.start} ({c.appointment.status})</dd></>)}
-            {c.open_barriers.length > 0 && (<><dt className="text-slate-600">{copy.detail.barriers}</dt><dd>{c.open_barriers.map((b) => b.label).join(", ")}</dd></>)}
-          </dl>
-          <section aria-labelledby="tl-h">
-            <h2 id="tl-h" className="mb-2 font-semibold">{copy.detail.timeline}</h2>
+
+          <Panel title={t.timeline} id="tl-h" actions={
+            <a href={api.fhirUrl(rid)} download className="text-sm font-medium text-accent hover:underline">{t.downloadFhir}</a>
+          }>
             <Timeline items={d.timeline} />
-          </section>
-          <a href={api.fhirUrl(rid)} download className="inline-block rounded border border-accent px-3 py-1 text-sm text-accent">
-            {copy.detail.downloadFhir}
-          </a>
+          </Panel>
         </div>
-        <PlaceContext items={d.place_context.items} />
+        <PlaceContext items={d.place_context.items} town={d.place_context.town} />
       </div>
     </div>
   );
