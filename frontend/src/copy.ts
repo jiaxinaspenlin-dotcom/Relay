@@ -27,6 +27,7 @@ export const copy = {
     footer: "For primary care practices in Massachusetts",
     trackLabel: "Referral stages",
     orTry: "or try a sample account",
+    skip: "Skip",
     sampleAs: (name: string, role: string) => `Sign in as ${name}, ${role} (sample)`,
     setupTitle: "Set up Relay",
     setupHelp: "Create the first coordinator account for your practice.",

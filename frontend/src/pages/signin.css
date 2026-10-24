@@ -1,0 +1,112 @@
+/* Sign-in page and its intro (SignIn.tsx). The intro is driven by one requestAnimationFrame loop;
+   CSS here only defines looks and the one-shot stage animations it triggers by adding classes. */
+
+.si-root { position: relative; min-height: 100vh; overflow: hidden; background: #FFFFFF; }
+
+/* Green panel: full screen during the intro, left half at the end. Its contents sit in a fixed
+   50vw layer so nothing moves while the right edge pulls back. */
+.si-green { position: absolute; top: 0; bottom: 0; left: 0; right: 0; background: #1F5F5B; overflow: hidden; z-index: 2; }
+.si-root.si-final .si-green, .si-root.si-revealing .si-green { right: 50%; }
+.si-root.si-revealing .si-green { animation: si-pull-green 900ms cubic-bezier(.65, 0, .35, 1) both; }
+@keyframes si-pull-green { from { right: 0; } to { right: 50%; } }
+.si-left { position: absolute; top: 0; bottom: 0; left: 0; width: 50vw; display: flex; flex-direction: column; padding: 48px; }
+
+/* White sign-in side: always in its final place (right half), under the green. */
+.si-form-side { position: absolute; top: 0; bottom: 0; left: 50%; right: 0; overflow-y: auto; display: flex; align-items: center; justify-content: center; padding: 48px 24px; z-index: 1; }
+.si-form { width: 100%; max-width: 380px; opacity: 0; transform: translateX(16px); }
+.si-final .si-form { opacity: 1; transform: none; }
+.si-revealing .si-form { animation: si-form-in 500ms ease-out 550ms both; }
+@keyframes si-form-in { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+
+/* Content that waits for the pull-back. */
+.si-fade { opacity: 0; transition: opacity 650ms ease-out; }
+.si-text .si-fade { opacity: 1; }
+.si-steth { position: absolute; right: -90px; bottom: 150px; pointer-events: none; opacity: 0; transition: opacity 650ms ease-out; }
+.si-text .si-steth { opacity: .06; }
+
+/* The pitch block (headline, subtitle, track) is what the camera transforms. */
+.si-pitch { position: relative; width: min(calc(50vw - 96px), 640px); transform-origin: 0 0; will-change: transform; }
+
+/* ------------------------------------------------------------ track */
+.si-track { position: relative; width: 100%; max-width: 520px; }
+.si-dots { position: relative; height: 14px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.si-line, .si-fill { position: absolute; top: 6px; height: 2px; }
+.si-line { background: rgba(255, 255, 255, .22); }
+.si-fill { background: #FFFFFF; width: 0; }
+.si-dot-cell { display: flex; justify-content: center; }
+.si-dot { position: relative; z-index: 1; width: 14px; height: 14px; border-radius: 50%; background: #1F5F5B; border: 2px solid rgba(255, 255, 255, .35); }
+.si-dot.si-lit { background: #FFFFFF; border-color: #FFFFFF; animation: si-pop 280ms ease-out; }
+.si-dot.si-arrived { animation: si-pop 280ms ease-out, si-arrived 1.2s ease-out; }
+@keyframes si-pop { 50% { transform: scale(1.35); } }
+@keyframes si-arrived { from { box-shadow: 0 0 0 0 rgba(255, 255, 255, .5); } to { box-shadow: 0 0 0 14px rgba(255, 255, 255, 0); } }
+.si-labels { margin-top: 10px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.si-label { text-align: center; font-size: 12px; line-height: 16px; color: rgba(255, 255, 255, .45); transition: color 200ms; }
+.si-label.si-lit { color: rgba(255, 255, 255, .92); }
+
+/* Arrow and trail while traveling (positioned by the rAF loop). */
+.si-arrow { position: absolute; top: -1px; width: 16px; height: 16px; opacity: 0; z-index: 2; filter: drop-shadow(0 0 4px rgba(255, 255, 255, .6)); }
+.si-trail { position: absolute; top: 6px; height: 2px; width: 0; background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .7)); z-index: 2; }
+
+/* ------------------------------------------------------------ stage badges (aria-hidden divs) */
+.si-badge { position: absolute; top: -46px; width: 24px; height: 24px; z-index: 3; opacity: 0;
+  transform: translateY(10px) scale(.3); transition: transform 350ms cubic-bezier(.3, 1.6, .5, 1), opacity 250ms; }
+.si-badge.si-in { opacity: 1; transform: none; }
+.si-pulling .si-badge.si-in { opacity: 0; transform: translateY(-4px) scale(.8); transition: transform 350ms ease-out, opacity 350ms ease-out; }
+.si-badge-circle { position: relative; width: 24px; height: 24px; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center; }
+.si-icon { width: 14px; height: 14px; fill: none; stroke: #1F5F5B; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+.si-ring { position: absolute; left: 0; top: 0; width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid #FFFFFF; opacity: 0; pointer-events: none; }
+
+/* Sent: the plane launches. */
+.si-in.si-b-sent .si-icon { animation: si-launch 600ms ease-out; }
+@keyframes si-launch { from { transform: translate(-5px, 4px) rotate(-10deg); } 55% { transform: translate(3px, -2px); } to { transform: none; } }
+/* Received: the arrow drops into the tray and fades, then the badge dips. */
+.si-recv-arrow { opacity: 0; }
+.si-in.si-b-received .si-recv-arrow { animation: si-drop 550ms ease-in; }
+@keyframes si-drop { from { transform: translateY(-12px); opacity: 1; } 70% { transform: none; opacity: 1; } to { transform: none; opacity: 0; } }
+.si-in.si-b-received .si-badge-circle { animation: si-dip 300ms ease-in-out 500ms; }
+@keyframes si-dip { 50% { transform: translateY(2px) scale(.94); } }
+/* Contacted: the phone wiggles; two rings radiate. */
+.si-in.si-b-contacted .si-icon { animation: si-wiggle 700ms ease-in-out; }
+@keyframes si-wiggle { 16% { transform: rotate(-16deg); } 33% { transform: rotate(16deg); } 50% { transform: rotate(-16deg); } 66% { transform: rotate(16deg); } 83% { transform: rotate(-6deg); } to { transform: none; } }
+.si-in.si-b-contacted .si-ring { animation: si-ring 900ms ease-out both; }
+.si-in.si-b-contacted .si-ring + .si-ring { animation-delay: 300ms; }
+@keyframes si-ring { from { transform: scale(1); opacity: .7; } to { transform: scale(1.9); opacity: 0; } }
+/* Scheduled: the day square pops in. */
+.si-day { fill: #1F5F5B; stroke: none; transform-box: fill-box; transform-origin: center; transform: scale(0); }
+.si-in.si-b-scheduled .si-day { animation: si-day 350ms cubic-bezier(.3, 1.6, .5, 1) 200ms both; }
+@keyframes si-day { from { transform: scale(0); } to { transform: scale(1); } }
+/* Seen: the heartbeat draws in. */
+.si-beat { stroke-dasharray: 64; stroke-dashoffset: 64; }
+.si-in.si-b-seen .si-beat { animation: si-draw-64 600ms ease-out both; }
+@keyframes si-draw-64 { from { stroke-dashoffset: 64; } to { stroke-dashoffset: 0; } }
+/* Plan back: the lines write one after another, then the page nudges back toward the PCP. */
+.si-doc-line { stroke-dasharray: 10; stroke-dashoffset: 10; }
+.si-in.si-b-plan .si-doc-line { animation: si-draw-10 250ms ease-out both; }
+.si-in.si-b-plan .si-doc-line:nth-of-type(2) { animation-delay: 120ms; }
+.si-in.si-b-plan .si-doc-line:nth-of-type(3) { animation-delay: 240ms; }
+@keyframes si-draw-10 { from { stroke-dashoffset: 10; } to { stroke-dashoffset: 0; } }
+.si-in.si-b-plan .si-icon { animation: si-nudge 500ms ease-in-out 500ms; }
+@keyframes si-nudge { 50% { transform: translateX(-4px); } }
+/* Closed: the check draws in and one ring pulses. */
+.si-in.si-b-closed .si-icon { stroke-width: 2.4; }
+.si-check { stroke-dasharray: 12; stroke-dashoffset: 12; }
+.si-in.si-b-closed .si-check { animation: si-draw-12 350ms ease-out 100ms both; }
+@keyframes si-draw-12 { from { stroke-dashoffset: 12; } to { stroke-dashoffset: 0; } }
+.si-in.si-b-closed .si-ring { animation: si-ring 900ms ease-out both; }
+
+/* Skip: bottom-right during the intro only. */
+.si-skip { position: absolute; right: 24px; bottom: 24px; z-index: 5; height: 40px; padding: 0 8px; font-size: 13px; color: rgba(255, 255, 255, .6); }
+.si-skip:hover { color: #FFFFFF; text-decoration: underline; text-underline-offset: 2px; }
+.si-skip:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
+
+/* Final state with no motion (Skip, reduced motion, small screens, return visits). */
+.si-static *, .si-static { animation: none !important; transition: none !important; }
+
+/* Under 860px: no intro; green is a compact top section, the form follows below. */
+@media (max-width: 859px) {
+  .si-green, .si-root.si-final .si-green { position: relative; right: auto; }
+  .si-left { position: relative; width: auto; padding: 32px 24px; }
+  .si-form-side { position: relative; left: auto; padding: 32px 24px 48px; }
+  .si-pitch { width: auto; }
+  .si-steth { display: none; }
+}
