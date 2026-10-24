@@ -2,3 +2,5 @@ tools/
 data/raw/
 __pycache__/
 node_modules/
+.DS_Store
+data/synthea_raw/

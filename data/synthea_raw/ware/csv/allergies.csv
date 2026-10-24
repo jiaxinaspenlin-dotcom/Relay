@@ -1,4 +1,0 @@
-START,STOP,PATIENT,ENCOUNTER,CODE,SYSTEM,DESCRIPTION,TYPE,CATEGORY,REACTION1,DESCRIPTION1,SEVERITY1,REACTION2,DESCRIPTION2,SEVERITY2
-1970-08-06,,46976cf7-b0bf-be20-39a5-9f425a52886d,46976cf7-b0bf-be20-e193-55255966fbc2,609328004,Unknown,Allergic disposition (finding),allergy,environment,,,,,,
-1970-08-06,,46976cf7-b0bf-be20-39a5-9f425a52886d,46976cf7-b0bf-be20-e193-55255966fbc2,264287008,Unknown,Animal dander (substance),allergy,environment,878820003,Rhinoconjunctivitis (disorder),MODERATE,271807003,Eruption of skin (disorder),MILD
-1970-08-06,,46976cf7-b0bf-be20-39a5-9f425a52886d,46976cf7-b0bf-be20-e193-55255966fbc2,29046,Unknown,Lisinopril,intolerance,medication,,,,,,

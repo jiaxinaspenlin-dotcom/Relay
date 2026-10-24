@@ -1,4 +1,0 @@
-START,STOP,PATIENT,ENCOUNTER,CODE,SYSTEM,DESCRIPTION,TYPE,CATEGORY,REACTION1,DESCRIPTION1,SEVERITY1,REACTION2,DESCRIPTION2,SEVERITY2
-1988-02-28,,ba419d35-0dfe-8af7-347c-eebf02485a56,ba419d35-0dfe-8af7-d286-acacba1fde6d,609328004,Unknown,Allergic disposition (finding),allergy,environment,,,,,,
-1940-09-01,,75430395-f5b3-d7bb-f9a7-87e93ac6e669,75430395-f5b3-d7bb-3e21-f18bdf862a4a,609328004,Unknown,Allergic disposition (finding),allergy,environment,,,,,,
-1940-09-01,,75430395-f5b3-d7bb-f9a7-87e93ac6e669,75430395-f5b3-d7bb-3e21-f18bdf862a4a,735029006,Unknown,Shellfish (substance),allergy,food,271807003,Eruption of skin (disorder),MODERATE,247472004,Wheal (finding),MILD
