@@ -21,6 +21,7 @@
 ```
 
 Everything runs locally. The app reads only committed snapshots. `DEMO_TODAY=2026-10-24` fixes the clock.
+"Business days" in stuck rules are Mon–Fri with no holiday calendar.
 
 ## 2. Data
 
@@ -94,10 +95,10 @@ Modeled on HL7 BSeR: a `ServiceRequest` (the referral) plus a `Task` that tracks
 The UI labels these defaults "Practice setting". Tests cover each rule boundary (n−1, n).
 
 ## 5. Specialist finder (`finder/`)
-Source file: `clinicians_ma.csv` (CMS `mj5m-pzi6`). Columns used: `npi`, `ind_pac_id`, `pri_spec`,
-`facility_name`, `adr_ln_1`, `city_town`, `state`, `zip_code`, `ind_assgn`, `grp_assgn`. Other
-columns are ignored. The file has **no hospital-affiliation columns**, and `telehlth` is never read
-into the finder output or shown (R3.7).
+Source file: `clinicians_ma.csv` (CMS `mj5m-pzi6`). Columns read: `npi` (count only, never
+output), `pri_spec`, `facility_name`, `org_pac_id` (organization identifier for FHIR), `adr_ln_1`,
+`city_town`, `state`, `zip_code`, `ind_assgn`, `grp_assgn`. `ind_pac_id` and `telehlth` are not
+loaded. The file has **no hospital-affiliation columns**, and `telehlth` is never shown (R3.7).
 
 1. **Practices:** filter on these exact `pri_spec` strings (one per demo specialty, no others):
 
@@ -109,32 +110,39 @@ into the finder output or shown (R3.7).
    | Nephrology | `NEPHROLOGY` | 740 |
 
    Group by (`facility_name`, `adr_ln_1`, normalized `city_town`, `zip_code[:5]`); `zip_code` is
-   ZIP+4. Per group: distinct `npi` count, and Medicare assignment from `ind_assgn` (all `Y` → yes,
-   mixed → partial, no `Y` → no; values in the snapshot are `Y` and `M`). Blank `facility_name`
+   ZIP+4. Per group: distinct `npi` count, and Medicare assignment from `ind_assgn`. CMS data
+   dictionary: `Y` = clinician accepts the Medicare-approved amount as payment in full; `M` =
+   clinician may accept Medicare assignment. These are the only values. Practice label: all `Y` →
+   "Accepts Medicare assignment"; any `M` → "May accept Medicare assignment — confirm with the
+   office". Never "No". (`grp_assgn` is read but not used for the label.) Blank `facility_name`
    (73 of 637 groups) → label "Practice at {adr_ln_1}, {Town}". No clinician names are output.
+   Organization names are shown as CMS spells them (some real names contain words like
+   "Affiliated"; wording tests exempt source names, not Relay's own labels).
 2. **Town normalization** (`finder/towns.py`): `city_town` is mostly uppercase with some mixed case.
    Normalize: trim, uppercase, collapse spaces, expand `N`/`S`/`E`/`W` prefixes, then apply a
    village → town map before matching uppercased `towns.csv.town`. Seed the map from the snapshot's
    unmatched values, e.g. HYANNIS → Barnstable; BRIGHTON, DORCHESTER, JAMAICA PLAIN, ROSLINDALE,
    CHARLESTOWN, SOUTH BOSTON, WEST ROXBURY, ROXBURY CROSSING → Boston; NORTH DARTMOUTH → Dartmouth;
-   SOUTH WEYMOUTH → Weymouth; FLORENCE → Northampton; S YARMOUTH → Yarmouth; NORTH/SOUTH EASTON →
-   Easton; NORTH ATTLEBORO → North Attleborough; NORTH CHELMSFORD → Chelmsford; SOUTH HAMILTON →
-   Hamilton; CHESTNUT HILL → Newton (spans Newton/Brookline; pick one and note it). Without the
-   map, 69 of 637 groups (10.8%) are unmatched, so the map is required to meet the < 10% target.
-   Unmatched → "distance unavailable" (counted in tests).
+   SOUTH WEYMOUTH → Weymouth; FLORENCE → Northampton; NORTH/SOUTH EASTON → Easton; NORTH ATTLEBORO
+   → North Attleborough; NORTH CHELMSFORD → Chelmsford; SOUTH HAMILTON → Hamilton; CHESTNUT HILL →
+   Newton (spans Newton/Brookline; Newton chosen 2026-10-24); plus source typos (WORCESTEER →
+   Worcester). S YARMOUTH expands to South Yarmouth, which is its own place in `towns.csv`. Without
+   the map, 69 of 637 groups (10.8%) are unmatched; with it, 0 of 978 specialty × location groups
+   are (asserted < 10% in tests). Unmatched → "distance unavailable".
 3. **Distance:** haversine from the patient's town centroid to the practice town centroid, in
    miles, rounded to whole miles.
 4. **Nearest hospital** (replaces affiliated hospitals): from `hospitals_massgis.csv`, keep
    `FACILITY_TYPE = "Acute Hospital"` (70 of 103 rows), and pick the one closest to the practice
-   town centroid (haversine to `lat`/`lon`, whole miles). Beds = `MED_SURG + ICU + PEDIATRIC`; show
-   ICU separately. Card label: "Nearest hospital", never "affiliated".
+   town centroid (haversine to `lat`/`lon`, whole miles). Beds = `MED_SURG + ICU + PEDIATRIC`,
+   labeled exactly "med/surg + ICU + pediatric beds" (never "total beds"); ICU shown separately.
+   Card label: "Nearest hospital", never "affiliated".
 5. **CMS rating join:** normalize both names (uppercase, `&` → `AND`, punctuation → space, collapse
    spaces). Only an **exact** match of MassGIS `FACILITY_NAME` to CMS `facility_name` attaches
    `hospital_overall_rating`, `hospital_type`, and `emergency_services`. No fuzzy matching, no city
-   fallback. A non-numeric rating ("Not Available") counts as no rating. Unmatched → "CMS rating not
-   matched". In the snapshot, 36 of 103 MassGIS names match exactly; tests assert the matched set.
-6. **Rank:** distance ascending by default, or nearest hospital's star rating descending (unrated
-   last, ties by distance). No composite score.
+   fallback. A non-numeric rating ("Not Available") counts as no rating. Unmatched → the card shows
+   nothing for rating. In the snapshot, 36 of 103 MassGIS names match exactly.
+6. **Rank:** distance ascending only (ties by organization label). No rating sort, no composite
+   score. Unmatched-distance practices go last.
 7. **Map (SHOULD):** patient town + top 5 practices + their nearest hospitals, with straight lines
    labeled in miles and an attribution line.
 

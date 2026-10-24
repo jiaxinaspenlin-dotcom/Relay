@@ -21,37 +21,37 @@ assignment, simulated specialist and plan back, PCP close, FHIR export, syntheti
 ---
 
 ## Block 1 — Data (0:00–1:00)
-- [ ] 1.1 Scaffold the repo per structure.md: FastAPI, Vite React TS + Tailwind, Makefile (`setup`,
+- [x] 1.1 Scaffold the repo per structure.md: FastAPI, Vite React TS + Tailwind, Makefile (`setup`,
   `data`, `dev`, `test`, `check-copy`), with the copy guard in `make test`. Set `DEMO_TODAY` in config.
   - _Requirements: 11.3_
-- [ ] 1.2 Fetch scripts for clinicians (MA, paged), CMS hospitals, PLACES county, EJ, MassGIS
+- [x] 1.2 Fetch scripts for clinicians (MA, paged), CMS hospitals, PLACES county, EJ, MassGIS
   hospitals (with geometry), and town centroids. Write snapshots and `SOURCES.md`. Confirm the
   clinician dataset ID and the exact `pri_spec` strings for 4 specialties.
   - _Requirements: 11.1, 3.2, 6.1_
-- [ ] 1.3 Manually download the HRSA primary-care HPSA file, then `load_hrsa.py` filters MA (≤ 10 min;
+- [x] 1.3 Manually download the HRSA primary-care HPSA file, then `load_hrsa.py` filters MA (≤ 10 min;
   otherwise cut)
   - _Requirements: 6.1_
-- [ ] 1.4 `run_synthea.sh` for the western-MA towns, plus `select_patients.py` (~10 patients with
+- [x] 1.4 `run_synthea.sh` for the western-MA towns, plus `select_patients.py` (~10 patients with
   specialist-relevant conditions and payer)
   - _Requirements: 3.1, 4.1_
-- [ ] 1.5 `seed_referrals.py` for archetypes R-101…R-108 with fictional practices
+- [x] 1.5 `seed_referrals.py` for archetypes R-101…R-108 with fictional practices
   - _Requirements: 1.1, 2.3, 5.1_
-- [ ] 1.6 Mock API fixtures for the frontend (dashboard, referral detail, finder results)
+- [x] 1.6 Mock API fixtures for the frontend (dashboard, referral detail, finder results)
   - _Requirements: 1.1_
 
 ## Block 2 — Core logic (1:00–2:30)
-- [ ] 2.1 `loop/states.py` transitions table, plus `test_loop.py` covering valid/invalid transitions
+- [x] 2.1 `loop/states.py` transitions table, plus `test_loop.py` covering valid/invalid transitions
   and event logging
   - _Requirements: 2.1, 2.2, 5.3_
-- [ ] 2.2 `loop/stuck.py` rules with practice settings, plus boundary tests. **Checkpoint:** R-102
+- [x] 2.2 `loop/stuck.py` rules with practice settings, plus boundary tests. **Checkpoint:** R-102
   and R-104 flagged with the exact messages.
   - _Requirements: 2.3, 2.4, 1.2_
-- [ ] 2.3 `finder/practices.py`, `distance.py` (normalization map, haversine), `rank.py`, plus
+- [x] 2.3 `finder/practices.py`, `distance.py` (normalization map, haversine), `rank.py`, plus
   `test_finder.py` (unmatched-city rate < 10%, no individual names in output)
   - _Requirements: 3.2, 3.3, 3.4, 3.5_
-- [ ] 2.4 `context/place.py` with source/year/level/cannot_tell_you on every item
+- [x] 2.4 `context/place.py` with source/year/level/cannot_tell_you on every item
   - _Requirements: 6.1, 6.2_
-- [ ] 2.5 Dashboard aggregates: counts and median days sent→scheduled
+- [x] 2.5 Dashboard aggregates: counts and median days sent→scheduled
   - _Requirements: 1.3_
 
 ## Block 3 — Drafting, plan back, FHIR (2:30–3:30)

@@ -1,0 +1,2775 @@
+{
+  "R-101": {
+    "synthetic": true,
+    "card": {
+      "id": "R-101",
+      "synthetic": true,
+      "patient": {
+        "id": "6c82ee38-33d8-5667-c9c7-a4c869857230",
+        "synthetic_name": "Edward499 Hauck852",
+        "town": "Athol",
+        "county": "Worcester",
+        "age": 87,
+        "sex": "M",
+        "payer": "Medicare"
+      },
+      "specialty": "Endocrinology",
+      "priority": "routine",
+      "performer": {
+        "id": "fx-endo",
+        "name": "Connecticut River Endocrine Group (fictional)",
+        "town": "Northampton",
+        "fictional": true
+      },
+      "stage": "sent",
+      "stage_label": "Sent",
+      "stepper": [
+        {
+          "stage": "sent",
+          "label": "Sent",
+          "at": "2026-10-17"
+        },
+        {
+          "stage": "accepted",
+          "label": "Accepted",
+          "at": null
+        },
+        {
+          "stage": "scheduled",
+          "label": "Scheduled",
+          "at": null
+        },
+        {
+          "stage": "seen",
+          "label": "Seen",
+          "at": null
+        },
+        {
+          "stage": "plan_returned",
+          "label": "Plan returned",
+          "at": null
+        },
+        {
+          "stage": "closed",
+          "label": "Closed",
+          "at": null
+        }
+      ],
+      "miles": 28,
+      "appointment": null,
+      "open_barriers": [],
+      "stuck": [
+        {
+          "rule": "sent_no_response",
+          "days": 5,
+          "message": "Sent 5 business days ago — no response from Connecticut River Endocrine Group (fictional)",
+          "setting_key": "sent_no_response_business_days",
+          "threshold": 3,
+          "unit": "business days",
+          "recipient": "specialist",
+          "challenge_failure": null
+        }
+      ]
+    },
+    "referral": {
+      "id": "R-101",
+      "synthetic": true,
+      "patient_id": "6c82ee38-33d8-5667-c9c7-a4c869857230",
+      "patient_town": "Athol",
+      "specialty": "Endocrinology",
+      "pri_spec": "ENDOCRINOLOGY",
+      "priority": "routine",
+      "reason_text": "Please evaluate: Neuropathy due to type 2 diabetes mellitus (disorder) (synthetic referral).",
+      "reason_condition": {
+        "code": "368581000119106",
+        "system": "SNOMED-CT",
+        "display": "Neuropathy due to type 2 diabetes mellitus (disorder)",
+        "onset": "2004-12-21"
+      },
+      "requester": {
+        "practice": "Quabbin Hills Family Medicine (fictional)",
+        "clinician": "Dr. Avery Lin (synthetic)",
+        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+      },
+      "performer": {
+        "id": "fx-endo",
+        "name": "Connecticut River Endocrine Group (fictional)",
+        "town": "Northampton",
+        "fictional": true
+      },
+      "stage": "sent",
+      "task_status": "requested",
+      "business_status": "sent",
+      "authored_on": "2026-10-17",
+      "events": [
+        {
+          "stage": "sent",
+          "at": "2026-10-17",
+          "actor": "pcp",
+          "note": ""
+        }
+      ],
+      "appointment": null,
+      "barriers": [],
+      "communications": [],
+      "plan": null,
+      "closure": null,
+      "replaces": null
+    },
+    "allowed_next": [
+      {
+        "stage": "accepted",
+        "label": "Accepted"
+      },
+      {
+        "stage": "declined",
+        "label": "Declined"
+      },
+      {
+        "stage": "cancelled",
+        "label": "Cancelled"
+      }
+    ],
+    "timeline": [
+      {
+        "kind": "event",
+        "at": "2026-10-17",
+        "stage": "sent",
+        "actor": "pcp",
+        "note": ""
+      }
+    ],
+    "place_context": {
+      "town": "Athol",
+      "county": "Worcester",
+      "describes": "places, not people",
+      "items": [
+        {
+          "kind": "places",
+          "title": "Worcester County health estimates",
+          "values": [
+            {
+              "measure": "Visits to doctor for routine checkup within the past year among adults",
+              "value": 81.3,
+              "ci_low": 78.7,
+              "ci_high": 83.7,
+              "unit": "%"
+            },
+            {
+              "measure": "Diagnosed diabetes among adults",
+              "value": 10.4,
+              "ci_low": 9.0,
+              "ci_high": 11.9,
+              "unit": "%"
+            },
+            {
+              "measure": "Obesity among adults",
+              "value": 32.6,
+              "ci_low": 28.3,
+              "ci_high": 36.9,
+              "unit": "%"
+            },
+            {
+              "measure": "Frequent mental distress among adults",
+              "value": 17.2,
+              "ci_low": 15.1,
+              "ci_high": 19.3,
+              "unit": "%"
+            },
+            {
+              "measure": "Current cigarette smoking among adults",
+              "value": 12.3,
+              "ci_low": 9.8,
+              "ci_high": 14.9,
+              "unit": "%"
+            }
+          ],
+          "source": "CDC PLACES (crude prevalence)",
+          "source_url": "https://data.cdc.gov/resource/swc5-untb",
+          "year": "2023",
+          "level": "County (model-based estimate)",
+          "cannot_tell_you": "Model-based county estimates. They say nothing about this patient or about this town specifically."
+        },
+        {
+          "kind": "ej",
+          "title": "Environmental-justice block groups in Athol",
+          "block_groups": 3,
+          "criteria": [
+            {
+              "criteria": "Income",
+              "block_groups": 3
+            }
+          ],
+          "source": "Massachusetts EEA / MassGIS, Environmental Justice Populations",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/EJ2020/MapServer/0",
+          "year": "2020",
+          "level": "Census block group, summarized to town",
+          "cannot_tell_you": "Criteria describe block-group populations, not this patient or household, and not where in town the patient lives."
+        },
+        {
+          "kind": "hrsa",
+          "title": "Primary-care shortage designations in Worcester County",
+          "designations": [
+            {
+              "hpsa_id": "1253715190",
+              "name": "North Quabbin",
+              "designation_type": "Geographic HPSA",
+              "score": 10,
+              "last_update": "10/16/2025",
+              "includes_town": true
+            },
+            {
+              "hpsa_id": "125999250B",
+              "name": "COMMUNITY HEALTH CONNECTIONS INC",
+              "designation_type": "Federally Qualified Health Center",
+              "score": 15,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1259992574",
+              "name": "EDWARD M KENNEDY COMMUNITY HEALTH CENTER, INC",
+              "designation_type": "Federally Qualified Health Center",
+              "score": 16,
+              "last_update": "07/01/2026",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1259992583",
+              "name": "FAMILY HEALTH CENTER OF WORCESTER INC",
+              "designation_type": "Federally Qualified Health Center",
+              "score": 9,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1255308401",
+              "name": "FMC Devens",
+              "designation_type": "Correctional Facility",
+              "score": 12,
+              "last_update": "10/24/2024",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1255097745",
+              "name": "FMC-Devens",
+              "designation_type": "Correctional Facility",
+              "score": 12,
+              "last_update": "05/12/2020",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1251961350",
+              "name": "LI Worcester City",
+              "designation_type": "HPSA Population",
+              "score": 9,
+              "last_update": "02/09/2026",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1255307923",
+              "name": "North Central Correctional Institution-Gardner",
+              "designation_type": "Correctional Facility",
+              "score": 3,
+              "last_update": "06/11/2024",
+              "includes_town": false
+            }
+          ],
+          "source": "HRSA Data Warehouse, Primary Care HPSA (status: Designated)",
+          "source_url": "https://data.hrsa.gov/DataDownload/DD_Files/BCD_HPSA_FCT_DET_PC.csv",
+          "year": "2026-10-23",
+          "level": "Designation area: geographic area, population group, or facility",
+          "cannot_tell_you": "A designation describes an area, population group, or facility. It can't tell you whether this patient can get a primary-care visit."
+        },
+        {
+          "kind": "hospitals",
+          "title": "Nearest acute hospitals to Athol",
+          "hospitals": [
+            {
+              "name": "Athol Memorial Hospital",
+              "town": "Athol",
+              "miles": 1,
+              "beds": 21,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 0,
+              "cms_rating": 2,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Critical Access Hospitals",
+              "cms_facility_id": "221303"
+            },
+            {
+              "name": "Heywood Hospital",
+              "town": "Gardner",
+              "miles": 12,
+              "beds": 91,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 11,
+              "cms_rating": 2,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Acute Care Hospitals",
+              "cms_facility_id": "220095"
+            },
+            {
+              "name": "Baystate Franklin Medical Center",
+              "town": "Greenfield",
+              "miles": 19,
+              "beds": 53,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 6,
+              "cms_rating": 3,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Acute Care Hospitals",
+              "cms_facility_id": "220016"
+            }
+          ],
+          "source": "MassGIS Hospitals layer",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/Hospitals/MapServer/0",
+          "year": "2026 (retrieved 2026-10-24)",
+          "level": "Hospital point; straight-line miles from the town center",
+          "cannot_tell_you": "Bed counts don't show specialty services or availability. Distance is straight-line from the town center, not travel time."
+        }
+      ]
+    },
+    "packet": null
+  },
+  "R-102": {
+    "synthetic": true,
+    "card": {
+      "id": "R-102",
+      "synthetic": true,
+      "patient": {
+        "id": "a94cbdb3-6379-0fdc-1a9b-28ae9399782c",
+        "synthetic_name": "Lajuana164 Wilkinson796",
+        "town": "Great Barrington",
+        "county": "Berkshire",
+        "age": 86,
+        "sex": "F",
+        "payer": "Medicare"
+      },
+      "specialty": "Nephrology",
+      "priority": "routine",
+      "performer": {
+        "id": "fx-neph",
+        "name": "Central Mass Kidney Care (fictional)",
+        "town": "Worcester",
+        "fictional": true
+      },
+      "stage": "accepted",
+      "stage_label": "Accepted",
+      "stepper": [
+        {
+          "stage": "sent",
+          "label": "Sent",
+          "at": "2026-10-06"
+        },
+        {
+          "stage": "accepted",
+          "label": "Accepted",
+          "at": "2026-10-10"
+        },
+        {
+          "stage": "scheduled",
+          "label": "Scheduled",
+          "at": null
+        },
+        {
+          "stage": "seen",
+          "label": "Seen",
+          "at": null
+        },
+        {
+          "stage": "plan_returned",
+          "label": "Plan returned",
+          "at": null
+        },
+        {
+          "stage": "closed",
+          "label": "Closed",
+          "at": null
+        }
+      ],
+      "miles": 78,
+      "appointment": null,
+      "open_barriers": [
+        {
+          "type": "transportation",
+          "label": "Transportation",
+          "opened": "2026-10-12"
+        }
+      ],
+      "stuck": [
+        {
+          "rule": "accepted_no_appointment",
+          "days": 14,
+          "message": "Accepted 14 days ago — no appointment yet",
+          "setting_key": "accepted_no_appointment_days",
+          "threshold": 7,
+          "unit": "days",
+          "recipient": "specialist",
+          "challenge_failure": 1
+        },
+        {
+          "rule": "barrier_open",
+          "days": 12,
+          "message": "Transportation barrier open 12 days",
+          "setting_key": "barrier_open_days",
+          "threshold": 7,
+          "unit": "days",
+          "recipient": "patient",
+          "challenge_failure": null
+        }
+      ]
+    },
+    "referral": {
+      "id": "R-102",
+      "synthetic": true,
+      "patient_id": "a94cbdb3-6379-0fdc-1a9b-28ae9399782c",
+      "patient_town": "Great Barrington",
+      "specialty": "Nephrology",
+      "pri_spec": "NEPHROLOGY",
+      "priority": "routine",
+      "reason_text": "Please evaluate: Chronic kidney disease stage 3 (disorder) (synthetic referral).",
+      "reason_condition": {
+        "code": "433144002",
+        "system": "SNOMED-CT",
+        "display": "Chronic kidney disease stage 3 (disorder)",
+        "onset": "2025-03-27"
+      },
+      "requester": {
+        "practice": "Quabbin Hills Family Medicine (fictional)",
+        "clinician": "Dr. Avery Lin (synthetic)",
+        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+      },
+      "performer": {
+        "id": "fx-neph",
+        "name": "Central Mass Kidney Care (fictional)",
+        "town": "Worcester",
+        "fictional": true
+      },
+      "stage": "accepted",
+      "task_status": "accepted",
+      "business_status": "accepted",
+      "authored_on": "2026-10-06",
+      "events": [
+        {
+          "stage": "sent",
+          "at": "2026-10-06",
+          "actor": "pcp",
+          "note": ""
+        },
+        {
+          "stage": "accepted",
+          "at": "2026-10-10",
+          "actor": "specialist",
+          "note": ""
+        }
+      ],
+      "appointment": null,
+      "barriers": [
+        {
+          "type": "transportation",
+          "status": "open",
+          "opened": "2026-10-12",
+          "note": "No car; daughter works weekdays (synthetic).",
+          "addressed": null
+        }
+      ],
+      "communications": [],
+      "plan": null,
+      "closure": null,
+      "replaces": null
+    },
+    "allowed_next": [
+      {
+        "stage": "scheduled",
+        "label": "Scheduled"
+      },
+      {
+        "stage": "patient_barrier",
+        "label": "Patient barrier"
+      },
+      {
+        "stage": "cancelled",
+        "label": "Cancelled"
+      }
+    ],
+    "timeline": [
+      {
+        "kind": "event",
+        "at": "2026-10-06",
+        "stage": "sent",
+        "actor": "pcp",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-10-10",
+        "stage": "accepted",
+        "actor": "specialist",
+        "note": ""
+      }
+    ],
+    "place_context": {
+      "town": "Great Barrington",
+      "county": "Berkshire",
+      "describes": "places, not people",
+      "items": [
+        {
+          "kind": "places",
+          "title": "Berkshire County health estimates",
+          "values": [
+            {
+              "measure": "Visits to doctor for routine checkup within the past year among adults",
+              "value": 81.7,
+              "ci_low": 78.6,
+              "ci_high": 84.4,
+              "unit": "%"
+            },
+            {
+              "measure": "Diagnosed diabetes among adults",
+              "value": 10.9,
+              "ci_low": 9.2,
+              "ci_high": 12.8,
+              "unit": "%"
+            },
+            {
+              "measure": "Obesity among adults",
+              "value": 31.2,
+              "ci_low": 25.4,
+              "ci_high": 36.7,
+              "unit": "%"
+            },
+            {
+              "measure": "Frequent mental distress among adults",
+              "value": 16.9,
+              "ci_low": 14.7,
+              "ci_high": 19.1,
+              "unit": "%"
+            },
+            {
+              "measure": "Current cigarette smoking among adults",
+              "value": 12.7,
+              "ci_low": 9.8,
+              "ci_high": 15.6,
+              "unit": "%"
+            }
+          ],
+          "source": "CDC PLACES (crude prevalence)",
+          "source_url": "https://data.cdc.gov/resource/swc5-untb",
+          "year": "2023",
+          "level": "County (model-based estimate)",
+          "cannot_tell_you": "Model-based county estimates. They say nothing about this patient or about this town specifically."
+        },
+        {
+          "kind": "ej",
+          "title": "Environmental-justice block groups in Great Barrington",
+          "block_groups": 3,
+          "criteria": [
+            {
+              "criteria": "Income",
+              "block_groups": 2
+            },
+            {
+              "criteria": "Minority",
+              "block_groups": 1
+            }
+          ],
+          "source": "Massachusetts EEA / MassGIS, Environmental Justice Populations",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/EJ2020/MapServer/0",
+          "year": "2020",
+          "level": "Census block group, summarized to town",
+          "cannot_tell_you": "Criteria describe block-group populations, not this patient or household, and not where in town the patient lives."
+        },
+        {
+          "kind": "hrsa",
+          "title": "Primary-care shortage designations in Berkshire County",
+          "designations": [
+            {
+              "hpsa_id": "1256756782",
+              "name": "Southern Berkshires",
+              "designation_type": "Geographic HPSA",
+              "score": 9,
+              "last_update": "07/14/2025",
+              "includes_town": true
+            },
+            {
+              "hpsa_id": "12599925A4",
+              "name": "COMMUNITY HEALTH PROGRAMS, INCORPORATED",
+              "designation_type": "Federally Qualified Health Center",
+              "score": 16,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1257086048",
+              "name": "EAST MOUNTAIN MEDICAL",
+              "designation_type": "Rural Health Clinic",
+              "score": 16,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1259478409",
+              "name": "Greenfield/Charlemont",
+              "designation_type": "Geographic HPSA",
+              "score": 8,
+              "last_update": "09/05/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1255654871",
+              "name": "LI - North Berkshire County",
+              "designation_type": "HPSA Population",
+              "score": 15,
+              "last_update": "08/22/2022",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1256108485",
+              "name": "WILLIAMSTOWN MEDICAL",
+              "designation_type": "Rural Health Clinic",
+              "score": 12,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1257177539",
+              "name": "WILLIAMSTOWN MEDICAL AT NORTH ADAMS",
+              "designation_type": "Rural Health Clinic",
+              "score": 6,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            }
+          ],
+          "source": "HRSA Data Warehouse, Primary Care HPSA (status: Designated)",
+          "source_url": "https://data.hrsa.gov/DataDownload/DD_Files/BCD_HPSA_FCT_DET_PC.csv",
+          "year": "2026-10-23",
+          "level": "Designation area: geographic area, population group, or facility",
+          "cannot_tell_you": "A designation describes an area, population group, or facility. It can't tell you whether this patient can get a primary-care visit."
+        },
+        {
+          "kind": "hospitals",
+          "title": "Nearest acute hospitals to Great Barrington",
+          "hospitals": [
+            {
+              "name": "Fairview Hospital",
+              "town": "Great Barrington",
+              "miles": 3,
+              "beds": 21,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 5,
+              "cms_rating": 5,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Critical Access Hospitals",
+              "cms_facility_id": "221302"
+            },
+            {
+              "name": "Berkshire Medical Center - Berkshire Campus",
+              "town": "Pittsfield",
+              "miles": 17,
+              "beds": 177,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 22,
+              "cms_rating": null,
+              "cms_emergency_services": null,
+              "cms_hospital_type": null,
+              "cms_facility_id": null
+            },
+            {
+              "name": "Baystate Noble Hospital",
+              "town": "Westfield",
+              "miles": 30,
+              "beds": 50,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 0,
+              "cms_rating": 2,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Acute Care Hospitals",
+              "cms_facility_id": "220065"
+            }
+          ],
+          "source": "MassGIS Hospitals layer",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/Hospitals/MapServer/0",
+          "year": "2026 (retrieved 2026-10-24)",
+          "level": "Hospital point; straight-line miles from the town center",
+          "cannot_tell_you": "Bed counts don't show specialty services or availability. Distance is straight-line from the town center, not travel time."
+        }
+      ]
+    },
+    "packet": null
+  },
+  "R-103": {
+    "synthetic": true,
+    "card": {
+      "id": "R-103",
+      "synthetic": true,
+      "patient": {
+        "id": "76b20010-c318-5754-8c85-983aa538522f",
+        "synthetic_name": "Shondra529 Hickle134",
+        "town": "Greenfield",
+        "county": "Franklin",
+        "age": 76,
+        "sex": "F",
+        "payer": "Medicare"
+      },
+      "specialty": "Gastroenterology",
+      "priority": "routine",
+      "performer": {
+        "id": "fx-gi",
+        "name": "Berkshire Digestive Health (fictional)",
+        "town": "Pittsfield",
+        "fictional": true
+      },
+      "stage": "scheduled",
+      "stage_label": "Scheduled",
+      "stepper": [
+        {
+          "stage": "sent",
+          "label": "Sent",
+          "at": "2026-10-01"
+        },
+        {
+          "stage": "accepted",
+          "label": "Accepted",
+          "at": "2026-10-03"
+        },
+        {
+          "stage": "scheduled",
+          "label": "Scheduled",
+          "at": "2026-10-08"
+        },
+        {
+          "stage": "seen",
+          "label": "Seen",
+          "at": null
+        },
+        {
+          "stage": "plan_returned",
+          "label": "Plan returned",
+          "at": null
+        },
+        {
+          "stage": "closed",
+          "label": "Closed",
+          "at": null
+        }
+      ],
+      "miles": 36,
+      "appointment": {
+        "start": "2026-11-03",
+        "status": "booked"
+      },
+      "open_barriers": [],
+      "stuck": []
+    },
+    "referral": {
+      "id": "R-103",
+      "synthetic": true,
+      "patient_id": "76b20010-c318-5754-8c85-983aa538522f",
+      "patient_town": "Greenfield",
+      "specialty": "Gastroenterology",
+      "pri_spec": "GASTROENTEROLOGY",
+      "priority": "routine",
+      "reason_text": "Please evaluate: Polyp of colon (disorder) (synthetic referral).",
+      "reason_condition": {
+        "code": "68496003",
+        "system": "SNOMED-CT",
+        "display": "Polyp of colon (disorder)",
+        "onset": "2010-10-05"
+      },
+      "requester": {
+        "practice": "Quabbin Hills Family Medicine (fictional)",
+        "clinician": "Dr. Avery Lin (synthetic)",
+        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+      },
+      "performer": {
+        "id": "fx-gi",
+        "name": "Berkshire Digestive Health (fictional)",
+        "town": "Pittsfield",
+        "fictional": true
+      },
+      "stage": "scheduled",
+      "task_status": "in-progress",
+      "business_status": "scheduled",
+      "authored_on": "2026-10-01",
+      "events": [
+        {
+          "stage": "sent",
+          "at": "2026-10-01",
+          "actor": "pcp",
+          "note": ""
+        },
+        {
+          "stage": "accepted",
+          "at": "2026-10-03",
+          "actor": "specialist",
+          "note": ""
+        },
+        {
+          "stage": "scheduled",
+          "at": "2026-10-08",
+          "actor": "specialist",
+          "note": ""
+        }
+      ],
+      "appointment": {
+        "start": "2026-11-03",
+        "status": "booked"
+      },
+      "barriers": [],
+      "communications": [],
+      "plan": null,
+      "closure": null,
+      "replaces": null
+    },
+    "allowed_next": [
+      {
+        "stage": "seen",
+        "label": "Seen"
+      },
+      {
+        "stage": "no_show",
+        "label": "No-show"
+      },
+      {
+        "stage": "patient_barrier",
+        "label": "Patient barrier"
+      },
+      {
+        "stage": "cancelled",
+        "label": "Cancelled"
+      }
+    ],
+    "timeline": [
+      {
+        "kind": "event",
+        "at": "2026-10-01",
+        "stage": "sent",
+        "actor": "pcp",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-10-03",
+        "stage": "accepted",
+        "actor": "specialist",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-10-08",
+        "stage": "scheduled",
+        "actor": "specialist",
+        "note": ""
+      }
+    ],
+    "place_context": {
+      "town": "Greenfield",
+      "county": "Franklin",
+      "describes": "places, not people",
+      "items": [
+        {
+          "kind": "places",
+          "title": "Franklin County health estimates",
+          "values": [
+            {
+              "measure": "Visits to doctor for routine checkup within the past year among adults",
+              "value": 82.1,
+              "ci_low": 78.8,
+              "ci_high": 85.0,
+              "unit": "%"
+            },
+            {
+              "measure": "Diagnosed diabetes among adults",
+              "value": 10.8,
+              "ci_low": 9.1,
+              "ci_high": 12.7,
+              "unit": "%"
+            },
+            {
+              "measure": "Obesity among adults",
+              "value": 26.3,
+              "ci_low": 20.8,
+              "ci_high": 32.8,
+              "unit": "%"
+            },
+            {
+              "measure": "Frequent mental distress among adults",
+              "value": 16.1,
+              "ci_low": 13.8,
+              "ci_high": 18.5,
+              "unit": "%"
+            },
+            {
+              "measure": "Current cigarette smoking among adults",
+              "value": 12.8,
+              "ci_low": 9.8,
+              "ci_high": 15.9,
+              "unit": "%"
+            }
+          ],
+          "source": "CDC PLACES (crude prevalence)",
+          "source_url": "https://data.cdc.gov/resource/swc5-untb",
+          "year": "2023",
+          "level": "County (model-based estimate)",
+          "cannot_tell_you": "Model-based county estimates. They say nothing about this patient or about this town specifically."
+        },
+        {
+          "kind": "ej",
+          "title": "Environmental-justice block groups in Greenfield",
+          "block_groups": 10,
+          "criteria": [
+            {
+              "criteria": "Income",
+              "block_groups": 8
+            },
+            {
+              "criteria": "Minority and income",
+              "block_groups": 2
+            }
+          ],
+          "source": "Massachusetts EEA / MassGIS, Environmental Justice Populations",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/EJ2020/MapServer/0",
+          "year": "2020",
+          "level": "Census block group, summarized to town",
+          "cannot_tell_you": "Criteria describe block-group populations, not this patient or household, and not where in town the patient lives."
+        },
+        {
+          "kind": "hrsa",
+          "title": "Primary-care shortage designations in Franklin County",
+          "designations": [
+            {
+              "hpsa_id": "1259478409",
+              "name": "Greenfield/Charlemont",
+              "designation_type": "Geographic HPSA",
+              "score": 8,
+              "last_update": "09/05/2025",
+              "includes_town": true
+            },
+            {
+              "hpsa_id": "1259992571",
+              "name": "COMMUNITY HEALTH CENTER OF FRANKLIN COUNTY INC",
+              "designation_type": "Federally Qualified Health Center",
+              "score": 18,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1253715190",
+              "name": "North Quabbin",
+              "designation_type": "Geographic HPSA",
+              "score": 10,
+              "last_update": "10/16/2025",
+              "includes_town": false
+            }
+          ],
+          "source": "HRSA Data Warehouse, Primary Care HPSA (status: Designated)",
+          "source_url": "https://data.hrsa.gov/DataDownload/DD_Files/BCD_HPSA_FCT_DET_PC.csv",
+          "year": "2026-10-23",
+          "level": "Designation area: geographic area, population group, or facility",
+          "cannot_tell_you": "A designation describes an area, population group, or facility. It can't tell you whether this patient can get a primary-care visit."
+        },
+        {
+          "kind": "hospitals",
+          "title": "Nearest acute hospitals to Greenfield",
+          "hospitals": [
+            {
+              "name": "Baystate Franklin Medical Center",
+              "town": "Greenfield",
+              "miles": 1,
+              "beds": 53,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 6,
+              "cms_rating": 3,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Acute Care Hospitals",
+              "cms_facility_id": "220016"
+            },
+            {
+              "name": "Cooley Dickinson Hospital",
+              "town": "Northampton",
+              "miles": 20,
+              "beds": 108,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 11,
+              "cms_rating": null,
+              "cms_emergency_services": null,
+              "cms_hospital_type": null,
+              "cms_facility_id": null
+            },
+            {
+              "name": "Athol Memorial Hospital",
+              "town": "Athol",
+              "miles": 20,
+              "beds": 21,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 0,
+              "cms_rating": 2,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Critical Access Hospitals",
+              "cms_facility_id": "221303"
+            }
+          ],
+          "source": "MassGIS Hospitals layer",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/Hospitals/MapServer/0",
+          "year": "2026 (retrieved 2026-10-24)",
+          "level": "Hospital point; straight-line miles from the town center",
+          "cannot_tell_you": "Bed counts don't show specialty services or availability. Distance is straight-line from the town center, not travel time."
+        }
+      ]
+    },
+    "packet": null
+  },
+  "R-104": {
+    "synthetic": true,
+    "card": {
+      "id": "R-104",
+      "synthetic": true,
+      "patient": {
+        "id": "a4fd2a0e-8bd8-d073-c7bf-38b30dbfab69",
+        "synthetic_name": "Christian753 Jacobson885",
+        "town": "Orange",
+        "county": "Franklin",
+        "age": 87,
+        "sex": "M",
+        "payer": "Dual Eligible"
+      },
+      "specialty": "Cardiology",
+      "priority": "routine",
+      "performer": {
+        "id": "fx-cardio",
+        "name": "Pioneer Valley Heart Associates (fictional)",
+        "town": "Springfield",
+        "fictional": true
+      },
+      "stage": "seen",
+      "stage_label": "Seen",
+      "stepper": [
+        {
+          "stage": "sent",
+          "label": "Sent",
+          "at": "2026-09-15"
+        },
+        {
+          "stage": "accepted",
+          "label": "Accepted",
+          "at": "2026-09-17"
+        },
+        {
+          "stage": "scheduled",
+          "label": "Scheduled",
+          "at": "2026-09-19"
+        },
+        {
+          "stage": "seen",
+          "label": "Seen",
+          "at": "2026-10-12"
+        },
+        {
+          "stage": "plan_returned",
+          "label": "Plan returned",
+          "at": null
+        },
+        {
+          "stage": "closed",
+          "label": "Closed",
+          "at": null
+        }
+      ],
+      "miles": 36,
+      "appointment": {
+        "start": "2026-10-12",
+        "status": "fulfilled"
+      },
+      "open_barriers": [],
+      "stuck": [
+        {
+          "rule": "seen_no_plan",
+          "days": 12,
+          "message": "Seen 12 days ago — plan not received",
+          "setting_key": "seen_no_plan_days",
+          "threshold": 7,
+          "unit": "days",
+          "recipient": "specialist",
+          "challenge_failure": 2
+        }
+      ]
+    },
+    "referral": {
+      "id": "R-104",
+      "synthetic": true,
+      "patient_id": "a4fd2a0e-8bd8-d073-c7bf-38b30dbfab69",
+      "patient_town": "Orange",
+      "specialty": "Cardiology",
+      "pri_spec": "CARDIOVASCULAR DISEASE (CARDIOLOGY)",
+      "priority": "routine",
+      "reason_text": "Please evaluate: Abnormal findings diagnostic imaging heart+coronary circulat (finding) (synthetic referral).",
+      "reason_condition": {
+        "code": "274531002",
+        "system": "SNOMED-CT",
+        "display": "Abnormal findings diagnostic imaging heart+coronary circulat (finding)",
+        "onset": "2001-12-09"
+      },
+      "requester": {
+        "practice": "Quabbin Hills Family Medicine (fictional)",
+        "clinician": "Dr. Avery Lin (synthetic)",
+        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+      },
+      "performer": {
+        "id": "fx-cardio",
+        "name": "Pioneer Valley Heart Associates (fictional)",
+        "town": "Springfield",
+        "fictional": true
+      },
+      "stage": "seen",
+      "task_status": "in-progress",
+      "business_status": "visit-completed",
+      "authored_on": "2026-09-15",
+      "events": [
+        {
+          "stage": "sent",
+          "at": "2026-09-15",
+          "actor": "pcp",
+          "note": ""
+        },
+        {
+          "stage": "accepted",
+          "at": "2026-09-17",
+          "actor": "specialist",
+          "note": ""
+        },
+        {
+          "stage": "scheduled",
+          "at": "2026-09-19",
+          "actor": "specialist",
+          "note": ""
+        },
+        {
+          "stage": "seen",
+          "at": "2026-10-12",
+          "actor": "specialist",
+          "note": ""
+        }
+      ],
+      "appointment": {
+        "start": "2026-10-12",
+        "status": "fulfilled"
+      },
+      "barriers": [],
+      "communications": [],
+      "plan": null,
+      "closure": null,
+      "replaces": null
+    },
+    "allowed_next": [
+      {
+        "stage": "plan_returned",
+        "label": "Plan returned"
+      }
+    ],
+    "timeline": [
+      {
+        "kind": "event",
+        "at": "2026-09-15",
+        "stage": "sent",
+        "actor": "pcp",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-09-17",
+        "stage": "accepted",
+        "actor": "specialist",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-09-19",
+        "stage": "scheduled",
+        "actor": "specialist",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-10-12",
+        "stage": "seen",
+        "actor": "specialist",
+        "note": ""
+      }
+    ],
+    "place_context": {
+      "town": "Orange",
+      "county": "Franklin",
+      "describes": "places, not people",
+      "items": [
+        {
+          "kind": "places",
+          "title": "Franklin County health estimates",
+          "values": [
+            {
+              "measure": "Visits to doctor for routine checkup within the past year among adults",
+              "value": 82.1,
+              "ci_low": 78.8,
+              "ci_high": 85.0,
+              "unit": "%"
+            },
+            {
+              "measure": "Diagnosed diabetes among adults",
+              "value": 10.8,
+              "ci_low": 9.1,
+              "ci_high": 12.7,
+              "unit": "%"
+            },
+            {
+              "measure": "Obesity among adults",
+              "value": 26.3,
+              "ci_low": 20.8,
+              "ci_high": 32.8,
+              "unit": "%"
+            },
+            {
+              "measure": "Frequent mental distress among adults",
+              "value": 16.1,
+              "ci_low": 13.8,
+              "ci_high": 18.5,
+              "unit": "%"
+            },
+            {
+              "measure": "Current cigarette smoking among adults",
+              "value": 12.8,
+              "ci_low": 9.8,
+              "ci_high": 15.9,
+              "unit": "%"
+            }
+          ],
+          "source": "CDC PLACES (crude prevalence)",
+          "source_url": "https://data.cdc.gov/resource/swc5-untb",
+          "year": "2023",
+          "level": "County (model-based estimate)",
+          "cannot_tell_you": "Model-based county estimates. They say nothing about this patient or about this town specifically."
+        },
+        {
+          "kind": "ej",
+          "title": "Environmental-justice block groups in Orange",
+          "block_groups": 2,
+          "criteria": [
+            {
+              "criteria": "Income",
+              "block_groups": 2
+            }
+          ],
+          "source": "Massachusetts EEA / MassGIS, Environmental Justice Populations",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/EJ2020/MapServer/0",
+          "year": "2020",
+          "level": "Census block group, summarized to town",
+          "cannot_tell_you": "Criteria describe block-group populations, not this patient or household, and not where in town the patient lives."
+        },
+        {
+          "kind": "hrsa",
+          "title": "Primary-care shortage designations in Franklin County",
+          "designations": [
+            {
+              "hpsa_id": "1253715190",
+              "name": "North Quabbin",
+              "designation_type": "Geographic HPSA",
+              "score": 10,
+              "last_update": "10/16/2025",
+              "includes_town": true
+            },
+            {
+              "hpsa_id": "1259992571",
+              "name": "COMMUNITY HEALTH CENTER OF FRANKLIN COUNTY INC",
+              "designation_type": "Federally Qualified Health Center",
+              "score": 18,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1259478409",
+              "name": "Greenfield/Charlemont",
+              "designation_type": "Geographic HPSA",
+              "score": 8,
+              "last_update": "09/05/2025",
+              "includes_town": false
+            }
+          ],
+          "source": "HRSA Data Warehouse, Primary Care HPSA (status: Designated)",
+          "source_url": "https://data.hrsa.gov/DataDownload/DD_Files/BCD_HPSA_FCT_DET_PC.csv",
+          "year": "2026-10-23",
+          "level": "Designation area: geographic area, population group, or facility",
+          "cannot_tell_you": "A designation describes an area, population group, or facility. It can't tell you whether this patient can get a primary-care visit."
+        },
+        {
+          "kind": "hospitals",
+          "title": "Nearest acute hospitals to Orange",
+          "hospitals": [
+            {
+              "name": "Athol Memorial Hospital",
+              "town": "Athol",
+              "miles": 4,
+              "beds": 21,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 0,
+              "cms_rating": 2,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Critical Access Hospitals",
+              "cms_facility_id": "221303"
+            },
+            {
+              "name": "Baystate Franklin Medical Center",
+              "town": "Greenfield",
+              "miles": 15,
+              "beds": 53,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 6,
+              "cms_rating": 3,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Acute Care Hospitals",
+              "cms_facility_id": "220016"
+            },
+            {
+              "name": "Heywood Hospital",
+              "town": "Gardner",
+              "miles": 16,
+              "beds": 91,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 11,
+              "cms_rating": 2,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Acute Care Hospitals",
+              "cms_facility_id": "220095"
+            }
+          ],
+          "source": "MassGIS Hospitals layer",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/Hospitals/MapServer/0",
+          "year": "2026 (retrieved 2026-10-24)",
+          "level": "Hospital point; straight-line miles from the town center",
+          "cannot_tell_you": "Bed counts don't show specialty services or availability. Distance is straight-line from the town center, not travel time."
+        }
+      ]
+    },
+    "packet": null
+  },
+  "R-105": {
+    "synthetic": true,
+    "card": {
+      "id": "R-105",
+      "synthetic": true,
+      "patient": {
+        "id": "3a3de94d-c3ab-76c1-1893-d73a17848fc1",
+        "synthetic_name": "Kaitlin600 Mann644",
+        "town": "Ware",
+        "county": "Hampshire",
+        "age": 86,
+        "sex": "F",
+        "payer": "Medicare"
+      },
+      "specialty": "Endocrinology",
+      "priority": "routine",
+      "performer": {
+        "id": "fx-endo",
+        "name": "Connecticut River Endocrine Group (fictional)",
+        "town": "Northampton",
+        "fictional": true
+      },
+      "stage": "plan_returned",
+      "stage_label": "Plan returned",
+      "stepper": [
+        {
+          "stage": "sent",
+          "label": "Sent",
+          "at": "2026-09-08"
+        },
+        {
+          "stage": "accepted",
+          "label": "Accepted",
+          "at": "2026-09-10"
+        },
+        {
+          "stage": "scheduled",
+          "label": "Scheduled",
+          "at": "2026-09-12"
+        },
+        {
+          "stage": "seen",
+          "label": "Seen",
+          "at": "2026-10-15"
+        },
+        {
+          "stage": "plan_returned",
+          "label": "Plan returned",
+          "at": "2026-10-22"
+        },
+        {
+          "stage": "closed",
+          "label": "Closed",
+          "at": null
+        }
+      ],
+      "miles": 20,
+      "appointment": {
+        "start": "2026-10-15",
+        "status": "fulfilled"
+      },
+      "open_barriers": [],
+      "stuck": []
+    },
+    "referral": {
+      "id": "R-105",
+      "synthetic": true,
+      "patient_id": "3a3de94d-c3ab-76c1-1893-d73a17848fc1",
+      "patient_town": "Ware",
+      "specialty": "Endocrinology",
+      "pri_spec": "ENDOCRINOLOGY",
+      "priority": "routine",
+      "reason_text": "Please evaluate: Nonproliferative diabetic retinopathy due to type II diabetes mellitus (synthetic referral).",
+      "reason_condition": {
+        "code": "1551000119108",
+        "system": "SNOMED-CT",
+        "display": "Nonproliferative diabetic retinopathy due to type II diabetes mellitus",
+        "onset": "2005-12-05"
+      },
+      "requester": {
+        "practice": "Quabbin Hills Family Medicine (fictional)",
+        "clinician": "Dr. Avery Lin (synthetic)",
+        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+      },
+      "performer": {
+        "id": "fx-endo",
+        "name": "Connecticut River Endocrine Group (fictional)",
+        "town": "Northampton",
+        "fictional": true
+      },
+      "stage": "plan_returned",
+      "task_status": "completed",
+      "business_status": "plan-returned",
+      "authored_on": "2026-09-08",
+      "events": [
+        {
+          "stage": "sent",
+          "at": "2026-09-08",
+          "actor": "pcp",
+          "note": ""
+        },
+        {
+          "stage": "accepted",
+          "at": "2026-09-10",
+          "actor": "specialist",
+          "note": ""
+        },
+        {
+          "stage": "scheduled",
+          "at": "2026-09-12",
+          "actor": "specialist",
+          "note": ""
+        },
+        {
+          "stage": "seen",
+          "at": "2026-10-15",
+          "actor": "specialist",
+          "note": ""
+        },
+        {
+          "stage": "plan_returned",
+          "at": "2026-10-22",
+          "actor": "specialist",
+          "note": ""
+        }
+      ],
+      "appointment": {
+        "start": "2026-10-15",
+        "status": "fulfilled"
+      },
+      "barriers": [],
+      "communications": [],
+      "plan": {
+        "simulated": true,
+        "returned_on": "2026-10-22",
+        "from": "Connecticut River Endocrine Group (fictional)",
+        "visit_date": "2026-10-15",
+        "reason": "Nonproliferative diabetic retinopathy due to type II diabetes mellitus",
+        "assessment": "Diabetes-related findings reviewed (synthetic).",
+        "plan": "Follow-up in 3 months. Endocrinology will send updated lab orders to the PCP.",
+        "actions_for_pcp": "Please review and update the problem list (synthetic).",
+        "questions_contact": "Connecticut River Endocrine Group (fictional) referral line (fictional)",
+        "omitted_fields_note": "ACCESS-specific fields (track, OAP measures) omitted: not an ACCESS referral."
+      },
+      "closure": null,
+      "replaces": null
+    },
+    "allowed_next": [
+      {
+        "stage": "closed",
+        "label": "Closed"
+      }
+    ],
+    "timeline": [
+      {
+        "kind": "event",
+        "at": "2026-09-08",
+        "stage": "sent",
+        "actor": "pcp",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-09-10",
+        "stage": "accepted",
+        "actor": "specialist",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-09-12",
+        "stage": "scheduled",
+        "actor": "specialist",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-10-15",
+        "stage": "seen",
+        "actor": "specialist",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-10-22",
+        "stage": "plan_returned",
+        "actor": "specialist",
+        "note": ""
+      }
+    ],
+    "place_context": {
+      "town": "Ware",
+      "county": "Hampshire",
+      "describes": "places, not people",
+      "items": [
+        {
+          "kind": "places",
+          "title": "Hampshire County health estimates",
+          "values": [
+            {
+              "measure": "Visits to doctor for routine checkup within the past year among adults",
+              "value": 80.6,
+              "ci_low": 77.3,
+              "ci_high": 83.6,
+              "unit": "%"
+            },
+            {
+              "measure": "Diagnosed diabetes among adults",
+              "value": 8.2,
+              "ci_low": 7.0,
+              "ci_high": 9.6,
+              "unit": "%"
+            },
+            {
+              "measure": "Obesity among adults",
+              "value": 22.2,
+              "ci_low": 17.9,
+              "ci_high": 27.2,
+              "unit": "%"
+            },
+            {
+              "measure": "Frequent mental distress among adults",
+              "value": 17.4,
+              "ci_low": 14.9,
+              "ci_high": 20.1,
+              "unit": "%"
+            },
+            {
+              "measure": "Current cigarette smoking among adults",
+              "value": 9.7,
+              "ci_low": 7.6,
+              "ci_high": 12.2,
+              "unit": "%"
+            }
+          ],
+          "source": "CDC PLACES (crude prevalence)",
+          "source_url": "https://data.cdc.gov/resource/swc5-untb",
+          "year": "2023",
+          "level": "County (model-based estimate)",
+          "cannot_tell_you": "Model-based county estimates. They say nothing about this patient or about this town specifically."
+        },
+        {
+          "kind": "ej",
+          "title": "Environmental-justice block groups in Ware",
+          "block_groups": 3,
+          "criteria": [
+            {
+              "criteria": "Income",
+              "block_groups": 2
+            },
+            {
+              "criteria": "Minority and income",
+              "block_groups": 1
+            }
+          ],
+          "source": "Massachusetts EEA / MassGIS, Environmental Justice Populations",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/EJ2020/MapServer/0",
+          "year": "2020",
+          "level": "Census block group, summarized to town",
+          "cannot_tell_you": "Criteria describe block-group populations, not this patient or household, and not where in town the patient lives."
+        },
+        {
+          "kind": "hrsa",
+          "title": "Primary-care shortage designations in Hampshire County",
+          "designations": [
+            {
+              "hpsa_id": "1258434797",
+              "name": "Gateway Hampshire Regional HPSA",
+              "designation_type": "Geographic HPSA",
+              "score": 14,
+              "last_update": "09/10/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "12599925B9",
+              "name": "HILLTOWN COMMUNITY HEALTH CENTERS, INC.",
+              "designation_type": "Federally Qualified Health Center",
+              "score": 15,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            }
+          ],
+          "source": "HRSA Data Warehouse, Primary Care HPSA (status: Designated)",
+          "source_url": "https://data.hrsa.gov/DataDownload/DD_Files/BCD_HPSA_FCT_DET_PC.csv",
+          "year": "2026-10-23",
+          "level": "Designation area: geographic area, population group, or facility",
+          "cannot_tell_you": "A designation describes an area, population group, or facility. It can't tell you whether this patient can get a primary-care visit."
+        },
+        {
+          "kind": "hospitals",
+          "title": "Nearest acute hospitals to Ware",
+          "hospitals": [
+            {
+              "name": "Baystate Wing Hospital and Medical Centers",
+              "town": "Palmer",
+              "miles": 8,
+              "beds": 46,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 0,
+              "cms_rating": null,
+              "cms_emergency_services": null,
+              "cms_hospital_type": null,
+              "cms_facility_id": null
+            },
+            {
+              "name": "UMass Memorial Health - Harrington Hospital",
+              "town": "Southbridge",
+              "miles": 18,
+              "beds": 86,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 3,
+              "cms_rating": 3,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Acute Care Hospitals",
+              "cms_facility_id": "220019"
+            },
+            {
+              "name": "Holyoke Medical Center",
+              "town": "Holyoke",
+              "miles": 19,
+              "beds": 159,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 12,
+              "cms_rating": 4,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Acute Care Hospitals",
+              "cms_facility_id": "220024"
+            }
+          ],
+          "source": "MassGIS Hospitals layer",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/Hospitals/MapServer/0",
+          "year": "2026 (retrieved 2026-10-24)",
+          "level": "Hospital point; straight-line miles from the town center",
+          "cannot_tell_you": "Bed counts don't show specialty services or availability. Distance is straight-line from the town center, not travel time."
+        }
+      ]
+    },
+    "packet": null
+  },
+  "R-106": {
+    "synthetic": true,
+    "card": {
+      "id": "R-106",
+      "synthetic": true,
+      "patient": {
+        "id": "c86c400e-ff88-a1e3-2e23-caa4d8311f47",
+        "synthetic_name": "Herschel574 Greenfelder433",
+        "town": "North Adams",
+        "county": "Berkshire",
+        "age": 87,
+        "sex": "M",
+        "payer": "Medicare"
+      },
+      "specialty": "Nephrology",
+      "priority": "routine",
+      "performer": {
+        "id": "fx-neph",
+        "name": "Central Mass Kidney Care (fictional)",
+        "town": "Worcester",
+        "fictional": true
+      },
+      "stage": "closed",
+      "stage_label": "Closed",
+      "stepper": [
+        {
+          "stage": "sent",
+          "label": "Sent",
+          "at": "2026-08-25"
+        },
+        {
+          "stage": "accepted",
+          "label": "Accepted",
+          "at": "2026-08-27"
+        },
+        {
+          "stage": "scheduled",
+          "label": "Scheduled",
+          "at": "2026-08-29"
+        },
+        {
+          "stage": "seen",
+          "label": "Seen",
+          "at": "2026-09-23"
+        },
+        {
+          "stage": "plan_returned",
+          "label": "Plan returned",
+          "at": "2026-09-30"
+        },
+        {
+          "stage": "closed",
+          "label": "Closed",
+          "at": "2026-10-05"
+        }
+      ],
+      "miles": 72,
+      "appointment": {
+        "start": "2026-09-23",
+        "status": "fulfilled"
+      },
+      "open_barriers": [],
+      "stuck": []
+    },
+    "referral": {
+      "id": "R-106",
+      "synthetic": true,
+      "patient_id": "c86c400e-ff88-a1e3-2e23-caa4d8311f47",
+      "patient_town": "North Adams",
+      "specialty": "Nephrology",
+      "pri_spec": "NEPHROLOGY",
+      "priority": "routine",
+      "reason_text": "Please evaluate: Chronic kidney disease stage 3 (disorder) (synthetic referral).",
+      "reason_condition": {
+        "code": "433144002",
+        "system": "SNOMED-CT",
+        "display": "Chronic kidney disease stage 3 (disorder)",
+        "onset": "2026-06-02"
+      },
+      "requester": {
+        "practice": "Quabbin Hills Family Medicine (fictional)",
+        "clinician": "Dr. Avery Lin (synthetic)",
+        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+      },
+      "performer": {
+        "id": "fx-neph",
+        "name": "Central Mass Kidney Care (fictional)",
+        "town": "Worcester",
+        "fictional": true
+      },
+      "stage": "closed",
+      "task_status": "completed",
+      "business_status": "closed-by-referrer",
+      "authored_on": "2026-08-25",
+      "events": [
+        {
+          "stage": "sent",
+          "at": "2026-08-25",
+          "actor": "pcp",
+          "note": ""
+        },
+        {
+          "stage": "accepted",
+          "at": "2026-08-27",
+          "actor": "specialist",
+          "note": ""
+        },
+        {
+          "stage": "scheduled",
+          "at": "2026-08-29",
+          "actor": "specialist",
+          "note": ""
+        },
+        {
+          "stage": "seen",
+          "at": "2026-09-23",
+          "actor": "specialist",
+          "note": ""
+        },
+        {
+          "stage": "plan_returned",
+          "at": "2026-09-30",
+          "actor": "specialist",
+          "note": ""
+        },
+        {
+          "stage": "closed",
+          "at": "2026-10-05",
+          "actor": "pcp",
+          "note": "Plan reviewed; added to problem list (synthetic)."
+        }
+      ],
+      "appointment": {
+        "start": "2026-09-23",
+        "status": "fulfilled"
+      },
+      "barriers": [],
+      "communications": [],
+      "plan": {
+        "simulated": true,
+        "returned_on": "2026-09-30",
+        "from": "Central Mass Kidney Care (fictional)",
+        "visit_date": "2026-09-23",
+        "reason": "Chronic kidney disease stage 3 (disorder)",
+        "assessment": "Kidney function reviewed; stable at this visit (synthetic).",
+        "plan": "Repeat kidney labs in 3 months, ordered by nephrology. Follow-up in 6 months; telehealth acceptable if labs are drawn locally.",
+        "actions_for_pcp": "Please review and update the problem list (synthetic).",
+        "questions_contact": "Central Mass Kidney Care (fictional) referral line (fictional)",
+        "omitted_fields_note": "ACCESS-specific fields (track, OAP measures) omitted: not an ACCESS referral."
+      },
+      "closure": {
+        "at": "2026-10-05",
+        "by": "Dr. Avery Lin (synthetic)",
+        "reason": "plan_received",
+        "note": "Plan reviewed; added to problem list (synthetic)."
+      },
+      "replaces": null
+    },
+    "allowed_next": [],
+    "timeline": [
+      {
+        "kind": "event",
+        "at": "2026-08-25",
+        "stage": "sent",
+        "actor": "pcp",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-08-27",
+        "stage": "accepted",
+        "actor": "specialist",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-08-29",
+        "stage": "scheduled",
+        "actor": "specialist",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-09-23",
+        "stage": "seen",
+        "actor": "specialist",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-09-30",
+        "stage": "plan_returned",
+        "actor": "specialist",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-10-05",
+        "stage": "closed",
+        "actor": "pcp",
+        "note": "Plan reviewed; added to problem list (synthetic)."
+      }
+    ],
+    "place_context": {
+      "town": "North Adams",
+      "county": "Berkshire",
+      "describes": "places, not people",
+      "items": [
+        {
+          "kind": "places",
+          "title": "Berkshire County health estimates",
+          "values": [
+            {
+              "measure": "Visits to doctor for routine checkup within the past year among adults",
+              "value": 81.7,
+              "ci_low": 78.6,
+              "ci_high": 84.4,
+              "unit": "%"
+            },
+            {
+              "measure": "Diagnosed diabetes among adults",
+              "value": 10.9,
+              "ci_low": 9.2,
+              "ci_high": 12.8,
+              "unit": "%"
+            },
+            {
+              "measure": "Obesity among adults",
+              "value": 31.2,
+              "ci_low": 25.4,
+              "ci_high": 36.7,
+              "unit": "%"
+            },
+            {
+              "measure": "Frequent mental distress among adults",
+              "value": 16.9,
+              "ci_low": 14.7,
+              "ci_high": 19.1,
+              "unit": "%"
+            },
+            {
+              "measure": "Current cigarette smoking among adults",
+              "value": 12.7,
+              "ci_low": 9.8,
+              "ci_high": 15.6,
+              "unit": "%"
+            }
+          ],
+          "source": "CDC PLACES (crude prevalence)",
+          "source_url": "https://data.cdc.gov/resource/swc5-untb",
+          "year": "2023",
+          "level": "County (model-based estimate)",
+          "cannot_tell_you": "Model-based county estimates. They say nothing about this patient or about this town specifically."
+        },
+        {
+          "kind": "ej",
+          "title": "Environmental-justice block groups in North Adams",
+          "block_groups": 8,
+          "criteria": [
+            {
+              "criteria": "Income",
+              "block_groups": 8
+            }
+          ],
+          "source": "Massachusetts EEA / MassGIS, Environmental Justice Populations",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/EJ2020/MapServer/0",
+          "year": "2020",
+          "level": "Census block group, summarized to town",
+          "cannot_tell_you": "Criteria describe block-group populations, not this patient or household, and not where in town the patient lives."
+        },
+        {
+          "kind": "hrsa",
+          "title": "Primary-care shortage designations in Berkshire County",
+          "designations": [
+            {
+              "hpsa_id": "1255654871",
+              "name": "LI - North Berkshire County",
+              "designation_type": "HPSA Population",
+              "score": 15,
+              "last_update": "08/22/2022",
+              "includes_town": true
+            },
+            {
+              "hpsa_id": "12599925A4",
+              "name": "COMMUNITY HEALTH PROGRAMS, INCORPORATED",
+              "designation_type": "Federally Qualified Health Center",
+              "score": 16,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1257086048",
+              "name": "EAST MOUNTAIN MEDICAL",
+              "designation_type": "Rural Health Clinic",
+              "score": 16,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1259478409",
+              "name": "Greenfield/Charlemont",
+              "designation_type": "Geographic HPSA",
+              "score": 8,
+              "last_update": "09/05/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1256756782",
+              "name": "Southern Berkshires",
+              "designation_type": "Geographic HPSA",
+              "score": 9,
+              "last_update": "07/14/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1256108485",
+              "name": "WILLIAMSTOWN MEDICAL",
+              "designation_type": "Rural Health Clinic",
+              "score": 12,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1257177539",
+              "name": "WILLIAMSTOWN MEDICAL AT NORTH ADAMS",
+              "designation_type": "Rural Health Clinic",
+              "score": 6,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            }
+          ],
+          "source": "HRSA Data Warehouse, Primary Care HPSA (status: Designated)",
+          "source_url": "https://data.hrsa.gov/DataDownload/DD_Files/BCD_HPSA_FCT_DET_PC.csv",
+          "year": "2026-10-23",
+          "level": "Designation area: geographic area, population group, or facility",
+          "cannot_tell_you": "A designation describes an area, population group, or facility. It can't tell you whether this patient can get a primary-care visit."
+        },
+        {
+          "kind": "hospitals",
+          "title": "Nearest acute hospitals to North Adams",
+          "hospitals": [
+            {
+              "name": "North Adams Regional Hospital",
+              "town": "North Adams",
+              "miles": 2,
+              "beds": 18,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 0,
+              "cms_rating": null,
+              "cms_emergency_services": null,
+              "cms_hospital_type": null,
+              "cms_facility_id": null
+            },
+            {
+              "name": "Berkshire Medical Center - Berkshire Campus",
+              "town": "Pittsfield",
+              "miles": 16,
+              "beds": 177,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 22,
+              "cms_rating": null,
+              "cms_emergency_services": null,
+              "cms_hospital_type": null,
+              "cms_facility_id": null
+            },
+            {
+              "name": "Baystate Franklin Medical Center",
+              "town": "Greenfield",
+              "miles": 27,
+              "beds": 53,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 6,
+              "cms_rating": 3,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Acute Care Hospitals",
+              "cms_facility_id": "220016"
+            }
+          ],
+          "source": "MassGIS Hospitals layer",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/Hospitals/MapServer/0",
+          "year": "2026 (retrieved 2026-10-24)",
+          "level": "Hospital point; straight-line miles from the town center",
+          "cannot_tell_you": "Bed counts don't show specialty services or availability. Distance is straight-line from the town center, not travel time."
+        }
+      ]
+    },
+    "packet": null
+  },
+  "R-107": {
+    "synthetic": true,
+    "card": {
+      "id": "R-107",
+      "synthetic": true,
+      "patient": {
+        "id": "aa616abe-1761-0c9a-7959-07544679dafd",
+        "synthetic_name": "Jona712 Olson653",
+        "town": "Great Barrington",
+        "county": "Berkshire",
+        "age": 82,
+        "sex": "F",
+        "payer": "Medicare"
+      },
+      "specialty": "Gastroenterology",
+      "priority": "routine",
+      "performer": {
+        "id": "fx-gi",
+        "name": "Berkshire Digestive Health (fictional)",
+        "town": "Pittsfield",
+        "fictional": true
+      },
+      "stage": "declined",
+      "stage_label": "Declined",
+      "stepper": [
+        {
+          "stage": "sent",
+          "label": "Sent",
+          "at": "2026-10-14"
+        },
+        {
+          "stage": "accepted",
+          "label": "Accepted",
+          "at": null
+        },
+        {
+          "stage": "scheduled",
+          "label": "Scheduled",
+          "at": null
+        },
+        {
+          "stage": "seen",
+          "label": "Seen",
+          "at": null
+        },
+        {
+          "stage": "plan_returned",
+          "label": "Plan returned",
+          "at": null
+        },
+        {
+          "stage": "closed",
+          "label": "Closed",
+          "at": null
+        }
+      ],
+      "miles": 16,
+      "appointment": null,
+      "open_barriers": [],
+      "stuck": [
+        {
+          "rule": "declined_not_rerouted",
+          "days": 4,
+          "message": "Declined 4 days ago — no new referral",
+          "setting_key": "declined_not_rerouted_days",
+          "threshold": 2,
+          "unit": "days",
+          "recipient": "pcp",
+          "challenge_failure": null
+        }
+      ]
+    },
+    "referral": {
+      "id": "R-107",
+      "synthetic": true,
+      "patient_id": "aa616abe-1761-0c9a-7959-07544679dafd",
+      "patient_town": "Great Barrington",
+      "specialty": "Gastroenterology",
+      "pri_spec": "GASTROENTEROLOGY",
+      "priority": "routine",
+      "reason_text": "Please evaluate: Polyp of colon (disorder) (synthetic referral).",
+      "reason_condition": {
+        "code": "68496003",
+        "system": "SNOMED-CT",
+        "display": "Polyp of colon (disorder)",
+        "onset": "1993-12-09"
+      },
+      "requester": {
+        "practice": "Quabbin Hills Family Medicine (fictional)",
+        "clinician": "Dr. Avery Lin (synthetic)",
+        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+      },
+      "performer": {
+        "id": "fx-gi",
+        "name": "Berkshire Digestive Health (fictional)",
+        "town": "Pittsfield",
+        "fictional": true
+      },
+      "stage": "declined",
+      "task_status": "rejected",
+      "business_status": "declined",
+      "authored_on": "2026-10-14",
+      "events": [
+        {
+          "stage": "sent",
+          "at": "2026-10-14",
+          "actor": "pcp",
+          "note": ""
+        },
+        {
+          "stage": "declined",
+          "at": "2026-10-20",
+          "actor": "specialist",
+          "note": "No new-patient capacity this quarter (synthetic)."
+        }
+      ],
+      "appointment": null,
+      "barriers": [],
+      "communications": [],
+      "plan": null,
+      "closure": null,
+      "replaces": null
+    },
+    "allowed_next": [],
+    "timeline": [
+      {
+        "kind": "event",
+        "at": "2026-10-14",
+        "stage": "sent",
+        "actor": "pcp",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-10-20",
+        "stage": "declined",
+        "actor": "specialist",
+        "note": "No new-patient capacity this quarter (synthetic)."
+      }
+    ],
+    "place_context": {
+      "town": "Great Barrington",
+      "county": "Berkshire",
+      "describes": "places, not people",
+      "items": [
+        {
+          "kind": "places",
+          "title": "Berkshire County health estimates",
+          "values": [
+            {
+              "measure": "Visits to doctor for routine checkup within the past year among adults",
+              "value": 81.7,
+              "ci_low": 78.6,
+              "ci_high": 84.4,
+              "unit": "%"
+            },
+            {
+              "measure": "Diagnosed diabetes among adults",
+              "value": 10.9,
+              "ci_low": 9.2,
+              "ci_high": 12.8,
+              "unit": "%"
+            },
+            {
+              "measure": "Obesity among adults",
+              "value": 31.2,
+              "ci_low": 25.4,
+              "ci_high": 36.7,
+              "unit": "%"
+            },
+            {
+              "measure": "Frequent mental distress among adults",
+              "value": 16.9,
+              "ci_low": 14.7,
+              "ci_high": 19.1,
+              "unit": "%"
+            },
+            {
+              "measure": "Current cigarette smoking among adults",
+              "value": 12.7,
+              "ci_low": 9.8,
+              "ci_high": 15.6,
+              "unit": "%"
+            }
+          ],
+          "source": "CDC PLACES (crude prevalence)",
+          "source_url": "https://data.cdc.gov/resource/swc5-untb",
+          "year": "2023",
+          "level": "County (model-based estimate)",
+          "cannot_tell_you": "Model-based county estimates. They say nothing about this patient or about this town specifically."
+        },
+        {
+          "kind": "ej",
+          "title": "Environmental-justice block groups in Great Barrington",
+          "block_groups": 3,
+          "criteria": [
+            {
+              "criteria": "Income",
+              "block_groups": 2
+            },
+            {
+              "criteria": "Minority",
+              "block_groups": 1
+            }
+          ],
+          "source": "Massachusetts EEA / MassGIS, Environmental Justice Populations",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/EJ2020/MapServer/0",
+          "year": "2020",
+          "level": "Census block group, summarized to town",
+          "cannot_tell_you": "Criteria describe block-group populations, not this patient or household, and not where in town the patient lives."
+        },
+        {
+          "kind": "hrsa",
+          "title": "Primary-care shortage designations in Berkshire County",
+          "designations": [
+            {
+              "hpsa_id": "1256756782",
+              "name": "Southern Berkshires",
+              "designation_type": "Geographic HPSA",
+              "score": 9,
+              "last_update": "07/14/2025",
+              "includes_town": true
+            },
+            {
+              "hpsa_id": "12599925A4",
+              "name": "COMMUNITY HEALTH PROGRAMS, INCORPORATED",
+              "designation_type": "Federally Qualified Health Center",
+              "score": 16,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1257086048",
+              "name": "EAST MOUNTAIN MEDICAL",
+              "designation_type": "Rural Health Clinic",
+              "score": 16,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1259478409",
+              "name": "Greenfield/Charlemont",
+              "designation_type": "Geographic HPSA",
+              "score": 8,
+              "last_update": "09/05/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1255654871",
+              "name": "LI - North Berkshire County",
+              "designation_type": "HPSA Population",
+              "score": 15,
+              "last_update": "08/22/2022",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1256108485",
+              "name": "WILLIAMSTOWN MEDICAL",
+              "designation_type": "Rural Health Clinic",
+              "score": 12,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1257177539",
+              "name": "WILLIAMSTOWN MEDICAL AT NORTH ADAMS",
+              "designation_type": "Rural Health Clinic",
+              "score": 6,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            }
+          ],
+          "source": "HRSA Data Warehouse, Primary Care HPSA (status: Designated)",
+          "source_url": "https://data.hrsa.gov/DataDownload/DD_Files/BCD_HPSA_FCT_DET_PC.csv",
+          "year": "2026-10-23",
+          "level": "Designation area: geographic area, population group, or facility",
+          "cannot_tell_you": "A designation describes an area, population group, or facility. It can't tell you whether this patient can get a primary-care visit."
+        },
+        {
+          "kind": "hospitals",
+          "title": "Nearest acute hospitals to Great Barrington",
+          "hospitals": [
+            {
+              "name": "Fairview Hospital",
+              "town": "Great Barrington",
+              "miles": 3,
+              "beds": 21,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 5,
+              "cms_rating": 5,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Critical Access Hospitals",
+              "cms_facility_id": "221302"
+            },
+            {
+              "name": "Berkshire Medical Center - Berkshire Campus",
+              "town": "Pittsfield",
+              "miles": 17,
+              "beds": 177,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 22,
+              "cms_rating": null,
+              "cms_emergency_services": null,
+              "cms_hospital_type": null,
+              "cms_facility_id": null
+            },
+            {
+              "name": "Baystate Noble Hospital",
+              "town": "Westfield",
+              "miles": 30,
+              "beds": 50,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 0,
+              "cms_rating": 2,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Acute Care Hospitals",
+              "cms_facility_id": "220065"
+            }
+          ],
+          "source": "MassGIS Hospitals layer",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/Hospitals/MapServer/0",
+          "year": "2026 (retrieved 2026-10-24)",
+          "level": "Hospital point; straight-line miles from the town center",
+          "cannot_tell_you": "Bed counts don't show specialty services or availability. Distance is straight-line from the town center, not travel time."
+        }
+      ]
+    },
+    "packet": null
+  },
+  "R-108": {
+    "synthetic": true,
+    "card": {
+      "id": "R-108",
+      "synthetic": true,
+      "patient": {
+        "id": "b7791785-0a80-6c8f-9111-d0d6eae834f1",
+        "synthetic_name": "Rhett759 Huels583",
+        "town": "Greenfield",
+        "county": "Franklin",
+        "age": 87,
+        "sex": "M",
+        "payer": "Medicare"
+      },
+      "specialty": "Cardiology",
+      "priority": "routine",
+      "performer": {
+        "id": "fx-cardio",
+        "name": "Pioneer Valley Heart Associates (fictional)",
+        "town": "Springfield",
+        "fictional": true
+      },
+      "stage": "no_show",
+      "stage_label": "No-show",
+      "stepper": [
+        {
+          "stage": "sent",
+          "label": "Sent",
+          "at": "2026-09-22"
+        },
+        {
+          "stage": "accepted",
+          "label": "Accepted",
+          "at": "2026-09-24"
+        },
+        {
+          "stage": "scheduled",
+          "label": "Scheduled",
+          "at": "2026-09-26"
+        },
+        {
+          "stage": "seen",
+          "label": "Seen",
+          "at": null
+        },
+        {
+          "stage": "plan_returned",
+          "label": "Plan returned",
+          "at": null
+        },
+        {
+          "stage": "closed",
+          "label": "Closed",
+          "at": null
+        }
+      ],
+      "miles": 35,
+      "appointment": {
+        "start": "2026-10-15",
+        "status": "noshow"
+      },
+      "open_barriers": [
+        {
+          "type": "schedule_work",
+          "label": "Schedule/work",
+          "opened": "2026-10-16"
+        }
+      ],
+      "stuck": [
+        {
+          "rule": "no_show",
+          "days": 9,
+          "message": "Missed appointment on 2026-10-15",
+          "setting_key": "no_show_days",
+          "threshold": 0,
+          "unit": "days",
+          "recipient": "patient",
+          "challenge_failure": null
+        },
+        {
+          "rule": "barrier_open",
+          "days": 8,
+          "message": "Schedule/work barrier open 8 days",
+          "setting_key": "barrier_open_days",
+          "threshold": 7,
+          "unit": "days",
+          "recipient": "patient",
+          "challenge_failure": null
+        }
+      ]
+    },
+    "referral": {
+      "id": "R-108",
+      "synthetic": true,
+      "patient_id": "b7791785-0a80-6c8f-9111-d0d6eae834f1",
+      "patient_town": "Greenfield",
+      "specialty": "Cardiology",
+      "pri_spec": "CARDIOVASCULAR DISEASE (CARDIOLOGY)",
+      "priority": "routine",
+      "reason_text": "Please evaluate: History of myocardial infarction (situation) (synthetic referral).",
+      "reason_condition": {
+        "code": "399211009",
+        "system": "SNOMED-CT",
+        "display": "History of myocardial infarction (situation)",
+        "onset": "2019-07-21"
+      },
+      "requester": {
+        "practice": "Quabbin Hills Family Medicine (fictional)",
+        "clinician": "Dr. Avery Lin (synthetic)",
+        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+      },
+      "performer": {
+        "id": "fx-cardio",
+        "name": "Pioneer Valley Heart Associates (fictional)",
+        "town": "Springfield",
+        "fictional": true
+      },
+      "stage": "no_show",
+      "task_status": "in-progress",
+      "business_status": "no-show",
+      "authored_on": "2026-09-22",
+      "events": [
+        {
+          "stage": "sent",
+          "at": "2026-09-22",
+          "actor": "pcp",
+          "note": ""
+        },
+        {
+          "stage": "accepted",
+          "at": "2026-09-24",
+          "actor": "specialist",
+          "note": ""
+        },
+        {
+          "stage": "scheduled",
+          "at": "2026-09-26",
+          "actor": "specialist",
+          "note": ""
+        },
+        {
+          "stage": "no_show",
+          "at": "2026-10-15",
+          "actor": "specialist",
+          "note": ""
+        }
+      ],
+      "appointment": {
+        "start": "2026-10-15",
+        "status": "noshow"
+      },
+      "barriers": [
+        {
+          "type": "schedule_work",
+          "status": "open",
+          "opened": "2026-10-16",
+          "note": "Works weekday shifts; asked about late-day slots (synthetic).",
+          "addressed": null
+        }
+      ],
+      "communications": [],
+      "plan": null,
+      "closure": null,
+      "replaces": null
+    },
+    "allowed_next": [
+      {
+        "stage": "scheduled",
+        "label": "Scheduled"
+      },
+      {
+        "stage": "patient_barrier",
+        "label": "Patient barrier"
+      },
+      {
+        "stage": "cancelled",
+        "label": "Cancelled"
+      }
+    ],
+    "timeline": [
+      {
+        "kind": "event",
+        "at": "2026-09-22",
+        "stage": "sent",
+        "actor": "pcp",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-09-24",
+        "stage": "accepted",
+        "actor": "specialist",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-09-26",
+        "stage": "scheduled",
+        "actor": "specialist",
+        "note": ""
+      },
+      {
+        "kind": "event",
+        "at": "2026-10-15",
+        "stage": "no_show",
+        "actor": "specialist",
+        "note": ""
+      }
+    ],
+    "place_context": {
+      "town": "Greenfield",
+      "county": "Franklin",
+      "describes": "places, not people",
+      "items": [
+        {
+          "kind": "places",
+          "title": "Franklin County health estimates",
+          "values": [
+            {
+              "measure": "Visits to doctor for routine checkup within the past year among adults",
+              "value": 82.1,
+              "ci_low": 78.8,
+              "ci_high": 85.0,
+              "unit": "%"
+            },
+            {
+              "measure": "Diagnosed diabetes among adults",
+              "value": 10.8,
+              "ci_low": 9.1,
+              "ci_high": 12.7,
+              "unit": "%"
+            },
+            {
+              "measure": "Obesity among adults",
+              "value": 26.3,
+              "ci_low": 20.8,
+              "ci_high": 32.8,
+              "unit": "%"
+            },
+            {
+              "measure": "Frequent mental distress among adults",
+              "value": 16.1,
+              "ci_low": 13.8,
+              "ci_high": 18.5,
+              "unit": "%"
+            },
+            {
+              "measure": "Current cigarette smoking among adults",
+              "value": 12.8,
+              "ci_low": 9.8,
+              "ci_high": 15.9,
+              "unit": "%"
+            }
+          ],
+          "source": "CDC PLACES (crude prevalence)",
+          "source_url": "https://data.cdc.gov/resource/swc5-untb",
+          "year": "2023",
+          "level": "County (model-based estimate)",
+          "cannot_tell_you": "Model-based county estimates. They say nothing about this patient or about this town specifically."
+        },
+        {
+          "kind": "ej",
+          "title": "Environmental-justice block groups in Greenfield",
+          "block_groups": 10,
+          "criteria": [
+            {
+              "criteria": "Income",
+              "block_groups": 8
+            },
+            {
+              "criteria": "Minority and income",
+              "block_groups": 2
+            }
+          ],
+          "source": "Massachusetts EEA / MassGIS, Environmental Justice Populations",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/EJ2020/MapServer/0",
+          "year": "2020",
+          "level": "Census block group, summarized to town",
+          "cannot_tell_you": "Criteria describe block-group populations, not this patient or household, and not where in town the patient lives."
+        },
+        {
+          "kind": "hrsa",
+          "title": "Primary-care shortage designations in Franklin County",
+          "designations": [
+            {
+              "hpsa_id": "1259478409",
+              "name": "Greenfield/Charlemont",
+              "designation_type": "Geographic HPSA",
+              "score": 8,
+              "last_update": "09/05/2025",
+              "includes_town": true
+            },
+            {
+              "hpsa_id": "1259992571",
+              "name": "COMMUNITY HEALTH CENTER OF FRANKLIN COUNTY INC",
+              "designation_type": "Federally Qualified Health Center",
+              "score": 18,
+              "last_update": "09/22/2025",
+              "includes_town": false
+            },
+            {
+              "hpsa_id": "1253715190",
+              "name": "North Quabbin",
+              "designation_type": "Geographic HPSA",
+              "score": 10,
+              "last_update": "10/16/2025",
+              "includes_town": false
+            }
+          ],
+          "source": "HRSA Data Warehouse, Primary Care HPSA (status: Designated)",
+          "source_url": "https://data.hrsa.gov/DataDownload/DD_Files/BCD_HPSA_FCT_DET_PC.csv",
+          "year": "2026-10-23",
+          "level": "Designation area: geographic area, population group, or facility",
+          "cannot_tell_you": "A designation describes an area, population group, or facility. It can't tell you whether this patient can get a primary-care visit."
+        },
+        {
+          "kind": "hospitals",
+          "title": "Nearest acute hospitals to Greenfield",
+          "hospitals": [
+            {
+              "name": "Baystate Franklin Medical Center",
+              "town": "Greenfield",
+              "miles": 1,
+              "beds": 53,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 6,
+              "cms_rating": 3,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Acute Care Hospitals",
+              "cms_facility_id": "220016"
+            },
+            {
+              "name": "Cooley Dickinson Hospital",
+              "town": "Northampton",
+              "miles": 20,
+              "beds": 108,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 11,
+              "cms_rating": null,
+              "cms_emergency_services": null,
+              "cms_hospital_type": null,
+              "cms_facility_id": null
+            },
+            {
+              "name": "Athol Memorial Hospital",
+              "town": "Athol",
+              "miles": 20,
+              "beds": 21,
+              "beds_label": "med/surg + ICU + pediatric beds",
+              "icu_beds": 0,
+              "cms_rating": 2,
+              "cms_emergency_services": "Yes",
+              "cms_hospital_type": "Critical Access Hospitals",
+              "cms_facility_id": "221303"
+            }
+          ],
+          "source": "MassGIS Hospitals layer",
+          "source_url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/Hospitals/MapServer/0",
+          "year": "2026 (retrieved 2026-10-24)",
+          "level": "Hospital point; straight-line miles from the town center",
+          "cannot_tell_you": "Bed counts don't show specialty services or availability. Distance is straight-line from the town center, not travel time."
+        }
+      ]
+    },
+    "packet": null
+  }
+}

@@ -2,5 +2,8 @@ tools/
 data/raw/
 __pycache__/
 node_modules/
+.venv/
+.pytest_cache/
+frontend/dist/
 .DS_Store
 data/synthea_raw/

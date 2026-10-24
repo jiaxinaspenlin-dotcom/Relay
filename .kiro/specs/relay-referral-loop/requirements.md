@@ -61,16 +61,23 @@ patient's travel in mind.
    snapshot, grouped at organization + address level, **without individual clinician names**.
 3. Each practice card SHALL show: organization, city, straight-line distance in miles from the
    patient's town center, number of clinicians in that specialty at that location, Medicare
-   assignment (yes / partial / no), and the **nearest hospital to the practice town** from the
-   MassGIS hospitals layer (`data/public/hospitals_massgis.csv`) with its straight-line miles from
-   the practice town center and bed count.
+   assignment, and the **nearest acute hospital to the practice town** from the MassGIS hospitals
+   layer (`data/public/hospitals_massgis.csv`) with its straight-line miles from the practice town
+   center and its bed count.
+   - Medicare assignment comes from `ind_assgn` (CMS data dictionary: Y = clinician accepts the
+     Medicare-approved amount as payment in full; M = clinician may accept Medicare assignment).
+     WHEN every clinician at the location is `Y` THE SYSTEM SHALL show "Accepts Medicare
+     assignment". WHEN any clinician is `M` it SHALL show "May accept Medicare assignment — confirm
+     with the office". It SHALL NEVER show "No"; the data has no such value.
+   - Bed count SHALL be labeled exactly "med/surg + ICU + pediatric beds", never "total beds". ICU
+     beds MAY be shown separately.
    - WHEN that hospital's normalized name exactly matches a `facility_name` in
      `hospitals_cms_ma.csv` THE SYSTEM SHALL show its CMS overall star rating. Otherwise it SHALL
-     show "CMS rating not matched" and SHALL NOT guess a match.
+     show nothing for rating and SHALL NOT guess a match (no fuzzy matching).
    - The CMS clinician file (`mj5m-pzi6`) has no hospital-affiliation columns. THE SYSTEM SHALL NOT
      describe any hospital as "affiliated" with a practice; the label is "Nearest hospital".
-4. THE SYSTEM SHALL sort by distance by default and allow sorting by the nearest hospital's CMS star
-   rating (unmatched last). It SHALL NOT label any practice "best".
+4. THE SYSTEM SHALL sort by distance only. It SHALL NOT offer a rating sort, and SHALL NOT label
+   any practice "best".
 5. WHEN the patient's coverage is Medicare THE SYSTEM SHALL show the Medicare assignment status
    prominently. It SHALL NOT claim network status for any other coverage.
 6. (SHOULD) THE SYSTEM SHALL show a mini-map with the patient's town and the top practices, with

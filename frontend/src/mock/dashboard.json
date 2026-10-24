@@ -1,0 +1,1113 @@
+{
+  "synthetic": true,
+  "as_of": "2026-10-24",
+  "summary": {
+    "synthetic": true,
+    "as_of": "2026-10-24",
+    "open": 7,
+    "stuck": 5,
+    "closed_this_month": 1,
+    "median_days_sent_to_scheduled": 4,
+    "median_basis_n": 5
+  },
+  "needs_attention": [
+    {
+      "referral_id": "R-102",
+      "stage": "accepted",
+      "days_stuck": 14,
+      "flags": [
+        {
+          "rule": "accepted_no_appointment",
+          "days": 14,
+          "message": "Accepted 14 days ago — no appointment yet",
+          "setting_key": "accepted_no_appointment_days",
+          "threshold": 7,
+          "unit": "days",
+          "recipient": "specialist",
+          "challenge_failure": 1
+        },
+        {
+          "rule": "barrier_open",
+          "days": 12,
+          "message": "Transportation barrier open 12 days",
+          "setting_key": "barrier_open_days",
+          "threshold": 7,
+          "unit": "days",
+          "recipient": "patient",
+          "challenge_failure": null
+        }
+      ],
+      "open_barriers": [
+        "transportation"
+      ],
+      "card": {
+        "id": "R-102",
+        "synthetic": true,
+        "patient": {
+          "id": "a94cbdb3-6379-0fdc-1a9b-28ae9399782c",
+          "synthetic_name": "Lajuana164 Wilkinson796",
+          "town": "Great Barrington",
+          "county": "Berkshire",
+          "age": 86,
+          "sex": "F",
+          "payer": "Medicare"
+        },
+        "specialty": "Nephrology",
+        "priority": "routine",
+        "performer": {
+          "id": "fx-neph",
+          "name": "Central Mass Kidney Care (fictional)",
+          "town": "Worcester",
+          "fictional": true
+        },
+        "stage": "accepted",
+        "stage_label": "Accepted",
+        "stepper": [
+          {
+            "stage": "sent",
+            "label": "Sent",
+            "at": "2026-10-06"
+          },
+          {
+            "stage": "accepted",
+            "label": "Accepted",
+            "at": "2026-10-10"
+          },
+          {
+            "stage": "scheduled",
+            "label": "Scheduled",
+            "at": null
+          },
+          {
+            "stage": "seen",
+            "label": "Seen",
+            "at": null
+          },
+          {
+            "stage": "plan_returned",
+            "label": "Plan returned",
+            "at": null
+          },
+          {
+            "stage": "closed",
+            "label": "Closed",
+            "at": null
+          }
+        ],
+        "miles": 78,
+        "appointment": null,
+        "open_barriers": [
+          {
+            "type": "transportation",
+            "label": "Transportation",
+            "opened": "2026-10-12"
+          }
+        ],
+        "stuck": [
+          {
+            "rule": "accepted_no_appointment",
+            "days": 14,
+            "message": "Accepted 14 days ago — no appointment yet",
+            "setting_key": "accepted_no_appointment_days",
+            "threshold": 7,
+            "unit": "days",
+            "recipient": "specialist",
+            "challenge_failure": 1
+          },
+          {
+            "rule": "barrier_open",
+            "days": 12,
+            "message": "Transportation barrier open 12 days",
+            "setting_key": "barrier_open_days",
+            "threshold": 7,
+            "unit": "days",
+            "recipient": "patient",
+            "challenge_failure": null
+          }
+        ]
+      }
+    },
+    {
+      "referral_id": "R-104",
+      "stage": "seen",
+      "days_stuck": 12,
+      "flags": [
+        {
+          "rule": "seen_no_plan",
+          "days": 12,
+          "message": "Seen 12 days ago — plan not received",
+          "setting_key": "seen_no_plan_days",
+          "threshold": 7,
+          "unit": "days",
+          "recipient": "specialist",
+          "challenge_failure": 2
+        }
+      ],
+      "open_barriers": [],
+      "card": {
+        "id": "R-104",
+        "synthetic": true,
+        "patient": {
+          "id": "a4fd2a0e-8bd8-d073-c7bf-38b30dbfab69",
+          "synthetic_name": "Christian753 Jacobson885",
+          "town": "Orange",
+          "county": "Franklin",
+          "age": 87,
+          "sex": "M",
+          "payer": "Dual Eligible"
+        },
+        "specialty": "Cardiology",
+        "priority": "routine",
+        "performer": {
+          "id": "fx-cardio",
+          "name": "Pioneer Valley Heart Associates (fictional)",
+          "town": "Springfield",
+          "fictional": true
+        },
+        "stage": "seen",
+        "stage_label": "Seen",
+        "stepper": [
+          {
+            "stage": "sent",
+            "label": "Sent",
+            "at": "2026-09-15"
+          },
+          {
+            "stage": "accepted",
+            "label": "Accepted",
+            "at": "2026-09-17"
+          },
+          {
+            "stage": "scheduled",
+            "label": "Scheduled",
+            "at": "2026-09-19"
+          },
+          {
+            "stage": "seen",
+            "label": "Seen",
+            "at": "2026-10-12"
+          },
+          {
+            "stage": "plan_returned",
+            "label": "Plan returned",
+            "at": null
+          },
+          {
+            "stage": "closed",
+            "label": "Closed",
+            "at": null
+          }
+        ],
+        "miles": 36,
+        "appointment": {
+          "start": "2026-10-12",
+          "status": "fulfilled"
+        },
+        "open_barriers": [],
+        "stuck": [
+          {
+            "rule": "seen_no_plan",
+            "days": 12,
+            "message": "Seen 12 days ago — plan not received",
+            "setting_key": "seen_no_plan_days",
+            "threshold": 7,
+            "unit": "days",
+            "recipient": "specialist",
+            "challenge_failure": 2
+          }
+        ]
+      }
+    },
+    {
+      "referral_id": "R-108",
+      "stage": "no_show",
+      "days_stuck": 9,
+      "flags": [
+        {
+          "rule": "no_show",
+          "days": 9,
+          "message": "Missed appointment on 2026-10-15",
+          "setting_key": "no_show_days",
+          "threshold": 0,
+          "unit": "days",
+          "recipient": "patient",
+          "challenge_failure": null
+        },
+        {
+          "rule": "barrier_open",
+          "days": 8,
+          "message": "Schedule/work barrier open 8 days",
+          "setting_key": "barrier_open_days",
+          "threshold": 7,
+          "unit": "days",
+          "recipient": "patient",
+          "challenge_failure": null
+        }
+      ],
+      "open_barriers": [
+        "schedule_work"
+      ],
+      "card": {
+        "id": "R-108",
+        "synthetic": true,
+        "patient": {
+          "id": "b7791785-0a80-6c8f-9111-d0d6eae834f1",
+          "synthetic_name": "Rhett759 Huels583",
+          "town": "Greenfield",
+          "county": "Franklin",
+          "age": 87,
+          "sex": "M",
+          "payer": "Medicare"
+        },
+        "specialty": "Cardiology",
+        "priority": "routine",
+        "performer": {
+          "id": "fx-cardio",
+          "name": "Pioneer Valley Heart Associates (fictional)",
+          "town": "Springfield",
+          "fictional": true
+        },
+        "stage": "no_show",
+        "stage_label": "No-show",
+        "stepper": [
+          {
+            "stage": "sent",
+            "label": "Sent",
+            "at": "2026-09-22"
+          },
+          {
+            "stage": "accepted",
+            "label": "Accepted",
+            "at": "2026-09-24"
+          },
+          {
+            "stage": "scheduled",
+            "label": "Scheduled",
+            "at": "2026-09-26"
+          },
+          {
+            "stage": "seen",
+            "label": "Seen",
+            "at": null
+          },
+          {
+            "stage": "plan_returned",
+            "label": "Plan returned",
+            "at": null
+          },
+          {
+            "stage": "closed",
+            "label": "Closed",
+            "at": null
+          }
+        ],
+        "miles": 35,
+        "appointment": {
+          "start": "2026-10-15",
+          "status": "noshow"
+        },
+        "open_barriers": [
+          {
+            "type": "schedule_work",
+            "label": "Schedule/work",
+            "opened": "2026-10-16"
+          }
+        ],
+        "stuck": [
+          {
+            "rule": "no_show",
+            "days": 9,
+            "message": "Missed appointment on 2026-10-15",
+            "setting_key": "no_show_days",
+            "threshold": 0,
+            "unit": "days",
+            "recipient": "patient",
+            "challenge_failure": null
+          },
+          {
+            "rule": "barrier_open",
+            "days": 8,
+            "message": "Schedule/work barrier open 8 days",
+            "setting_key": "barrier_open_days",
+            "threshold": 7,
+            "unit": "days",
+            "recipient": "patient",
+            "challenge_failure": null
+          }
+        ]
+      }
+    },
+    {
+      "referral_id": "R-101",
+      "stage": "sent",
+      "days_stuck": 5,
+      "flags": [
+        {
+          "rule": "sent_no_response",
+          "days": 5,
+          "message": "Sent 5 business days ago — no response from Connecticut River Endocrine Group (fictional)",
+          "setting_key": "sent_no_response_business_days",
+          "threshold": 3,
+          "unit": "business days",
+          "recipient": "specialist",
+          "challenge_failure": null
+        }
+      ],
+      "open_barriers": [],
+      "card": {
+        "id": "R-101",
+        "synthetic": true,
+        "patient": {
+          "id": "6c82ee38-33d8-5667-c9c7-a4c869857230",
+          "synthetic_name": "Edward499 Hauck852",
+          "town": "Athol",
+          "county": "Worcester",
+          "age": 87,
+          "sex": "M",
+          "payer": "Medicare"
+        },
+        "specialty": "Endocrinology",
+        "priority": "routine",
+        "performer": {
+          "id": "fx-endo",
+          "name": "Connecticut River Endocrine Group (fictional)",
+          "town": "Northampton",
+          "fictional": true
+        },
+        "stage": "sent",
+        "stage_label": "Sent",
+        "stepper": [
+          {
+            "stage": "sent",
+            "label": "Sent",
+            "at": "2026-10-17"
+          },
+          {
+            "stage": "accepted",
+            "label": "Accepted",
+            "at": null
+          },
+          {
+            "stage": "scheduled",
+            "label": "Scheduled",
+            "at": null
+          },
+          {
+            "stage": "seen",
+            "label": "Seen",
+            "at": null
+          },
+          {
+            "stage": "plan_returned",
+            "label": "Plan returned",
+            "at": null
+          },
+          {
+            "stage": "closed",
+            "label": "Closed",
+            "at": null
+          }
+        ],
+        "miles": 28,
+        "appointment": null,
+        "open_barriers": [],
+        "stuck": [
+          {
+            "rule": "sent_no_response",
+            "days": 5,
+            "message": "Sent 5 business days ago — no response from Connecticut River Endocrine Group (fictional)",
+            "setting_key": "sent_no_response_business_days",
+            "threshold": 3,
+            "unit": "business days",
+            "recipient": "specialist",
+            "challenge_failure": null
+          }
+        ]
+      }
+    },
+    {
+      "referral_id": "R-107",
+      "stage": "declined",
+      "days_stuck": 4,
+      "flags": [
+        {
+          "rule": "declined_not_rerouted",
+          "days": 4,
+          "message": "Declined 4 days ago — no new referral",
+          "setting_key": "declined_not_rerouted_days",
+          "threshold": 2,
+          "unit": "days",
+          "recipient": "pcp",
+          "challenge_failure": null
+        }
+      ],
+      "open_barriers": [],
+      "card": {
+        "id": "R-107",
+        "synthetic": true,
+        "patient": {
+          "id": "aa616abe-1761-0c9a-7959-07544679dafd",
+          "synthetic_name": "Jona712 Olson653",
+          "town": "Great Barrington",
+          "county": "Berkshire",
+          "age": 82,
+          "sex": "F",
+          "payer": "Medicare"
+        },
+        "specialty": "Gastroenterology",
+        "priority": "routine",
+        "performer": {
+          "id": "fx-gi",
+          "name": "Berkshire Digestive Health (fictional)",
+          "town": "Pittsfield",
+          "fictional": true
+        },
+        "stage": "declined",
+        "stage_label": "Declined",
+        "stepper": [
+          {
+            "stage": "sent",
+            "label": "Sent",
+            "at": "2026-10-14"
+          },
+          {
+            "stage": "accepted",
+            "label": "Accepted",
+            "at": null
+          },
+          {
+            "stage": "scheduled",
+            "label": "Scheduled",
+            "at": null
+          },
+          {
+            "stage": "seen",
+            "label": "Seen",
+            "at": null
+          },
+          {
+            "stage": "plan_returned",
+            "label": "Plan returned",
+            "at": null
+          },
+          {
+            "stage": "closed",
+            "label": "Closed",
+            "at": null
+          }
+        ],
+        "miles": 16,
+        "appointment": null,
+        "open_barriers": [],
+        "stuck": [
+          {
+            "rule": "declined_not_rerouted",
+            "days": 4,
+            "message": "Declined 4 days ago — no new referral",
+            "setting_key": "declined_not_rerouted_days",
+            "threshold": 2,
+            "unit": "days",
+            "recipient": "pcp",
+            "challenge_failure": null
+          }
+        ]
+      }
+    }
+  ],
+  "pipeline": [
+    {
+      "stage": "sent",
+      "label": "Sent",
+      "referral_ids": [
+        "R-101"
+      ],
+      "cards": [
+        {
+          "id": "R-101",
+          "synthetic": true,
+          "patient": {
+            "id": "6c82ee38-33d8-5667-c9c7-a4c869857230",
+            "synthetic_name": "Edward499 Hauck852",
+            "town": "Athol",
+            "county": "Worcester",
+            "age": 87,
+            "sex": "M",
+            "payer": "Medicare"
+          },
+          "specialty": "Endocrinology",
+          "priority": "routine",
+          "performer": {
+            "id": "fx-endo",
+            "name": "Connecticut River Endocrine Group (fictional)",
+            "town": "Northampton",
+            "fictional": true
+          },
+          "stage": "sent",
+          "stage_label": "Sent",
+          "stepper": [
+            {
+              "stage": "sent",
+              "label": "Sent",
+              "at": "2026-10-17"
+            },
+            {
+              "stage": "accepted",
+              "label": "Accepted",
+              "at": null
+            },
+            {
+              "stage": "scheduled",
+              "label": "Scheduled",
+              "at": null
+            },
+            {
+              "stage": "seen",
+              "label": "Seen",
+              "at": null
+            },
+            {
+              "stage": "plan_returned",
+              "label": "Plan returned",
+              "at": null
+            },
+            {
+              "stage": "closed",
+              "label": "Closed",
+              "at": null
+            }
+          ],
+          "miles": 28,
+          "appointment": null,
+          "open_barriers": [],
+          "stuck": [
+            {
+              "rule": "sent_no_response",
+              "days": 5,
+              "message": "Sent 5 business days ago — no response from Connecticut River Endocrine Group (fictional)",
+              "setting_key": "sent_no_response_business_days",
+              "threshold": 3,
+              "unit": "business days",
+              "recipient": "specialist",
+              "challenge_failure": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stage": "accepted",
+      "label": "Accepted",
+      "referral_ids": [
+        "R-102"
+      ],
+      "cards": [
+        {
+          "id": "R-102",
+          "synthetic": true,
+          "patient": {
+            "id": "a94cbdb3-6379-0fdc-1a9b-28ae9399782c",
+            "synthetic_name": "Lajuana164 Wilkinson796",
+            "town": "Great Barrington",
+            "county": "Berkshire",
+            "age": 86,
+            "sex": "F",
+            "payer": "Medicare"
+          },
+          "specialty": "Nephrology",
+          "priority": "routine",
+          "performer": {
+            "id": "fx-neph",
+            "name": "Central Mass Kidney Care (fictional)",
+            "town": "Worcester",
+            "fictional": true
+          },
+          "stage": "accepted",
+          "stage_label": "Accepted",
+          "stepper": [
+            {
+              "stage": "sent",
+              "label": "Sent",
+              "at": "2026-10-06"
+            },
+            {
+              "stage": "accepted",
+              "label": "Accepted",
+              "at": "2026-10-10"
+            },
+            {
+              "stage": "scheduled",
+              "label": "Scheduled",
+              "at": null
+            },
+            {
+              "stage": "seen",
+              "label": "Seen",
+              "at": null
+            },
+            {
+              "stage": "plan_returned",
+              "label": "Plan returned",
+              "at": null
+            },
+            {
+              "stage": "closed",
+              "label": "Closed",
+              "at": null
+            }
+          ],
+          "miles": 78,
+          "appointment": null,
+          "open_barriers": [
+            {
+              "type": "transportation",
+              "label": "Transportation",
+              "opened": "2026-10-12"
+            }
+          ],
+          "stuck": [
+            {
+              "rule": "accepted_no_appointment",
+              "days": 14,
+              "message": "Accepted 14 days ago — no appointment yet",
+              "setting_key": "accepted_no_appointment_days",
+              "threshold": 7,
+              "unit": "days",
+              "recipient": "specialist",
+              "challenge_failure": 1
+            },
+            {
+              "rule": "barrier_open",
+              "days": 12,
+              "message": "Transportation barrier open 12 days",
+              "setting_key": "barrier_open_days",
+              "threshold": 7,
+              "unit": "days",
+              "recipient": "patient",
+              "challenge_failure": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stage": "scheduled",
+      "label": "Scheduled",
+      "referral_ids": [
+        "R-103"
+      ],
+      "cards": [
+        {
+          "id": "R-103",
+          "synthetic": true,
+          "patient": {
+            "id": "76b20010-c318-5754-8c85-983aa538522f",
+            "synthetic_name": "Shondra529 Hickle134",
+            "town": "Greenfield",
+            "county": "Franklin",
+            "age": 76,
+            "sex": "F",
+            "payer": "Medicare"
+          },
+          "specialty": "Gastroenterology",
+          "priority": "routine",
+          "performer": {
+            "id": "fx-gi",
+            "name": "Berkshire Digestive Health (fictional)",
+            "town": "Pittsfield",
+            "fictional": true
+          },
+          "stage": "scheduled",
+          "stage_label": "Scheduled",
+          "stepper": [
+            {
+              "stage": "sent",
+              "label": "Sent",
+              "at": "2026-10-01"
+            },
+            {
+              "stage": "accepted",
+              "label": "Accepted",
+              "at": "2026-10-03"
+            },
+            {
+              "stage": "scheduled",
+              "label": "Scheduled",
+              "at": "2026-10-08"
+            },
+            {
+              "stage": "seen",
+              "label": "Seen",
+              "at": null
+            },
+            {
+              "stage": "plan_returned",
+              "label": "Plan returned",
+              "at": null
+            },
+            {
+              "stage": "closed",
+              "label": "Closed",
+              "at": null
+            }
+          ],
+          "miles": 36,
+          "appointment": {
+            "start": "2026-11-03",
+            "status": "booked"
+          },
+          "open_barriers": [],
+          "stuck": []
+        }
+      ]
+    },
+    {
+      "stage": "no_show",
+      "label": "No-show",
+      "referral_ids": [
+        "R-108"
+      ],
+      "cards": [
+        {
+          "id": "R-108",
+          "synthetic": true,
+          "patient": {
+            "id": "b7791785-0a80-6c8f-9111-d0d6eae834f1",
+            "synthetic_name": "Rhett759 Huels583",
+            "town": "Greenfield",
+            "county": "Franklin",
+            "age": 87,
+            "sex": "M",
+            "payer": "Medicare"
+          },
+          "specialty": "Cardiology",
+          "priority": "routine",
+          "performer": {
+            "id": "fx-cardio",
+            "name": "Pioneer Valley Heart Associates (fictional)",
+            "town": "Springfield",
+            "fictional": true
+          },
+          "stage": "no_show",
+          "stage_label": "No-show",
+          "stepper": [
+            {
+              "stage": "sent",
+              "label": "Sent",
+              "at": "2026-09-22"
+            },
+            {
+              "stage": "accepted",
+              "label": "Accepted",
+              "at": "2026-09-24"
+            },
+            {
+              "stage": "scheduled",
+              "label": "Scheduled",
+              "at": "2026-09-26"
+            },
+            {
+              "stage": "seen",
+              "label": "Seen",
+              "at": null
+            },
+            {
+              "stage": "plan_returned",
+              "label": "Plan returned",
+              "at": null
+            },
+            {
+              "stage": "closed",
+              "label": "Closed",
+              "at": null
+            }
+          ],
+          "miles": 35,
+          "appointment": {
+            "start": "2026-10-15",
+            "status": "noshow"
+          },
+          "open_barriers": [
+            {
+              "type": "schedule_work",
+              "label": "Schedule/work",
+              "opened": "2026-10-16"
+            }
+          ],
+          "stuck": [
+            {
+              "rule": "no_show",
+              "days": 9,
+              "message": "Missed appointment on 2026-10-15",
+              "setting_key": "no_show_days",
+              "threshold": 0,
+              "unit": "days",
+              "recipient": "patient",
+              "challenge_failure": null
+            },
+            {
+              "rule": "barrier_open",
+              "days": 8,
+              "message": "Schedule/work barrier open 8 days",
+              "setting_key": "barrier_open_days",
+              "threshold": 7,
+              "unit": "days",
+              "recipient": "patient",
+              "challenge_failure": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stage": "seen",
+      "label": "Seen",
+      "referral_ids": [
+        "R-104"
+      ],
+      "cards": [
+        {
+          "id": "R-104",
+          "synthetic": true,
+          "patient": {
+            "id": "a4fd2a0e-8bd8-d073-c7bf-38b30dbfab69",
+            "synthetic_name": "Christian753 Jacobson885",
+            "town": "Orange",
+            "county": "Franklin",
+            "age": 87,
+            "sex": "M",
+            "payer": "Dual Eligible"
+          },
+          "specialty": "Cardiology",
+          "priority": "routine",
+          "performer": {
+            "id": "fx-cardio",
+            "name": "Pioneer Valley Heart Associates (fictional)",
+            "town": "Springfield",
+            "fictional": true
+          },
+          "stage": "seen",
+          "stage_label": "Seen",
+          "stepper": [
+            {
+              "stage": "sent",
+              "label": "Sent",
+              "at": "2026-09-15"
+            },
+            {
+              "stage": "accepted",
+              "label": "Accepted",
+              "at": "2026-09-17"
+            },
+            {
+              "stage": "scheduled",
+              "label": "Scheduled",
+              "at": "2026-09-19"
+            },
+            {
+              "stage": "seen",
+              "label": "Seen",
+              "at": "2026-10-12"
+            },
+            {
+              "stage": "plan_returned",
+              "label": "Plan returned",
+              "at": null
+            },
+            {
+              "stage": "closed",
+              "label": "Closed",
+              "at": null
+            }
+          ],
+          "miles": 36,
+          "appointment": {
+            "start": "2026-10-12",
+            "status": "fulfilled"
+          },
+          "open_barriers": [],
+          "stuck": [
+            {
+              "rule": "seen_no_plan",
+              "days": 12,
+              "message": "Seen 12 days ago — plan not received",
+              "setting_key": "seen_no_plan_days",
+              "threshold": 7,
+              "unit": "days",
+              "recipient": "specialist",
+              "challenge_failure": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stage": "plan_returned",
+      "label": "Plan returned",
+      "referral_ids": [
+        "R-105"
+      ],
+      "cards": [
+        {
+          "id": "R-105",
+          "synthetic": true,
+          "patient": {
+            "id": "3a3de94d-c3ab-76c1-1893-d73a17848fc1",
+            "synthetic_name": "Kaitlin600 Mann644",
+            "town": "Ware",
+            "county": "Hampshire",
+            "age": 86,
+            "sex": "F",
+            "payer": "Medicare"
+          },
+          "specialty": "Endocrinology",
+          "priority": "routine",
+          "performer": {
+            "id": "fx-endo",
+            "name": "Connecticut River Endocrine Group (fictional)",
+            "town": "Northampton",
+            "fictional": true
+          },
+          "stage": "plan_returned",
+          "stage_label": "Plan returned",
+          "stepper": [
+            {
+              "stage": "sent",
+              "label": "Sent",
+              "at": "2026-09-08"
+            },
+            {
+              "stage": "accepted",
+              "label": "Accepted",
+              "at": "2026-09-10"
+            },
+            {
+              "stage": "scheduled",
+              "label": "Scheduled",
+              "at": "2026-09-12"
+            },
+            {
+              "stage": "seen",
+              "label": "Seen",
+              "at": "2026-10-15"
+            },
+            {
+              "stage": "plan_returned",
+              "label": "Plan returned",
+              "at": "2026-10-22"
+            },
+            {
+              "stage": "closed",
+              "label": "Closed",
+              "at": null
+            }
+          ],
+          "miles": 20,
+          "appointment": {
+            "start": "2026-10-15",
+            "status": "fulfilled"
+          },
+          "open_barriers": [],
+          "stuck": []
+        }
+      ]
+    },
+    {
+      "stage": "declined",
+      "label": "Declined",
+      "referral_ids": [
+        "R-107"
+      ],
+      "cards": [
+        {
+          "id": "R-107",
+          "synthetic": true,
+          "patient": {
+            "id": "aa616abe-1761-0c9a-7959-07544679dafd",
+            "synthetic_name": "Jona712 Olson653",
+            "town": "Great Barrington",
+            "county": "Berkshire",
+            "age": 82,
+            "sex": "F",
+            "payer": "Medicare"
+          },
+          "specialty": "Gastroenterology",
+          "priority": "routine",
+          "performer": {
+            "id": "fx-gi",
+            "name": "Berkshire Digestive Health (fictional)",
+            "town": "Pittsfield",
+            "fictional": true
+          },
+          "stage": "declined",
+          "stage_label": "Declined",
+          "stepper": [
+            {
+              "stage": "sent",
+              "label": "Sent",
+              "at": "2026-10-14"
+            },
+            {
+              "stage": "accepted",
+              "label": "Accepted",
+              "at": null
+            },
+            {
+              "stage": "scheduled",
+              "label": "Scheduled",
+              "at": null
+            },
+            {
+              "stage": "seen",
+              "label": "Seen",
+              "at": null
+            },
+            {
+              "stage": "plan_returned",
+              "label": "Plan returned",
+              "at": null
+            },
+            {
+              "stage": "closed",
+              "label": "Closed",
+              "at": null
+            }
+          ],
+          "miles": 16,
+          "appointment": null,
+          "open_barriers": [],
+          "stuck": [
+            {
+              "rule": "declined_not_rerouted",
+              "days": 4,
+              "message": "Declined 4 days ago — no new referral",
+              "setting_key": "declined_not_rerouted_days",
+              "threshold": 2,
+              "unit": "days",
+              "recipient": "pcp",
+              "challenge_failure": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stage": "patient_barrier",
+      "label": "Patient barrier",
+      "referral_ids": [],
+      "cards": []
+    }
+  ],
+  "practice_settings": {
+    "label": "Practice setting",
+    "values": {
+      "sent_no_response_business_days": 3,
+      "accepted_no_appointment_days": 7,
+      "appointment_not_confirmed_days": 2,
+      "no_show_days": 0,
+      "seen_no_plan_days": 7,
+      "plan_not_acknowledged_days": 3,
+      "declined_not_rerouted_days": 2,
+      "barrier_open_days": 7
+    }
+  }
+}

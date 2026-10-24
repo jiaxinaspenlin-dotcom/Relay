@@ -31,6 +31,12 @@ BANNED: list[tuple[str, str]] = [
     (r"\b\d+\s*(min|mins|minutes|hours?|hrs?)\s+(away|drive)\b", "distance is straight-line, not travel time"),
     (r"\bin[- ]network\b", "Relay only knows Medicare assignment"),
     (r"\b(accepts|takes) (your|their|the patient's) insurance\b", "Relay only knows Medicare assignment"),
+    (r"\b(does not|doesn't|do not|don't|won't) accept medicare\b",
+     "CMS has only Y/M; say 'May accept Medicare assignment — confirm with the office'"),
+    (r"\bmedicare assignment:?\s*(no|none)\b", "CMS has no 'No' value for Medicare assignment"),
+    (r"\bno medicare assignment\b", "CMS has no 'No' value for Medicare assignment"),
+    (r"\baffiliated hospitals?\b", "the CMS clinician file has no affiliations; say 'Nearest hospital'"),
+    (r"\btotal beds\b", "label beds 'med/surg + ICU + pediatric beds'"),
     # places, not people
     (r"\b(high|low)[- ]risk (patient|person|people)\b", "community data are not person scores"),
     (r"\bvulnerable (patient|person)\b", "community data are not person scores"),
