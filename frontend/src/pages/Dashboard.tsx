@@ -1,20 +1,22 @@
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
-import { api, type Card } from "../api";
+import { api, type Card, type Dashboard as DashboardT, type StuckFlag } from "../api";
 import { copy } from "../copy";
-import { LoopStepper } from "../components/LoopStepper";
+import { FAILURE_RULES, plural, routeLine } from "../format";
+import { RouteTrack, primaryFlag } from "../components/RouteTrack";
 import { ErrorNote, Loading } from "../components/Status";
-import { Button, Num, Panel, SampleTag, StageBadge } from "../components/ui";
+import { Button, Chip, Muted, SampleTag } from "../components/ui";
 
 function EmptyState() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const sample = useMutation({ mutationFn: api.loadSample, onSuccess: () => qc.invalidateQueries() });
   return (
-    <div className="mx-auto mt-16 max-w-lg rounded-lg border border-slate-200 bg-white p-8 text-center" data-testid="empty-state">
-      <h1 className="text-xl font-semibold">{copy.empty.title}</h1>
-      <p className="mt-2 text-sm text-slate-600">{copy.empty.body}</p>
-      <div className="mt-6 flex justify-center gap-3">
+    <div className="max-w-xl rounded-panel border border-line bg-surface p-8" data-testid="empty-state">
+      <h1 className="text-page font-bold">{copy.empty.title}</h1>
+      <p className="mt-2 text-muted">{copy.empty.body}</p>
+      <div className="mt-6 flex flex-wrap gap-3">
         <Button variant="primary" onClick={() => nav("/new")}>{copy.empty.add}</Button>
         <Button onClick={() => sample.mutate()} disabled={sample.isPending}>{copy.empty.sample}</Button>
       </div>
@@ -23,109 +25,185 @@ function EmptyState() {
   );
 }
 
-function PipelineCard({ card }: { card: Card }) {
+function Headline({ d }: { d: DashboardT }) {
+  const rules = d.needs_attention.flatMap((r) => r.flags.map((f) => f.rule));
+  const never = rules.filter((r) => r === "accepted_no_appointment").length;
+  const noPlan = rules.filter((r) => r === "seen_no_plan").length;
+  const parts = copy.dashboard.headline(d.summary.open, d.summary.stuck, never, noPlan);
   return (
-    <Link
-      to={`/referrals/${card.id}`}
-      data-testid={`card-${card.id}`}
-      className={`block rounded-md border bg-white p-2 text-sm hover:border-accent ${card.stuck.length ? "border-amber-300" : "border-slate-200"}`}
-    >
-      <div className="flex items-center justify-between gap-1 text-xs text-slate-500">
-        <Num>{card.id}</Num>
-        <SampleTag show={card.sample} />
+    <div>
+      <h1 className="text-page font-normal" data-testid="headline">
+        {parts.map((p, i) => (typeof p === "number" ? <strong key={i} className="font-bold">{p}</strong> : <span key={i}>{p}</span>))}
+      </h1>
+      <p className="mt-1 text-caption text-muted">
+        {copy.dashboard.median(d.summary.median_days_sent_to_scheduled, d.summary.median_basis_n)}
+      </p>
+    </div>
+  );
+}
+
+function sentenceFor(flag: StuckFlag): string {
+  return flag.message.replace(" — ", ", ") + ".";
+}
+
+function AttentionRow({ card, flags, fresh }: { card: Card; flags: StuckFlag[]; fresh: boolean }) {
+  const main = primaryFlag(flags) ?? flags[0];
+  const failure = FAILURE_RULES.has(main.rule);
+  return (
+    <li data-testid={`row-${card.id}`} className={`grid gap-4 border-b border-line px-5 py-4 last:border-b-0 md:grid-cols-[15rem_1fr] ${fresh ? "highlight-in" : ""}`}>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link to={`/referrals/${card.id}`} className="font-semibold text-ink hover:text-hemlock hover:underline">{card.patient.name}</Link>
+          <SampleTag show={card.sample} />
+        </div>
+        <div className="text-caption text-muted">{routeLine(card.patient.town, card.performer.town, card.miles)}, {card.id}</div>
+        <div className="text-caption text-muted">{card.specialty}</div>
       </div>
-      <div className="truncate font-medium">{card.patient.name}</div>
-      <div className="truncate text-xs text-slate-600">{card.specialty} · {card.performer.town}</div>
-    </Link>
+      <div className="min-w-0 space-y-2">
+        <RouteTrack steps={card.stepper} flags={flags} />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`font-semibold ${failure ? "text-rust" : "text-amber"}`} data-testid="rule-sentence">
+              {flags.map(sentenceFor).join(" ")}
+            </span>
+            {card.open_barriers.map((b) => <Chip key={b.type}>{b.label} barrier</Chip>)}
+          </div>
+          <Link
+            to={`/referrals/${card.id}?followup=1`}
+            className="inline-flex min-h-[40px] items-center rounded-control border border-hemlock px-4 font-semibold text-hemlock hover:bg-hemlock-tint"
+          >
+            {copy.dashboard.draftFollowUp}
+          </Link>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+function StageBar({ d }: { d: DashboardT }) {
+  const cols = d.pipeline.filter((c) => c.cards.length > 0);
+  const total = cols.reduce((n, c) => n + c.cards.length, 0) || 1;
+  const shade = ["#1F5F5B", "#3D7A75", "#5B9590", "#79AFAA", "#97C9C4", "#B5DDD8", "#CFE7E3", "#E3EFEC", "#EEF4F2"];
+  return (
+    <div>
+      <div className="flex h-3 overflow-hidden rounded-full border border-line" aria-hidden="true">
+        {cols.map((c, i) => <span key={c.stage} style={{ width: `${(c.cards.length / total) * 100}%`, background: shade[i % shade.length] }} />)}
+      </div>
+      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-caption" data-testid="stage-bar">
+        {cols.map((c, i) => (
+          <li key={c.stage} data-testid={`stage-${c.stage}`} className="flex items-center gap-1.5">
+            <span aria-hidden="true" className="inline-block h-2.5 w-2.5 rounded-sm border border-line" style={{ background: shade[i % shade.length] }} />
+            {c.label} <strong className="font-semibold">{c.cards.length}</strong>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function OpenTable({ d }: { d: DashboardT }) {
+  const nav = useNavigate();
+  const [desc, setDesc] = useState(true);
+  const rows = useMemo(() => {
+    const all = d.pipeline.flatMap((c) => c.cards);
+    return [...all].sort((a, b) => (desc ? b.days_in_stage - a.days_in_stage : a.days_in_stage - b.days_in_stage));
+  }, [d, desc]);
+  const c = copy.dashboard.cols;
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left" data-testid="open-table">
+        <thead className="text-caption text-muted">
+          <tr className="border-b border-line">
+            <th className="py-2 pr-3 font-semibold">{c.patient}</th>
+            <th className="py-2 pr-3 font-semibold">{c.specialty}</th>
+            <th className="py-2 pr-3 font-semibold">{c.route}</th>
+            <th className="py-2 pr-3 font-semibold">{c.stage}</th>
+            <th className="py-2 text-right font-semibold" aria-sort={desc ? "descending" : "ascending"}>
+              <button type="button" className="min-h-[40px] font-semibold text-hemlock hover:underline" onClick={() => setDesc(!desc)} aria-label={copy.dashboard.sortBy}>
+                {c.days} {desc ? "▾" : "▴"}
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr
+              key={r.id}
+              data-testid={`open-${r.id}`}
+              data-stage={r.stage}
+              tabIndex={0}
+              onClick={() => nav(`/referrals/${r.id}`)}
+              onKeyDown={(e) => e.key === "Enter" && nav(`/referrals/${r.id}`)}
+              className="cursor-pointer border-b border-line last:border-b-0 hover:bg-hemlock-tint/50 focus:bg-hemlock-tint/50"
+            >
+              <td className="py-2 pr-3"><span className="font-semibold">{r.patient.name}</span> <SampleTag show={r.sample} /></td>
+              <td className="py-2 pr-3">{r.specialty}</td>
+              <td className="py-2 pr-3 text-muted">{routeLine(r.patient.town, r.performer.town, r.miles)}</td>
+              <td className={`py-2 pr-3 ${r.stuck.length ? "text-amber" : ""}`}>{r.stage_label}</td>
+              <td className="py-2 text-right">{r.days_in_stage}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
 export default function Dashboard() {
   const q = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard });
+  const settings = useQuery({ queryKey: ["settings"], queryFn: api.settings });
+  // Highlight referrals that newly crossed a limit since the last render (the one motion moment).
+  const seen = useRef<Set<string> | null>(null);
+  const [fresh, setFresh] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (!q.data) return;
+    const ids = new Set(q.data.needs_attention.map((r) => r.referral_id));
+    if (seen.current) setFresh(new Set([...ids].filter((i) => !seen.current!.has(i))));
+    seen.current = ids;
+  }, [q.data]);
+
   if (q.isLoading) return <Loading />;
   if (q.error) return <ErrorNote error={q.error} />;
   const d = q.data!;
   if (d.total === 0) return <EmptyState />;
-  const s = d.summary;
+  const failures = d.needs_attention.filter((r) => r.flags.some((f) => FAILURE_RULES.has(f.rule)));
+  const others = d.needs_attention.filter((r) => !r.flags.some((f) => FAILURE_RULES.has(f.rule)));
   const t = copy.dashboard;
+  const demo = settings.data?.clock.demo_mode;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">{t.title}</h1>
-        <Link to="/new" className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white">{copy.empty.add}</Link>
+    <div className="space-y-8">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <Headline d={d} />
+        <Link to="/new" className="inline-flex min-h-[40px] items-center rounded-control bg-hemlock px-4 font-semibold text-white hover:bg-[#184d4a]">
+          {copy.nav.newReferral}
+        </Link>
       </div>
 
-      <dl className="grid grid-cols-2 gap-3 md:grid-cols-4" data-testid="counts">
-        {([
-          [t.open, s.open],
-          [t.stuck, s.stuck],
-          [t.closedThisMonth, s.closed_this_month],
-          [t.medianSentToScheduled, s.median_days_sent_to_scheduled ?? "—"],
-        ] as const).map(([label, value]) => (
-          <div key={label} className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-            <dt className="text-xs text-slate-500">{label}</dt>
-            <dd className={`font-mono text-2xl tabular-nums ${label === t.stuck && s.stuck ? "text-amber-700" : ""}`}>{value}</dd>
-          </div>
-        ))}
-      </dl>
+      <div data-testid="needs-attention" className="space-y-6">
+        {d.needs_attention.length === 0 && (
+          <p className="rounded-panel border border-line bg-surface p-5 text-muted">
+            {t.noneStuck} {demo ? t.nextCheckDemo : t.nextCheckReal}
+          </p>
+        )}
+        {([[t.failures, failures, "failures-h"], [t.waiting, others, "waiting-h"]] as const).map(([title, rows, id]) =>
+          rows.length > 0 && (
+            <section key={id} aria-labelledby={id}>
+              <h2 id={id} className="mb-2 text-section font-semibold">{title}</h2>
+              <ul className="rounded-panel border border-line bg-surface">
+                {rows.map((r) => <AttentionRow key={r.referral_id} card={r.card} flags={r.flags} fresh={fresh.has(r.referral_id)} />)}
+              </ul>
+            </section>
+          ),
+        )}
+      </div>
 
-      <Panel title={t.needsAttention} id="na-h">
-        {d.needs_attention.length === 0 && <p className="text-sm text-slate-600">{t.noneStuck}</p>}
-        <ul className="divide-y divide-slate-100" data-testid="needs-attention">
-          {d.needs_attention.map((row) => (
-            <li key={row.referral_id} className="grid gap-3 py-3 md:grid-cols-[1fr_22rem] md:items-center">
-              <div className="min-w-0 space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link to={`/referrals/${row.referral_id}`} className="font-mono text-sm text-accent hover:underline">{row.referral_id}</Link>
-                  <span className="font-medium">{row.card.patient.name}</span>
-                  <StageBadge stage={row.card.stage} label={row.card.stage_label} />
-                  <SampleTag show={row.card.sample} />
-                </div>
-                <div className="text-xs text-slate-600">{row.card.specialty} · {row.card.performer.name}</div>
-                <ul className="text-sm">
-                  {row.flags.map((f) => (
-                    <li key={f.rule + f.message}>
-                      <span className="font-medium text-amber-800">{f.message}</span>{" "}
-                      <span className="text-xs text-slate-500">({copy.practiceSetting}: {f.threshold} {f.unit})</span>
-                    </li>
-                  ))}
-                </ul>
-                {row.card.open_barriers.length > 0 && (
-                  <div className="flex gap-1">
-                    {row.card.open_barriers.map((b) => (
-                      <span key={b.type} className="rounded bg-amber-100 px-1.5 text-xs text-amber-900">{b.label}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="space-y-2">
-                <LoopStepper steps={row.card.stepper} stuck compact />
-                <div className="text-right">
-                  <Link to={`/referrals/${row.referral_id}?followup=1`} className="text-sm font-medium text-accent hover:underline">
-                    {t.draftFollowUp} →
-                  </Link>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </Panel>
-
-      <Panel title={t.pipeline} id="pipe-h">
-        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-9" data-testid="pipeline">
-          {d.pipeline.map((col) => (
-            <div key={col.stage} data-testid={`col-${col.stage}`} className="min-w-0 space-y-2">
-              <h3 className="flex items-center justify-between gap-1">
-                <StageBadge stage={col.stage} label={col.label} />
-                <Num><span className="text-xs text-slate-500">{col.cards.length}</span></Num>
-              </h3>
-              {col.cards.length === 0 && <p className="text-xs text-slate-400">{t.emptyCol}</p>}
-              {col.cards.map((c) => <PipelineCard key={c.id} card={c} />)}
-            </div>
-          ))}
-        </div>
-      </Panel>
+      <section aria-labelledby="all-h" className="space-y-4 rounded-panel border border-line bg-surface p-5">
+        <h2 id="all-h" className="text-section font-semibold">{t.allOpen}</h2>
+        <StageBar d={d} />
+        <OpenTable d={d} />
+        <Muted>{plural(d.summary.open, "open referral")}.</Muted>
+      </section>
     </div>
   );
 }

@@ -36,6 +36,7 @@ export type Card = {
   stage_label: string;
   stepper: StepperItem[];
   last_update: string;
+  days_in_stage: number;
   miles: number | null;
   appointment: { start: string; time: string | null; status: string } | null;
   open_barriers: { type: string; label: string; opened: string }[];

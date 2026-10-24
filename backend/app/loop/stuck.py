@@ -10,6 +10,7 @@ from datetime import date, timedelta
 from typing import Iterable, Optional
 
 from app.config import PRACTICE_SETTINGS
+from app.dates import short
 from app.loop.states import TERMINAL
 from app.loop.timeline import last_event_date
 from app.models import Referral
@@ -104,7 +105,7 @@ def stuck_flags(
             if n >= s["appointment_not_confirmed_days"]:
                 out.append(_flag(
                     "appointment_not_confirmed", n,
-                    f"Appointment was {appt.start.isoformat()} — visit not confirmed",
+                    f"Appointment was {short(appt.start)} — visit not confirmed",
                     "appointment_not_confirmed_days", "days", "specialist", settings=s))
 
     elif stage == "no_show":
@@ -114,7 +115,7 @@ def stuck_flags(
             n = max((today - missed).days, 0)
             if n >= s["no_show_days"]:
                 out.append(_flag(
-                    "no_show", n, f"Missed appointment on {missed.isoformat()}",
+                    "no_show", n, f"Missed appointment on {short(missed)}",
                     "no_show_days", "days", "patient", settings=s))
 
     elif stage == "seen":

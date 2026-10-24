@@ -2,14 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import { copy } from "../copy";
+import { FAILURE_RULES, routeLine, shortDate, time12 } from "../format";
 import { FollowUp } from "../components/FollowUp";
 import { LogUpdate } from "../components/LogUpdate";
-import { LoopStepper } from "../components/LoopStepper";
 import { PlaceContext } from "../components/PlaceContext";
+import { RouteTrack } from "../components/RouteTrack";
 import { SendPanel } from "../components/SendPanel";
 import { ErrorNote, Loading } from "../components/Status";
 import { Timeline } from "../components/Timeline";
-import { Button, Num, Panel, SampleTag, StageBadge } from "../components/ui";
+import { Button, Chip, Muted, Panel, SampleTag } from "../components/ui";
 
 export default function ReferralDetail() {
   const { rid = "" } = useParams();
@@ -22,70 +23,69 @@ export default function ReferralDetail() {
   const r = d.referral;
   const stuck = c.stuck.length > 0;
   const showFollowUp = params.get("followup") === "1" && stuck;
+  const failure = c.stuck.some((f) => FAILURE_RULES.has(f.rule));
   const t = copy.detail;
   const appt = c.appointment;
 
   return (
     <div className="space-y-5">
-      <Link to="/" className="text-sm text-accent hover:underline">← {t.back}</Link>
+      <Link to="/" className="inline-flex min-h-[40px] items-center text-hemlock hover:underline">{t.back}</Link>
 
-      <header className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-semibold"><Num>{c.id}</Num> · {c.patient.name}</h1>
-            <StageBadge stage={c.stage} label={c.stage_label} />
-            <SampleTag show={c.sample} />
+      <header className="space-y-4 rounded-panel border border-line bg-surface p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-page font-bold">{c.patient.name}</h1>
+              <SampleTag show={c.sample} />
+            </div>
+            <p className="text-muted">
+              {c.specialty} referral {c.id}. {routeLine(c.patient.town, c.performer.town, c.miles)}. {c.stage_label}.
+            </p>
           </div>
-          <div className="text-sm text-slate-600">
-            {c.patient.town} · {c.patient.coverage_label}{c.patient.dob && <> · DOB <Num>{c.patient.dob}</Num></>}
-          </div>
+          {stuck && !showFollowUp && <Button onClick={() => setParams({ followup: "1" })}>{copy.dashboard.draftFollowUp}</Button>}
         </div>
-        <LoopStepper steps={c.stepper} stuck={stuck} />
+        <RouteTrack steps={c.stepper} flags={c.stuck} size="lg" />
         {stuck && (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm" data-testid="stuck-now">
-            <ul>
-              {c.stuck.map((f) => (
-                <li key={f.rule + f.message}>
-                  <span className="font-medium text-amber-900">{f.message}</span>{" "}
-                  <span className="text-xs text-slate-500">({copy.practiceSetting}: {f.threshold} {f.unit})</span>
-                </li>
-              ))}
-            </ul>
-            {!showFollowUp && <Button variant="primary" onClick={() => setParams({ followup: "1" })}>{copy.dashboard.draftFollowUp}</Button>}
-          </div>
+          <p data-testid="stuck-now" className={`font-semibold ${failure ? "text-rust" : "text-amber"}`}>
+            {c.stuck.map((f) => f.message.replace(" — ", ", ") + ".").join(" ")}
+          </p>
         )}
       </header>
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
+      {showFollowUp && <FollowUp rid={rid} onClose={() => setParams({})} />}
+      {d.can_send && c.stage === "draft" && <SendPanel rid={rid} stage={c.stage} officePath={d.office_path} />}
+
+      <div className="grid items-start gap-5 lg:grid-cols-[1fr_24rem]">
         <div className="space-y-5">
-          {showFollowUp && <FollowUp rid={rid} onClose={() => setParams({})} />}
-          {d.can_send && <SendPanel rid={rid} stage={c.stage} officePath={d.office_path} />}
-
-          <Panel title={t.referral} id="ref-facts-h">
-            <dl className="grid grid-cols-[8rem_1fr] gap-x-3 gap-y-1.5 text-sm">
-              <dt className="text-slate-500">{t.performer}</dt>
-              <dd>
-                {r.performer.name}{r.performer.address ? `, ${r.performer.address}` : ""}, {r.performer.town}
-                {c.miles !== null && <> · {c.miles === 0 ? `in ${c.patient.town}` : <><Num>{c.miles}</Num> {copy.milesUnit} straight-line</>}</>}
-                <span className="ml-1 text-xs text-slate-500">({r.performer.fictional ? copy.fictional : copy.directory})</span>
-              </dd>
-              <dt className="text-slate-500">{t.condition}</dt><dd>{r.reason_condition.display}</dd>
-              <dt className="text-slate-500">{t.reason}</dt><dd>{r.reason_text}</dd>
-              <dt className="text-slate-500">{t.priority}</dt><dd className="capitalize">{r.priority}</dd>
-              {appt && (<><dt className="text-slate-500">{t.appointment}</dt><dd><Num>{appt.start}{appt.time ? ` ${appt.time}` : ""}</Num> ({appt.status})</dd></>)}
-              {c.open_barriers.length > 0 && (<><dt className="text-slate-500">{t.barriers}</dt><dd>{c.open_barriers.map((b) => b.label).join(", ")}</dd></>)}
-            </dl>
-          </Panel>
-
-          <LogUpdate rid={rid} actions={d.log_update_actions} />
-
           <Panel title={t.timeline} id="tl-h" actions={
-            <a href={api.fhirUrl(rid)} download className="text-sm font-medium text-accent hover:underline">{t.downloadFhir}</a>
+            <a href={api.fhirUrl(rid)} download className="inline-flex min-h-[40px] items-center text-hemlock hover:underline">{t.downloadFhir}</a>
           }>
             <Timeline items={d.timeline} />
           </Panel>
+          <Panel title={t.referral} id="ref-h">
+            <dl className="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-2">
+              <dt className="text-muted">{t.performer}</dt>
+              <dd>
+                {r.performer.name} {r.performer.fictional && <span className="text-muted">{copy.fictional}</span>}
+                <div className="text-caption text-muted">{r.performer.address ? `${r.performer.address}, ` : ""}{r.performer.town}</div>
+              </dd>
+              <dt className="text-muted">{t.condition}</dt><dd>{r.reason_condition.display}</dd>
+              <dt className="text-muted">{t.reason}</dt><dd>{r.reason_text}</dd>
+              <dt className="text-muted">{t.priority}</dt><dd className="capitalize">{r.priority}</dd>
+              {appt && (<><dt className="text-muted">{t.appointment}</dt><dd>{shortDate(appt.start)}{appt.time ? `, ${time12(appt.time)}` : ""} ({appt.status})</dd></>)}
+            </dl>
+          </Panel>
+          {d.can_send && c.stage !== "draft" && <SendPanel rid={rid} stage={c.stage} officePath={d.office_path} />}
         </div>
-        <PlaceContext items={d.place_context.items} town={d.place_context.town} />
+        <div className="space-y-5">
+          <LogUpdate rid={rid} actions={d.log_update_actions} />
+          <Panel title={t.barriers} id="bar-h">
+            {c.open_barriers.length === 0
+              ? <Muted>{t.noBarriers}</Muted>
+              : <div className="flex flex-wrap gap-2">{c.open_barriers.map((b) => <Chip key={b.type}>{b.label}, open since {shortDate(b.opened)}</Chip>)}</div>}
+          </Panel>
+          <PlaceContext items={d.place_context.items} town={d.place_context.town} />
+        </div>
       </div>
     </div>
   );

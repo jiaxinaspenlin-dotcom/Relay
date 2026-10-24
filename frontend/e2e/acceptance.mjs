@@ -42,7 +42,7 @@ async function handReferral(page) {
   await form.getByRole("button", { name: "Add patient" }).click();
   const card = page.getByTestId("practice-card").first();
   await card.waitFor({ timeout: T });
-  await page.getByLabel("Specialty").selectOption("Cardiology");
+  await page.getByLabel("Specialty", { exact: true }).selectOption("Cardiology");
   await page.getByLabel("Condition this referral is for").fill("Chest pain on exertion");
   await page.getByLabel("Reason for referral (in your words)").fill("New exertional chest discomfort over 3 weeks; please evaluate.");
   await page.getByLabel("Routine").check();
@@ -52,7 +52,7 @@ async function handReferral(page) {
   const rid = page.url().split("/").pop();
   await page.getByText("This referral is a draft until you send it.").waitFor({ timeout: T });
   await page.getByRole("button", { name: "Copy text" }).click();
-  await page.getByTestId("timeline").getByText("Referral sent to office").waitFor({ timeout: T });
+  await page.getByTestId("timeline").getByText("Referral sent to the office, copied").waitFor({ timeout: T });
   const officeHref = await page.getByTestId("office-link").getAttribute("href");
   return { rid, officeHref };
 }
@@ -75,13 +75,18 @@ const tests = {
     await page.getByText("No referrals yet").waitFor({ timeout: T });
     await page.getByRole("button", { name: "Load sample data" }).click();
     const na = page.getByTestId("needs-attention");
-    await na.getByText("Accepted 14 days ago — no appointment yet").waitFor({ timeout: T });
-    await na.getByText("Seen 12 days ago — plan not received").waitFor({ timeout: T });
-    for (const s of ["draft", "sent", "accepted", "scheduled", "seen", "plan_returned", "declined", "patient_barrier"]) {
-      await page.getByTestId(`col-${s}`).waitFor({ timeout: T });
+    await na.getByTestId("row-R-102").getByText("Accepted 14 days ago, no appointment yet.", { exact: false }).waitFor({ timeout: T });
+    await na.getByTestId("row-R-104").getByText("Seen 12 days ago, plan not received.", { exact: false }).waitFor({ timeout: T });
+    const failures = page.getByRole("region", { name: "Never scheduled or plan never returned" });
+    await failures.getByTestId("row-R-102").waitFor();
+    await failures.getByTestId("row-R-104").waitFor();
+    const headline = await page.getByTestId("headline").innerText();
+    assert(headline === "7 open referrals. 5 need attention, including 1 never scheduled and 1 plan never returned.", `headline: ${headline}`);
+    for (const s of ["sent", "accepted", "scheduled", "no_show", "seen", "plan_returned", "declined"]) {
+      await page.getByTestId(`stage-${s}`).waitFor({ timeout: T });
     }
-    const counts = await page.getByTestId("counts").innerText();
-    assert(/Open\s*7/.test(counts) && /Stuck\s*5/.test(counts) && /Closed this month\s*1/.test(counts), `counts: ${counts}`);
+    await page.getByTestId("open-table").getByTestId("open-R-102").waitFor();
+    await page.getByTestId("row-R-102").getByText("14 days waiting, limit 7").waitFor();
     await page.getByText("Sample data is loaded.").first().waitFor();
     const body = await page.locator("body").innerText();
     assert(!body.includes("(synthetic"), "generated text still says (synthetic)");
@@ -93,7 +98,9 @@ const tests = {
     const msg = await page.getByTestId("referral-message").textContent();
     assert(msg.includes("Maria Santos") && msg.includes("/office/"), "referral text missing patient or office link");
     await page.goto(WEB);
-    await page.getByTestId("col-sent").getByTestId(`card-${rid}`).waitFor({ timeout: T });
+    const row = page.getByTestId(`open-${rid}`);
+    await row.waitFor({ timeout: T });
+    assert((await row.getAttribute("data-stage")) === "sent", "new referral should be Sent");
     const banner = await page.getByTestId("demo-banner").count();
     assert(banner === 0, "demo banner should be off by default");
   },
@@ -103,39 +110,42 @@ const tests = {
     const { rid, officeHref } = await handReferral(page);
     await officeDo(page, officeHref, [{ button: "Accept referral", expect: "Accepted" }]);
     await page.goto(`${WEB}/referrals/${rid}`);
-    await page.getByTestId("timeline").getByText("by office via link").waitFor({ timeout: T });
+    await page.getByTestId("timeline").getByTestId("event-meta").getByText("Office, update link").waitFor({ timeout: T });
     await page.goto(`${WEB}/settings`);
-    await page.getByRole("button", { name: "Turn on" }).click();
+    await page.getByRole("button", { name: "Turn on demo mode" }).click();
     await page.getByTestId("demo-banner").waitFor({ timeout: T });
-    const start = await page.getByTestId("demo-today").innerText();
+    const start = await page.getByTestId("demo-today").getAttribute("data-iso");
     await page.getByRole("button", { name: "+7 days" }).click();
     const want = new Date(new Date(start + "T12:00:00Z").getTime() + 7 * 864e5).toISOString().slice(0, 10);
-    await page.getByTestId("demo-today").getByText(want).waitFor({ timeout: T });
+    await page.locator(`[data-testid="demo-today"][data-iso="${want}"]`).waitFor({ timeout: T });
     await page.goto(WEB);
-    const row = page.getByTestId("needs-attention").locator(":scope > li", { hasText: rid });
-    await row.getByText("Accepted 7 days ago — no appointment yet").waitFor({ timeout: T });
+    const row = page.getByTestId(`row-${rid}`);
+    await row.getByText("Accepted 7 days ago, no appointment yet.", { exact: false }).waitFor({ timeout: T });
+    await row.getByText("7 days waiting, limit 7").waitFor();
     return rid;
   },
 
   // Follow-up with [F#] citations → edit → send (email and copy) → Communication on the timeline.
   async M4(page) {
     const rid = await tests.M3(page);
-    await page.getByTestId("needs-attention").locator(":scope > li", { hasText: rid })
-      .getByRole("link", { name: /Draft follow-up/ }).click();
+    await page.getByTestId(`row-${rid}`).getByRole("link", { name: "Draft follow-up" }).click();
+    const drawer = page.getByRole("dialog", { name: "Follow-up" });
+    await drawer.waitFor({ timeout: T });
     const box = page.getByTestId("followup-text");
     await box.waitFor({ timeout: T });
     await page.waitForFunction(() => document.querySelector('[data-testid="followup-text"]')?.value.includes("[F"));
     const drafted = await box.inputValue();
     assert(/\[F\d+\]/.test(drafted) && drafted.includes("7 days after acceptance") && drafted.includes("/office/"), `draft: ${drafted}`);
     assert(!drafted.includes("(synthetic"), "draft says (synthetic)");
-    await page.getByText("Verified: every number and date matches a cited fact.").waitFor();
+    await drawer.getByText("Every number and date matches a cited fact.").waitFor();
     const extra = "Late-day slots would help; she relies on a ride from family.";
     await box.fill(`${drafted}\n${extra}`);
-    await page.getByRole("button", { name: "Copy text" }).first().click();
+    await drawer.getByRole("button", { name: "Copy text" }).click();
+    await drawer.waitFor({ state: "detached", timeout: T });
     const comm = page.getByTestId("timeline").locator('li[data-kind="communication"]', { hasText: extra });
     await comm.waitFor({ timeout: T });
-    await comm.getByText("edited before sending").waitFor();
-    await comm.getByText("(copied)").waitFor();
+    await comm.getByText("Edited before sending.").waitFor();
+    await comm.getByText("Follow-up sent to the office, copied").waitFor();
   },
 
   // Office returns the plan via link → PCP inbox → close → FHIR export validates.
@@ -159,10 +169,10 @@ const tests = {
     await item.waitFor({ timeout: T });
     assert((await item.getByTestId("original-reason").innerText()).startsWith("New exertional"), "reason missing");
     assert((await item.getByTestId("returned-plan").innerText()).includes("Stress echo"), "plan missing");
-    await item.getByRole("button", { name: "Acknowledge & close" }).click();
+    await item.getByRole("button", { name: "Acknowledge and close" }).click();
     await item.waitFor({ state: "detached", timeout: T });
     await page.goto(`${WEB}/referrals/${rid}`);
-    await page.getByTestId("timeline").getByText("Closed").waitFor({ timeout: T });
+    await page.getByTestId("timeline").getByText("Closed", { exact: true }).waitFor({ timeout: T });
     const [dl] = await Promise.all([
       page.waitForEvent("download", { timeout: T }),
       page.getByRole("link", { name: "Download FHIR bundle" }).click(),

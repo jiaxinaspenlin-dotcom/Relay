@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from datetime import date
 
+from app.dates import long
 from app.drafting.facts import Fact
 from app.loop.stuck import BARRIER_LABELS, StuckFlag
 from app.loop.timeline import last_event_date
@@ -123,18 +124,18 @@ def render(ref: Referral, flag: StuckFlag, facts: list[Fact], today: date) -> st
     vars_ = {
         "specialty": ref.specialty,
         "performer": ref.performer.name,
-        "sent_date": sent.isoformat() if sent else "",
-        "stage_date": ref.events[-1].at.isoformat() if ref.events else "",
-        "appt_date": ref.appointment.start.isoformat() if ref.appointment else "",
-        "returned": ref.plan.returned_on.isoformat() if ref.plan else "",
-        "today": today.isoformat(),
+        "sent_date": long(sent) if sent else "",
+        "stage_date": long(ref.events[-1].at) if ref.events else "",
+        "appt_date": long(ref.appointment.start) if ref.appointment else "",
+        "returned": long(ref.plan.returned_on) if ref.plan else "",
+        "today": long(today),
         "n": n,
         "unit": unit,
         "reason": ref.reason_text,
         "decline_note": decline_note,
         "barrier_label": BARRIER_LABELS[barrier.type].lower() if barrier else "",
         "barrier_note": barrier.note if barrier else "",
-        "barrier_opened": barrier.opened.isoformat() if barrier else "",
+        "barrier_opened": long(barrier.opened) if barrier else "",
         "coordinator": ref.requester.coordinator,
         "practice": ref.requester.practice,
         "office_url": by_key["office_link"].value if "office_link" in by_key else "",
@@ -153,7 +154,7 @@ def render(ref: Referral, flag: StuckFlag, facts: list[Fact], today: date) -> st
 def referral_message(ref: Referral, patient: dict, office_url: str) -> dict:
     """Plain-text referral for Copy / email / fax. Clinical content is the PCP's own words and the
     linked condition; Relay adds no clinical judgment."""
-    dob = patient.get("dob") or "not recorded"
+    dob = long(date.fromisoformat(patient["dob"])) if patient.get("dob") else "not recorded"
     subject = f"Referral: {ref.specialty} for {patient['name']} (DOB {dob})"
     lines = [
         f"To: {ref.performer.name}, {ref.performer.address + ', ' if ref.performer.address else ''}{ref.performer.town}",

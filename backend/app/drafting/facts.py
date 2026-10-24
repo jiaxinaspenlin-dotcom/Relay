@@ -10,12 +10,13 @@ import re
 from dataclasses import asdict, dataclass, field
 from datetime import date
 
+from app.dates import long
 from app.loop.states import STAGE_LABELS
 from app.loop.stuck import BARRIER_LABELS, StuckFlag
 from app.loop.timeline import last_event_date
 from app.models import Referral
 
-DATE_RE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+DATE_RE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2}, \d{4}\b")
 NUM_RE = re.compile(r"\d+(?:\.\d+)?")
 
 
@@ -62,32 +63,32 @@ def build_facts(ref: Referral, today: date, flag: StuckFlag | None = None,
         raw.append((key, label, value, source))
 
     sent = last_event_date(ref, "sent")
-    add("referral", "Referral", f"{ref.specialty} referral sent {sent.isoformat() if sent else 'not yet'}",
+    add("referral", "Referral", f"{ref.specialty} referral sent {long(sent) if sent else 'not yet'}",
         "Referral timeline")
     add("performer", "Specialist practice", ref.performer.name, "Referral")
     add("reason", "Reason for referral (PCP's words)", ref.reason_text, "Referral")
     add("priority", "Priority (set by PCP)", ref.priority, "Referral")
-    stage_date = ref.events[-1].at.isoformat() if ref.events else ""
+    stage_date = long(ref.events[-1].at) if ref.events else ""
     add("stage", "Current stage", f"{STAGE_LABELS[ref.stage]} on {stage_date}", "Referral timeline")
     if ref.appointment:
-        add("appointment", "Appointment", f"Appointment on {ref.appointment.start.isoformat()}",
+        add("appointment", "Appointment", f"Appointment on {long(ref.appointment.start)}",
             "Referral timeline")
     declined_note = next((e.note for e in reversed(ref.events) if e.stage == "declined" and e.note), "")
     if declined_note:
         add("decline_note", "Office note on decline", declined_note, "Referral timeline")
     if ref.plan:
-        add("plan_returned", "Plan received", ref.plan.returned_on.isoformat(), "Referral timeline")
+        add("plan_returned", "Plan received", long(ref.plan.returned_on), "Referral timeline")
     for b in ref.barriers:
         if b.status == "open":
             add(f"barrier_{b.type}", f"Open barrier: {BARRIER_LABELS[b.type]}",
-                f"{BARRIER_LABELS[b.type]} barrier noted {b.opened.isoformat()}: {b.note}",
+                f"{BARRIER_LABELS[b.type]} barrier noted {long(b.opened)}: {b.note}",
                 "Barriers panel")
     if flag is not None:
         unit = "business days" if flag.unit == "business days" else "days"
         n = flag.days
         unit = unit[:-1] if n == 1 else unit
         add("elapsed", "Elapsed time",
-            f"{n} {unit} {ELAPSED_PHRASE[flag.rule]}, as of {today.isoformat()}", "Demo clock")
+            f"{n} {unit} {ELAPSED_PHRASE[flag.rule]}, as of {long(today)}", "Demo clock")
     if office_url:
         add("office_link", "Office update link", office_url, "Relay")
     add("requester", "Referring practice",

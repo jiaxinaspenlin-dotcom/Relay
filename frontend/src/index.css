@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* Every number uses tabular figures (design.md). */
+  body { font-variant-numeric: tabular-nums; }
+  :focus-visible { outline: 2px solid #1F5F5B; outline-offset: 2px; }
+}
+
+@layer utilities {
+  .highlight-in { animation: highlight-in 1.6s ease-out; }
+}
+
+@keyframes highlight-in {
+  from { background-color: #FBEFD9; }
+  to { background-color: #FFFFFF; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .highlight-in { animation: none; }
+  * { transition-duration: 0s !important; }
+}

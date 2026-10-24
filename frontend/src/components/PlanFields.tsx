@@ -1,15 +1,15 @@
 import { copy } from "../copy";
-import { Field, inputCls } from "./ui";
+import { Field, Muted, inputCls } from "./ui";
 
 export type PlanState = { visit_date: string; assessment: string; plan: string; actions_for_pcp: string; questions_contact: string };
 export const emptyPlan: PlanState = { visit_date: "", assessment: "", plan: "", actions_for_pcp: "", questions_contact: "" };
 
-// CMS care-update-template-shaped plan form, shared by Log update and the office page.
+// Care-update form in CMS template sections, shared by Log update and the office page.
 export function PlanFields({ value, onChange }: { value: PlanState; onChange: (v: PlanState) => void }) {
   const t = copy.planForm;
   return (
-    <fieldset className="space-y-2 rounded-md bg-slate-50 p-3">
-      <legend className="text-sm font-semibold">{t.legend}</legend>
+    <fieldset className="space-y-3 rounded-panel border border-line bg-paper p-4">
+      <legend className="px-1 font-semibold">{t.legend}</legend>
       <Field label={t.visitDate}>
         <input type="date" className={inputCls} value={value.visit_date} onChange={(e) => onChange({ ...value, visit_date: e.target.value })} />
       </Field>
@@ -23,7 +23,7 @@ export function PlanFields({ value, onChange }: { value: PlanState; onChange: (v
           <textarea className={inputCls} rows={rows} value={value[k]} onChange={(e) => onChange({ ...value, [k]: e.target.value })} />
         </Field>
       ))}
-      <p className="text-xs text-slate-500">{t.omitted}</p>
+      <Muted>{t.omitted}</Muted>
     </fieldset>
   );
 }

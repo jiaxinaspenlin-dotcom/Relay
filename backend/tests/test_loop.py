@@ -188,7 +188,7 @@ def test_seed_flags(refs):
     assert _msgs(refs["R-105"]) == []  # plan returned 2 days ago, threshold 3
     assert _msgs(refs["R-106"]) == []
     assert _msgs(refs["R-107"]) == ["Declined 4 days ago — no new referral"]
-    assert _msgs(refs["R-108"]) == ["Missed appointment on 2026-10-15",
+    assert _msgs(refs["R-108"]) == ["Missed appointment on Oct 15",
                                     "Schedule/work barrier open 8 days"]
 
 
@@ -224,7 +224,7 @@ def test_boundary_seen_no_plan(refs):
 def test_boundary_appointment_not_confirmed(refs):
     _boundary(refs["R-103"], "appointment_not_confirmed", D("2026-11-03") + timedelta(days=2))
     assert stuck_flags(refs["R-103"], D("2026-11-05"))[0].message == (
-        "Appointment was 2026-11-03 — visit not confirmed")
+        "Appointment was Nov 3 — visit not confirmed")
 
 
 def test_boundary_plan_not_acknowledged(refs):
@@ -250,7 +250,7 @@ def test_barrier_rule_ignores_addressed_and_terminal(refs):
 
 
 def test_no_show_is_immediate(refs):
-    assert stuck_flags(refs["R-108"], D("2026-10-15"))[0].message == "Missed appointment on 2026-10-15"
+    assert stuck_flags(refs["R-108"], D("2026-10-15"))[0].message == "Missed appointment on Oct 15"
 
 
 def test_boundary_sent_business_days(refs):

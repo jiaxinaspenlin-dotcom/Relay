@@ -1,21 +1,22 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
-import { copy, stageColors } from "../copy";
+import { copy } from "../copy";
 
-// Calm operations-tool primitives: white surfaces, one accent, monospace numbers.
+// Quiet primitives from .kiro/steering/design.md: white surfaces, one hemlock accent,
+// borders not shadows, 6px controls, 10px panels, 40px hit targets, sentence case.
 
-type Variant = "primary" | "secondary" | "quiet" | "danger";
+type Variant = "primary" | "outline" | "quiet" | "danger";
 const variants: Record<Variant, string> = {
-  primary: "bg-accent text-white hover:bg-accent/90 disabled:bg-slate-300",
-  secondary: "border border-slate-300 bg-white text-slate-800 hover:border-accent hover:text-accent disabled:text-slate-400",
-  quiet: "text-accent underline-offset-2 hover:underline disabled:text-slate-400",
-  danger: "border border-rose-300 bg-white text-rose-800 hover:bg-rose-50",
+  primary: "bg-hemlock text-white hover:bg-[#184d4a] disabled:bg-line disabled:text-muted",
+  outline: "border border-hemlock bg-surface text-hemlock hover:bg-hemlock-tint disabled:border-line disabled:text-muted",
+  quiet: "text-hemlock underline-offset-2 hover:underline disabled:text-muted",
+  danger: "border border-rust bg-surface text-rust hover:bg-rust-tint",
 };
 
-export function Button({ variant = "secondary", className = "", ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
+export function Button({ variant = "outline", className = "", ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
   return (
     <button
       type="button"
-      className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:cursor-not-allowed ${variants[variant]} ${className}`}
+      className={`inline-flex min-h-[40px] items-center justify-center gap-1 rounded-control px-4 text-body font-semibold transition-colors disabled:cursor-not-allowed ${variant === "quiet" ? "px-1" : ""} ${variants[variant]} ${className}`}
       {...rest}
     />
   );
@@ -23,10 +24,10 @@ export function Button({ variant = "secondary", className = "", ...rest }: Butto
 
 export function Panel({ title, children, actions, id, className = "" }: { title?: ReactNode; children: ReactNode; actions?: ReactNode; id?: string; className?: string }) {
   return (
-    <section aria-labelledby={id} className={`rounded-lg border border-slate-200 bg-white p-4 ${className}`}>
+    <section aria-labelledby={title ? id : undefined} className={`rounded-panel border border-line bg-surface p-5 ${className}`}>
       {(title || actions) && (
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          {title && <h2 id={id} className="text-sm font-semibold uppercase tracking-wide text-slate-600">{title}</h2>}
+          {title && <h2 id={id} className="text-section font-semibold">{title}</h2>}
           {actions}
         </div>
       )}
@@ -35,36 +36,40 @@ export function Panel({ title, children, actions, id, className = "" }: { title?
   );
 }
 
-export function StageBadge({ stage, label }: { stage: string; label: string }) {
-  return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${stageColors[stage] ?? "bg-slate-100"}`}>
-      {label}
-    </span>
-  );
-}
-
 export function SampleTag({ show }: { show: boolean }) {
   if (!show) return null;
-  return (
-    <span className="rounded border border-amber-300 bg-amber-50 px-1.5 py-0 text-[11px] font-medium uppercase tracking-wide text-amber-900">
-      {copy.sampleTag}
-    </span>
-  );
+  return <span className="rounded-control border border-line bg-paper px-1.5 text-caption text-muted">{copy.sampleTag}</span>;
 }
 
-export function Num({ children }: { children: ReactNode }) {
-  return <span className="font-mono tabular-nums">{children}</span>;
+export function Chip({ children, tone = "amber" }: { children: ReactNode; tone?: "amber" | "rust" | "plain" }) {
+  const cls = tone === "rust" ? "bg-rust-tint text-rust" : tone === "amber" ? "bg-amber-tint text-amber" : "bg-paper text-muted";
+  return <span className={`inline-flex items-center rounded-control px-2 py-0.5 text-caption font-semibold ${cls}`}>{children}</span>;
 }
 
 export const inputCls =
-  "mt-1 block w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30";
+  "mt-1 block min-h-[40px] w-full rounded-control border border-line bg-surface px-3 py-2 text-body text-ink focus:border-hemlock focus:outline-none";
 
 export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
   return (
-    <label className="block text-sm text-slate-700">
-      {label}
+    <label className="block text-body text-ink">
+      <span className="font-semibold">{label}</span>
       {children}
-      {hint && <span className="mt-0.5 block text-xs text-slate-500">{hint}</span>}
+      {hint && <span className="mt-1 block text-caption text-muted">{hint}</span>}
     </label>
+  );
+}
+
+export function Muted({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <span className={`text-caption text-muted ${className}`}>{children}</span>;
+}
+
+/** Route glyph for the wordmark: two dots joined by a line. */
+export function RouteGlyph() {
+  return (
+    <svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true" className="inline-block">
+      <line x1="4" y1="5" x2="18" y2="5" stroke="#1F5F5B" strokeWidth="2" />
+      <circle cx="4" cy="5" r="3.5" fill="#1F5F5B" />
+      <circle cx="18" cy="5" r="3" fill="#FFFFFF" stroke="#1F5F5B" strokeWidth="2" />
+    </svg>
   );
 }

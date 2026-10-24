@@ -10,7 +10,7 @@ const COVERAGE_LABEL: Record<string, string> = {
   medicare: "Medicare", medicaid: "Medicaid", commercial: "Commercial", other: "Other", unknown: "Unknown",
 };
 
-export function AddPatient({ onAdded, onCancel }: { onAdded: (p: PatientBrief) => void; onCancel: () => void }) {
+export function AddPatient({ onAdded, onCancel }: { onAdded: (p: PatientBrief) => void; onCancel?: () => void }) {
   const qc = useQueryClient();
   const towns = useQuery({ queryKey: ["towns"], queryFn: api.towns, staleTime: Infinity });
   const [name, setName] = useState("");
@@ -30,13 +30,10 @@ export function AddPatient({ onAdded, onCancel }: { onAdded: (p: PatientBrief) =
   return (
     <form
       aria-label={t.title}
-      className="space-y-3 rounded-lg border border-accent/40 bg-accent-soft/40 p-3"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (name.trim() && validTown) add.mutate();
-      }}
+      className="space-y-3 rounded-panel border border-line bg-paper p-4"
+      onSubmit={(e) => { e.preventDefault(); if (name.trim() && validTown) add.mutate(); }}
     >
-      <h3 className="text-sm font-semibold">{t.title}</h3>
+      <h3 className="font-semibold">{t.title}</h3>
       <Field label={t.name}>
         <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} required autoComplete="off" />
       </Field>
@@ -46,7 +43,7 @@ export function AddPatient({ onAdded, onCancel }: { onAdded: (p: PatientBrief) =
           {towns.data?.towns.map((x) => <option key={x} value={x} />)}
         </datalist>
       </Field>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t.coverage}>
           <select className={inputCls} value={coverage} onChange={(e) => setCoverage(e.target.value)}>
             {COVERAGE.map((c) => <option key={c} value={c}>{COVERAGE_LABEL[c]}</option>)}
@@ -58,7 +55,7 @@ export function AddPatient({ onAdded, onCancel }: { onAdded: (p: PatientBrief) =
       </div>
       <div className="flex gap-2">
         <Button variant="primary" type="submit" disabled={!name.trim() || !validTown || add.isPending}>{t.save}</Button>
-        <Button variant="quiet" onClick={onCancel}>{t.cancel}</Button>
+        {onCancel && <Button variant="quiet" onClick={onCancel}>{t.cancel}</Button>}
       </div>
       {add.error && <ErrorNote error={add.error} />}
     </form>

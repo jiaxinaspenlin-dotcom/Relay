@@ -4,7 +4,7 @@ import { api } from "../api";
 import { copy } from "../copy";
 import { PlanFields, emptyPlan } from "./PlanFields";
 import { ErrorNote } from "./Status";
-import { Button, Field, Panel, inputCls } from "./ui";
+import { Button, Field, Muted, Panel, inputCls } from "./ui";
 
 type Action = keyof typeof copy.logUpdate.actions;
 type Source = keyof typeof copy.logUpdate.sources;
@@ -36,28 +36,29 @@ export function LogUpdate({ rid, actions }: { rid: string; actions: string[] }) 
   if (actions.length === 0) return null;
   const ready = action && source && (action !== "scheduled" || apptDate) &&
     (action !== "plan_received" || (plan.assessment.trim() && plan.plan.trim()));
+  const radio = "flex min-h-[40px] items-center gap-2";
 
   return (
     <Panel title={t.title} id="log-h">
       <form aria-label={t.title} className="space-y-3" onSubmit={(e) => { e.preventDefault(); if (ready) m.mutate(); }}>
-        <p className="text-xs text-slate-500">{t.help}</p>
-        <fieldset className="text-sm">
-          <legend className="text-slate-700">{t.action}</legend>
-          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+        <Muted>{t.help}</Muted>
+        <fieldset>
+          <legend className="font-semibold">{t.action}</legend>
+          <div className="flex flex-wrap gap-x-4">
             {actions.map((a) => (
-              <label key={a} className="flex items-center gap-1">
-                <input type="radio" name="action" value={a} checked={action === a} onChange={() => setAction(a as Action)} />
+              <label key={a} className={radio}>
+                <input type="radio" name="action" value={a} checked={action === a} onChange={() => setAction(a as Action)} className="h-4 w-4 accent-hemlock" />
                 {t.actions[a as Action]}
               </label>
             ))}
           </div>
         </fieldset>
-        <fieldset className="text-sm">
-          <legend className="text-slate-700">{t.source}</legend>
-          <div className="mt-1 flex flex-wrap gap-x-4">
+        <fieldset>
+          <legend className="font-semibold">{t.source}</legend>
+          <div className="flex flex-wrap gap-x-4">
             {(Object.keys(t.sources) as Source[]).map((s) => (
-              <label key={s} className="flex items-center gap-1">
-                <input type="radio" name="source" value={s} checked={source === s} onChange={() => setSource(s)} />
+              <label key={s} className={radio}>
+                <input type="radio" name="source" value={s} checked={source === s} onChange={() => setSource(s)} className="h-4 w-4 accent-hemlock" />
                 {t.sources[s]}
               </label>
             ))}
@@ -71,7 +72,7 @@ export function LogUpdate({ rid, actions }: { rid: string; actions: string[] }) 
         )}
         {action === "plan_received" && <PlanFields value={plan} onChange={setPlan} />}
         <Field label={t.note}><input className={inputCls} value={note} onChange={(e) => setNote(e.target.value)} /></Field>
-        <Button variant="primary" type="submit" disabled={!ready || m.isPending}>{t.submit}</Button>
+        <Button variant="outline" type="submit" disabled={!ready || m.isPending}>{t.submit}</Button>
         {m.error && <ErrorNote error={m.error} />}
       </form>
     </Panel>

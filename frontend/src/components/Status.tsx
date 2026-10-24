@@ -1,14 +1,15 @@
 import { copy } from "../copy";
 
 export function Loading() {
-  return <p role="status" className="p-6 text-slate-600">{copy.loading}</p>;
+  return <p role="status" className="py-6 text-muted">{copy.loading}</p>;
 }
 
+// Errors say what happened and what to do, without apology (design.md).
 export function ErrorNote({ error }: { error: unknown }) {
-  const msg = error instanceof Error ? error.message : String(error);
+  const msg = (error instanceof Error ? error.message : String(error)).replace(/\.\s*$/, "");
   return (
-    <p role="alert" className="rounded bg-rose-50 p-2 text-sm text-rose-900">
-      {copy.errorPrefix} {msg}
+    <p role="alert" className="rounded-control border border-rust/30 bg-rust-tint px-3 py-2 text-caption text-rust">
+      {copy.errorPrefix} {msg}. {copy.errorNext}
     </p>
   );
 }
