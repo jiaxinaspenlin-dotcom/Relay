@@ -74,6 +74,8 @@ class Event(_Model):
     source: Optional[UpdateSource] = None
     # "stage" = a stage transition; others record field changes without moving the stage.
     kind: Literal["stage", "authorization", "barrier", "transport", "phone"] = "stage"
+    by: str = ""  # the signed-in user who acted (empty for the office link)
+    user_id: str = ""
 
 
 class Appointment(_Model):
@@ -102,6 +104,7 @@ class Communication(_Model):
     recipient: Literal["specialist", "patient", "pcp"]
     text: str
     sent_by: str
+    sent_by_id: str = ""
     kind: Literal["referral", "follow_up", "patient_message"] = "follow_up"
     channel: Channel = "manual"
     ai_drafted: bool = False
@@ -128,6 +131,7 @@ class Plan(_Model):
 class Closure(_Model):
     at: date
     by: str
+    by_id: str = ""
     reason: Literal["plan_received", "patient_declined", "referred_elsewhere", "cancelled"]
     note: str = ""
 

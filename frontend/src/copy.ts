@@ -11,7 +11,23 @@ export const copy = {
   delivery: "Relay records what you send. It doesn't send email or fax by itself. Production delivery is Mass HIway (the state's health information exchange) Direct messaging.",
   practiceSetting: "Practice setting",
 
-  nav: { dashboard: "Dashboard", inbox: "Inbox", settings: "Settings", label: "Main" },
+  nav: { dashboard: "Dashboard", inbox: "Inbox", settings: "Settings", label: "Main", signOut: "Sign out" },
+
+  signIn: {
+    title: "Sign in to Relay",
+    email: "Email",
+    password: "Password",
+    submit: "Sign in",
+    sampleCoordinator: "Sign in as coordinator (sample)",
+    sampleClinician: "Sign in as clinician (sample)",
+    setupTitle: "Set up Relay",
+    setupHelp: "Create the first coordinator account for your practice.",
+    name: "Your name",
+    practice: "Practice name",
+    passwordHint: "At least 8 characters.",
+    create: "Create account",
+    orSample: "Or try it with sample data first.",
+  },
 
   empty: {
     title: "No referrals yet",
@@ -169,6 +185,8 @@ export const copy = {
     channel: { copy: "copied", email: "email", print: "print", manual: "recorded" } as Record<string, string>,
     actor: { pcp: "PCP", coordinator: "Coordinator", office: "Office", specialist: "Office", patient: "Patient", system: "Relay" } as Record<string, string>,
     sent: { referral: "Referral sent", follow_up: "Follow-up sent", patient_message: "Message to patient" } as Record<string, string>,
+    officeLink: "Office link",
+    by: (what: string, name: string) => `${what} by ${name}`,
     edited: "Edited before sending.",
   },
 
@@ -224,6 +242,7 @@ export const copy = {
 
   inbox: {
     title: "Inbox",
+    clinicianOnly: "Only a clinician can acknowledge and close.",
     empty: "No returned plans are waiting.",
     question: "Original question",
     plan: "Returned plan",

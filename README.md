@@ -1,39 +1,61 @@
-# Relay: closing the referral loop (Kiro build kit)
+# Relay: closing the referral loop
 
 **Challenge:** Improving Healthcare Access and Coordination.
-Relay tracks each specialty referral from a rural Massachusetts practice through sent, accepted,
-scheduled, seen, plan returned, and closed. It catches the two failures the challenge names,
-shows distance and community context from real public data, and drafts follow-ups for a person to
-send. Clinical and scheduling decisions stay with people.
+Relay follows each specialty referral from a rural Massachusetts primary-care practice the way U.S.
+referrals actually move: sent as paperwork, received by the specialist office (complete or with
+missing items), the patient contacted to schedule, scheduled, seen, the plan returned, and the
+loop closed by the clinician. It catches the two failures the challenge names (never scheduled,
+plan never returned) and drafts follow-ups for a person to send. Clinical and scheduling decisions
+stay with people.
 
+## Run it
+```bash
+make setup          # Python venv + npm install
+make dev            # API on :8000 and web on :5173 (SQLite file: data/relay.db)
+make test           # copy guard + pytest
 ```
-.kiro/
-├── specs/relay-referral-loop/  requirements.md · design.md · tasks.md (7-hour plan, cut order)
-├── steering/                   product.md · ai-guardrails.md · tech.md · structure.md
-└── hooks/relay-hooks.json      copy guard · loop/finder tests · drafting verification · FHIR · sources · spec sync
-scripts/check_copy.py           copy guard (works now)
+Open http://127.0.0.1:5173. On a brand-new install the sign-in page offers **Create account**
+(first coordinator) and **Load sample data**.
+
+### Sample accounts
+Sample accounts exist only while sample data is loaded (Settings → Load / Remove sample data).
+The sign-in page shows "Sign in as coordinator (sample)" and "Sign in as clinician (sample)" then.
+
+| Name | Role | Email | Password |
+|---|---|---|---|
+| Sam Ortiz | coordinator | sam.ortiz@quabbinhills.example | `relay-coordinator` |
+| Dr. Avery Lin | clinician | avery.lin@quabbinhills.example | `relay-clinician` |
+
+Coordinators land on the Dashboard. Clinicians land on the Inbox, can view the Dashboard, and are
+the only ones who can **Acknowledge and close**. Specialist offices never sign in: each referral
+has an office update link (`/office/{token}`) for offices not yet on Mass HIway.
+
+### Acceptance tests (UI, real clock)
+```bash
+make dev-api-e2e    # API on a throwaway database: RELAY_E2E=1, data/relay-e2e.db
+make dev-web
+make e2e            # A1–A5; refuses to run against any other database
+node frontend/e2e/core_loop.mjs   # every office action on a brand-new referral
 ```
 
-## Start
-1. Open in Kiro: "Review .kiro/specs/relay-referral-loop against the steering files, list conflicts,
-   then start Block 1."
-2. Start the data fetches and Synthea in the first 20 minutes. They're the slowest, least predictable part.
-3. Log each hook catch in `docs/KIRO.md` as it happens.
+### AI call assistant (optional)
+`POST /api/referrals/{id}/call-session` and `/call-transcript` need a signed-in coordinator and
+`ELEVENLABS_API_KEY` / `ELEVENLABS_AGENT_ID` in `.env` (read through python-dotenv; never logged).
+Without them, "Call office" opens Log update instead. Transcript extraction uses an LLM when
+`ANTHROPIC_API_KEY` is set, otherwise a deterministic extractor; suggestions are never applied
+until the coordinator saves them.
 
-## Verify early (first hour)
-- The CMS clinician dataset ID and exact specialty strings (task 1.2).
-- That Synthea accepts each western-MA town name (task 1.4).
-- The HRSA HPSA download columns (task 1.3). Cut it if it takes more than 10 minutes.
-- Hooks use Kiro's `version: "v1"` JSON format. If your build doesn't load them, recreate them in
-  the Agent Hooks panel.
+## Not a production deployment
+Relay makes **no HIPAA compliance claim**. Data here is synthetic (Synthea) or public. Production
+use with patient data needs SSO, audit logging, and hosting approved for patient data, plus
+delivery over Mass HIway Direct messaging rather than copy, email, or print.
 
-## Sources
-- CMS Provider Data Catalog: https://data.cms.gov/provider-data/
-- Doctors and Clinicians data dictionary: https://data.cms.gov/provider-data/sites/default/files/data_dictionaries/DOC_Data_Dictionary.pdf
-- CDC PLACES: https://data.cdc.gov/resource/swc5-untb.json
-- HRSA Data Warehouse: https://data.hrsa.gov/
-- HL7 BSeR workflow resources: https://hl7.org/fhir/us/bser/WorkflowManagementResources.html
-- CMS ACCESS Care Update template: https://www.cms.gov/priorities/innovation/files/access-care-update-template.pdf
-- Massachusetts rural health: https://www.mass.gov/rural-health
-- MassGIS data layers: https://www.mass.gov/info-details/massgis-data-layers
+## Data
+- Public snapshots and sources: `data/public/SOURCES.md`; policy sources: `docs/SOURCES.md`.
+- Sample referrals: `data/synthetic/referrals.json`, generated by `scripts/seed_referrals.py`.
+  Dates are day offsets from load time, so the sample reads the same on any day.
 - Synthea (Apache-2.0): https://github.com/synthetichealth/synthea
+
+## Kiro
+Spec, steering, and hooks are in `.kiro/`; catches and deviations are logged in `docs/KIRO.md`.
+Screenshots: `docs/screenshots/`.

@@ -27,6 +27,12 @@ def real_today() -> date:
     return date.today()
 
 
+def real_now():
+    """The real time in UTC, for session expiry only."""
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc)
+
+
 # Stuck-rule thresholds. PRACTICE SETTINGS chosen by the practice, not clinical standards.
 PRACTICE_SETTINGS: dict[str, int] = {
     "sent_no_receipt_business_days": 2,

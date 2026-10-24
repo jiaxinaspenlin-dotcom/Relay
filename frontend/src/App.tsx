@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { Inbox, LayoutGrid, SlidersHorizontal, type LucideIcon } from "lucide-react";
-import { NavLink, Outlet, Route, Routes } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Inbox, LayoutGrid, LogOut, SlidersHorizontal, type LucideIcon } from "lucide-react";
+import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { LIVE, api } from "./api";
 import { copy } from "./copy";
 import { RouteGlyph } from "./components/ui";
@@ -11,6 +12,8 @@ import PcpInbox from "./pages/PcpInbox";
 import SettingsPage from "./pages/Settings";
 import OfficePage from "./pages/Office";
 import PrintPage from "./pages/Print";
+import SignIn from "./pages/SignIn";
+import { Loading } from "./components/Status";
 
 export function Wordmark({ color = "#FFFFFF" }: { color?: string }) {
   return (
@@ -42,9 +45,26 @@ function RailLink({ to, icon: Icon, label, count, end }: { to: string; icon: Luc
   );
 }
 
+function SignOut({ name }: { name?: string }) {
+  const qc = useQueryClient();
+  const out = useMutation({ mutationFn: api.signOut, onSuccess: () => { qc.clear(); window.location.assign("/sign-in"); } });
+  return (
+    <button type="button" onClick={() => out.mutate()} aria-label={copy.nav.signOut}
+      className="flex min-h-[40px] w-full items-center gap-3 rounded-control px-3 text-white/[.82] hover:bg-white/[.08]">
+      <LogOut size={18} strokeWidth={1.8} aria-hidden="true" />
+      <span className="max-[859px]:sr-only">{copy.nav.signOut}{name ? "" : ""}</span>
+    </button>
+  );
+}
+
 function Shell() {
-  const s = useQuery({ queryKey: ["settings"], queryFn: api.settings });
-  const d = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard, ...LIVE });
+  const me = useQuery({ queryKey: ["me"], queryFn: api.me, retry: false });
+  const loc = useLocation();
+  const s = useQuery({ queryKey: ["settings"], queryFn: api.settings, enabled: !!me.data });
+  const d = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard, ...LIVE, enabled: !!me.data });
+  if (me.isLoading) return <Loading />;
+  if (me.error || !me.data) return <Navigate to="/sign-in" replace state={{ from: loc.pathname }} />;
+  const user = me.data.user;
   return (
     <div className="min-h-screen min-[860px]:flex">
       {/* The rail stretches to the page height; its contents stay pinned while the page scrolls. */}
@@ -58,7 +78,14 @@ function Shell() {
             <RailLink to="/settings" icon={SlidersHorizontal} label={copy.nav.settings} />
           </nav>
         </div>
-        <div className="mt-auto hidden px-7 pb-7 text-caption text-white/75 min-[860px]:block">{s.data?.practice.practice}</div>
+        <div className="mt-auto hidden px-4 pb-7 min-[860px]:block">
+          <div className="mb-2 px-3 text-caption text-white/75">
+            <div className="font-semibold text-white" data-testid="signed-in-as">{user.name}</div>
+            <div>{s.data?.practice.practice ?? user.practice}</div>
+          </div>
+          <SignOut />
+        </div>
+        <div className="px-4 pb-3 min-[860px]:hidden"><SignOut /></div>
         </div>
       </aside>
       <div className="relative min-w-0 flex-1 overflow-x-hidden bg-paper">
@@ -76,6 +103,7 @@ export default function App() {
       {/* The office link and print pages use no app chrome. */}
       <Route path="/office/:token" element={<OfficePage />} />
       <Route path="/print/:rid/:commId" element={<PrintPage />} />
+      <Route path="/sign-in" element={<SignIn />} />
       <Route element={<Shell />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/new" element={<NewReferral />} />

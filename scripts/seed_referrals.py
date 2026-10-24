@@ -72,8 +72,13 @@ def d(month: int, day: int) -> int:
     return (date(2026, month, day) - REF).days
 
 
-def ev(stage: str, at: str, actor: str, note: str = "", source: str | None = None) -> dict:
-    return {"stage": stage, "at": at, "actor": actor, "note": note, "source": source, "kind": "stage"}
+# Who acted, by sample account (offices act without an account).
+BY = {"coordinator": "Sam Ortiz", "pcp": "Dr. Avery Lin"}
+
+
+def ev(stage: str, at: int, actor: str, note: str = "", source: str | None = None) -> dict:
+    return {"stage": stage, "at": at, "actor": actor, "note": note, "source": source, "kind": "stage",
+            "by": BY.get(actor, "")}
 
 
 def chart_condition(pid: str, code: str) -> dict:

@@ -60,6 +60,8 @@ class Repo:
         self.conn.execute("PRAGMA foreign_keys = ON")
         self.conn.executescript(SCHEMA)
         self.conn.commit()
+        from app.auth import Users  # users and sessions live in the same SQLite file
+        self.users = Users(self)
 
     # ------------------------------------------------------------ locked reads
     # One sqlite3 connection is shared by FastAPI's threadpool. Concurrent use of one connection is
@@ -170,6 +172,9 @@ class Repo:
         if self.has_sample():
             raise SampleAlreadyLoaded("Sample data is already loaded")
         seed = load_seed(today)
+        self.users.add_sample_users()
+        if self.setting("practice") == DEFAULT_PRACTICE:
+            self.set_setting("practice", seed["pcp"])
         existing = self.patients()
         for p in load_patients().values():
             if p["id"] not in existing:
@@ -195,11 +200,23 @@ class Repo:
                 "DELETE FROM office_tokens WHERE referral_id IN (SELECT id FROM referrals WHERE sample = 1);"
                 "DELETE FROM referrals WHERE sample = 1; DELETE FROM patients WHERE sample = 1;")
             self.conn.commit()
+        self.users.remove_sample_users()
+        if self.setting("practice") == load_seed()["pcp"]:
+            self.set_setting("practice", DEFAULT_PRACTICE)
         return n
 
     def clear_all(self) -> None:
+        """Delete every patient and referral (and the sample accounts). Real accounts stay."""
         with self._lock:
             self.conn.executescript("DELETE FROM office_tokens; DELETE FROM referrals; "
                                     "DELETE FROM patients;")
+            self.conn.commit()
+        self.users.remove_sample_users()
+
+    def reset_everything(self) -> None:
+        """Test-only (RELAY_E2E=1): empty every table, including accounts and settings."""
+        with self._lock:
+            self.conn.executescript("DELETE FROM sessions; DELETE FROM users; DELETE FROM office_tokens; "
+                                    "DELETE FROM referrals; DELETE FROM patients; DELETE FROM settings;")
             self.conn.commit()
 

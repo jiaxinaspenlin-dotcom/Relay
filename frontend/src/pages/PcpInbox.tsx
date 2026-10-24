@@ -6,10 +6,12 @@ import { copy } from "../copy";
 import { shortDate } from "../format";
 import { ErrorNote, Loading } from "../components/Status";
 import { Button, Field, Muted, SampleTag, inputCls } from "../components/ui";
+import { useMe } from "../components/useMe";
 
 // Reading layout, 72 characters per line: the original question, the plan in template
 // sections, then "Acknowledge and close".
 function Item({ item }: { item: InboxItem }) {
+  const me = useMe();
   const qc = useQueryClient();
   const [note, setNote] = useState("");
   const close = useMutation({ mutationFn: () => api.close(item.card.id, note), onSuccess: () => qc.invalidateQueries() });
@@ -40,11 +42,15 @@ function Item({ item }: { item: InboxItem }) {
           </div>
         ))}
       </section>
-      <div className="space-y-3 border-t border-line pt-5">
-        <Field label={t.note}><input className={inputCls} value={note} onChange={(e) => setNote(e.target.value)} /></Field>
-        <Button variant="primary" onClick={() => close.mutate()} disabled={close.isPending}>{t.acknowledge}</Button>
-        {close.error && <ErrorNote error={close.error} />}
-      </div>
+      {me?.role === "clinician" ? (
+        <div className="space-y-3 border-t border-line pt-5">
+          <Field label={t.note}><input className={inputCls} value={note} onChange={(e) => setNote(e.target.value)} /></Field>
+          <Button variant="primary" onClick={() => close.mutate()} disabled={close.isPending}>{t.acknowledge}</Button>
+          {close.error && <ErrorNote error={close.error} />}
+        </div>
+      ) : (
+        <Muted className="block border-t border-line pt-5">{t.clinicianOnly}</Muted>
+      )}
     </article>
   );
 }

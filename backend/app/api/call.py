@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Literal, Optional
 
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from app import clock
@@ -17,6 +17,7 @@ from app.config import voice_settings
 from app.dates import long
 from app.loop.stuck import stuck_flags
 from app.loop.timeline import first_event_date
+from app.api.auth import require_role
 from app.store import get_repo
 from app.views import initials
 
@@ -43,7 +44,8 @@ def long_month(d) -> str:
 
 
 @router.post("/{rid}/call-session")
-def call_session(rid: str) -> dict:
+def call_session(rid: str, request: Request) -> dict:
+    require_role(request, "coordinator", "start an AI call")
     v = voice_settings()
     if not (v["api_key"] and v["agent_id"]):
         raise HTTPException(503, "Voice calls aren't configured on this server")
@@ -78,7 +80,8 @@ class TranscriptBody(BaseModel):
 
 
 @router.post("/{rid}/call-transcript")
-def call_transcript(rid: str, body: TranscriptBody) -> dict:
+def call_transcript(rid: str, body: TranscriptBody, request: Request) -> dict:
+    require_role(request, "coordinator", "check an AI call transcript")
     repo = get_repo()
     try:
         ref = repo.get(rid)

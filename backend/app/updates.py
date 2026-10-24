@@ -51,14 +51,15 @@ def make_plan(ref: Referral, form: PlanForm, today: date) -> Plan:
     })
 
 
-def apply_update(ref: Referral, body: UpdateBody, *, actor: str, source: str, today: date) -> Referral:
+def apply_update(ref: Referral, body: UpdateBody, *, actor: str, source: str, today: date,
+                 by: str = "", user_id: str = "") -> Referral:
     """Return the updated referral. Raises UpdateError (bad input) or InvalidTransition."""
     note = body.note.strip()
     a = body.action
     if a == "authorization":
         if body.authorization is None or body.authorization == "not_set":
             raise UpdateError("Choose an authorization status")
-        new = record_field_update(ref, "authorization", at=today, actor=actor, source=source,
+        new = record_field_update(ref, "authorization", at=today, actor=actor, source=source, by=by, user_id=user_id,
                                   note=f"Authorization: {AUTH_LABELS[body.authorization].lower()}"
                                        + (f". {note}" if note else ""))
         if body.authorization == "pending" and ref.authorization != "pending":
@@ -89,7 +90,7 @@ def apply_update(ref: Referral, body: UpdateBody, *, actor: str, source: str, to
         if body.plan is None:
             raise UpdateError("Returning a plan needs the plan form")
         kw["plan"] = make_plan(ref, body.plan, today)
-    return transition(ref, stage, at=today, actor=actor, note=note, source=source, **kw)
+    return transition(ref, stage, at=today, actor=actor, note=note, source=source, by=by, user_id=user_id, **kw)
 
 
 __all__ = ["UpdateBody", "PlanForm", "UpdateError", "InvalidTransition", "apply_update", "make_plan"]

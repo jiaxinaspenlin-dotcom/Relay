@@ -12,6 +12,9 @@ from app.store import set_repo
 
 TODAY = date(2026, 10, 24)
 
+COORD = {"name": "Casey Reed", "email": "casey@example.test", "role": "coordinator", "password": "coord-pass-1"}
+CLIN = {"name": "Dr. Jo Park", "email": "jo@example.test", "role": "clinician", "password": "clin-pass-1"}
+
 
 @pytest.fixture(scope="session")
 def seed() -> dict:
@@ -40,12 +43,35 @@ def real_today(monkeypatch):
 @pytest.fixture()
 def repo(real_today) -> Repo:
     r = Repo(":memory:")
+    for u in (COORD, CLIN):
+        r.users.create(name=u["name"], email=u["email"], role=u["role"], practice="Test Family Practice",
+                       password=u["password"])
     set_repo(r)
     yield r
     set_repo(None)
 
 
+def signed_in(account: dict) -> TestClient:
+    from app.main import app
+    c = TestClient(app)
+    r = c.post("/api/auth/sign-in", json={"email": account["email"], "password": account["password"]})
+    assert r.status_code == 200, r.text
+    return c
+
+
 @pytest.fixture()
 def client(repo) -> TestClient:
+    """Signed in as a coordinator."""
+    return signed_in(COORD)
+
+
+@pytest.fixture()
+def clinician(repo) -> TestClient:
+    """Signed in as a clinician (only clinicians can acknowledge and close)."""
+    return signed_in(CLIN)
+
+
+@pytest.fixture()
+def anon(repo) -> TestClient:
     from app.main import app
     return TestClient(app)

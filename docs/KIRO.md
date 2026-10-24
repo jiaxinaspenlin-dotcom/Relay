@@ -70,3 +70,14 @@
   digit stream, so the number is confirmed either way; a number in neither form is nulled with
   an error. Tests mock the LLM; with no LLM key, a deterministic extractor gives the same result
   on the fixture. Suggestions are never applied: the coordinator saves them in Log update.
+- 2026-10-24 — Demo mode removed (real clock only). Sample dates are now day offsets from load
+  time written by seed_referrals.py, so "Not scheduled, 14 days" holds on any day; every time
+  threshold is tested in pytest with an injected clock (config.real_today patched), never in the UI.
+- 2026-10-24 — Sign-in: argon2 hashes, HttpOnly SameSite=Lax session cookie (only the token's
+  SHA-256 is stored, 12-hour expiry), roles coordinator/clinician. Only clinicians close; only
+  coordinators start AI calls. Sample accounts exist only while sample data is loaded, and are
+  deleted (with their sessions) when it's removed. Every event, message and closure records the
+  acting user; FHIR Provenance names them, and the closing clinician is the Composition attester
+  (the specialist office stays the plan's author).
+- 2026-10-24 — A1 first failed because the e2e navigated away before "Load sample data" finished;
+  the test now waits for the sample sign-in buttons.

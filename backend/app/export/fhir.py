@@ -99,6 +99,18 @@ def build_bundle(ref: Referral, patient: dict, today: date) -> dict:
         "comp": f"Composition/plan-{rid}",
         "coverage": f"Coverage/cov-{rid}",
     }
+    # Signed-in users who acted on this referral become Practitioners (Provenance agents, authors).
+    acting: dict[str, str] = {}
+    for ev in ref.events:
+        if ev.user_id:
+            acting[ev.user_id] = ev.by
+    if ref.closure and ref.closure.by_id:
+        acting[ref.closure.by_id] = ref.closure.by
+    for c in ref.communications:
+        if c.sent_by_id:
+            acting[c.sent_by_id] = c.sent_by
+    for uid in acting:
+        refs[f"user:{uid}"] = f"Practitioner/{_id(uid)}"
     R = lambda k, display=None: {"reference": refs[k], **({"display": display} if display else {})}  # noqa: E731
 
     res: list[dict] = []
@@ -121,6 +133,9 @@ def build_bundle(ref: Referral, patient: dict, today: date) -> dict:
         "beneficiary": R("patient"),
         "payor": [{"display": COVERAGE_LABELS.get(cov_code, "Unknown")}],
     })
+    res += [{"resourceType": "Practitioner", "id": _id(uid), "meta": _meta(),
+             "identifier": [{"system": f"{BASE}/NamingSystem/user-id", "value": uid}],
+             "name": [{"text": name}]} for uid, name in acting.items()]
     res += [
         {"resourceType": "Practitioner", "id": "pcp", "meta": _meta(),
          "name": [{"text": ref.requester.clinician}]},
@@ -206,7 +221,8 @@ def build_bundle(ref: Referral, patient: dict, today: date) -> dict:
         res.append({
             "resourceType": "Communication", "id": _id(f"comm-{c.id or len(res)}"), "meta": _meta(),
             "status": "completed", "basedOn": [R("sr")], "subject": R("patient"),
-            "recipient": [R(recipients[c.recipient])], "sender": R("coordinator"),
+            "recipient": [R(recipients[c.recipient])],
+            "sender": R(f"user:{c.sent_by_id}", c.sent_by) if c.sent_by_id else R("coordinator"),
             "sent": c.sent.isoformat(), "payload": [{"contentString": c.text}],
             "medium": [{"text": {"copy": "Copied text", "email": "Email", "print": "Printed for fax",
                                  "manual": "Recorded in Relay"}[c.channel]}],
@@ -234,7 +250,14 @@ def build_bundle(ref: Referral, patient: dict, today: date) -> dict:
             "type": {"coding": [{"system": "http://loinc.org", "code": "11488-4",
                                  "display": "Consult note"}]},
             "subject": R("patient"), "date": p.returned_on.isoformat(),
-            "author": [R("perf_org", p.from_)],
+            # The specialist office wrote the plan; a coordinator who entered it from a phone or
+            # fax report is a co-author; the clinician who acknowledged it attests to it.
+            "author": [R("perf_org", p.from_)] + [
+                R(f"user:{ev.user_id}", ev.by) for ev in ref.events
+                if ev.stage == "plan_returned" and ev.kind == "stage" and ev.user_id],
+            **({"attester": [{"mode": "professional", "time": ref.closure.at.isoformat(),
+                              "party": R(f"user:{ref.closure.by_id}", ref.closure.by)}]}
+               if ref.closure and ref.closure.by_id else {}),
             "title": "Specialist care update (care-update template sections)",
             "section": [{"title": t, "text": _div(v)} for t, v in sections],
         })
@@ -247,7 +270,8 @@ def build_bundle(ref: Referral, patient: dict, today: date) -> dict:
             "target": [R("task")], "recorded": _instant(ev.at),
             "activity": {"text": (f"Stage → {STAGE_LABELS.get(ev.stage, ev.stage)}" if ev.kind == "stage"
                                   else f"Update: {ev.kind}") + (f" (via {ev.source})" if ev.source else "")},
-            "agent": [{"who": R(actors[ev.actor])}],
+            "agent": [{"who": R(f"user:{ev.user_id}", ev.by) if ev.user_id
+                       else R(actors[ev.actor], "Office link" if ev.source == "link" else None)}],
         }
         if ev.note:
             prov["reason"] = [{"text": ev.note}]

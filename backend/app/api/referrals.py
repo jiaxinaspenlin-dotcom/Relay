@@ -19,6 +19,8 @@ from app.loop.states import STAGES, InvalidTransition, record_field_update, tran
 from app.loop.stuck import BARRIER_LABELS
 from app.models import (Barrier, BarrierType, Channel, Communication, Condition, Party, Performer,
                         Referral)
+from app.api.auth import current_user, require_role
+from app.auth import User
 from app.store import get_repo
 from app.updates import UpdateBody, UpdateError, apply_update
 from app.views import patient_brief, referral_detail_view
@@ -60,12 +62,16 @@ def _save(ref: Referral) -> dict:
     return _detail(ref)
 
 
-def _comm(ref: Referral, *, recipient: str, text: str, kind: str, channel: str, rule: str = "",
-          edited: bool = False) -> Referral:
+def _actor(user: User) -> str:
+    return "pcp" if user.role == "clinician" else "coordinator"
+
+
+def _comm(ref: Referral, user: User, *, recipient: str, text: str, kind: str, channel: str,
+          rule: str = "", edited: bool = False) -> Referral:
     new = ref.model_copy(deep=True)
     new.communications.append(Communication(
         id=f"{ref.id}-C{len(ref.communications) + 1}", sent=clock.today(get_repo()), recipient=recipient,
-        text=text.strip(), sent_by=ref.requester.coordinator, kind=kind, channel=channel, rule=rule,
+        text=text.strip(), sent_by=user.name, sent_by_id=user.id, kind=kind, channel=channel, rule=rule,
         edited=edited))
     return new
 
@@ -89,7 +95,8 @@ class NewReferral(BaseModel):
 
 
 @router.post("/referrals", status_code=201)
-def create_referral(body: NewReferral) -> dict:
+def create_referral(body: NewReferral, request: Request) -> dict:
+    user = current_user(request)
     repo = get_repo()
     p = repo.patient(body.patient_id)
     if p is None:
@@ -117,7 +124,8 @@ def create_referral(body: NewReferral) -> dict:
         id=repo.next_id(), sample=False, patient_id=p["id"], patient_town=p["town"],
         specialty=body.specialty, pri_spec=pri_spec, priority=body.priority,
         reason_text=body.reason_text.strip(), reason_condition=condition,
-        requester=Party(**repo.setting("practice")),
+        requester=Party(**{**repo.setting("practice"),
+                           **({"coordinator": user.name} if user.role == "coordinator" else {"clinician": user.name})}),
         performer=Performer(id=practice.id, name=practice.label, town=practice.town or practice.city_raw,
                             fictional=False, address=practice.address, zip5=practice.zip5,
                             org_pac_id=practice.org_pac_id, phone=practice.phone),
@@ -144,6 +152,7 @@ class SendReferral(BaseModel):
 @router.post("/referrals/{rid}/send")
 def send_referral(rid: str, body: SendReferral, request: Request) -> dict:
     """Record that a person sent the referral. The first send moves Draft to Sent."""
+    user = current_user(request)
     repo = get_repo()
     ref = _get(rid)
     if ref.stage in ("closed", "cancelled", "declined"):
@@ -151,9 +160,9 @@ def send_referral(rid: str, body: SendReferral, request: Request) -> dict:
     msg = referral_message(ref, _patient(ref), office_url(request, repo.token_for(rid)))
     new = ref
     if ref.stage == "draft":
-        new = transition(ref, "sent", at=clock.today(repo), actor="coordinator",
-                         by=ref.requester.coordinator, note=f"Sent by {body.channel}")
-    new = _comm(new, recipient="specialist", text=msg["text"], kind="referral", channel=body.channel)
+        new = transition(ref, "sent", at=clock.today(repo), actor=_actor(user), by=user.name,
+                         user_id=user.id, note={"copy": "Copied for sending", "email": "Opened in email", "print": "Printed for fax"}[body.channel])
+    new = _comm(new, user, recipient="specialist", text=msg["text"], kind="referral", channel=body.channel)
     return {**_save(new), "message": msg, "communication_id": new.communications[-1].id}
 
 
@@ -164,10 +173,12 @@ class LogUpdate(UpdateBody):
 
 
 @router.post("/referrals/{rid}/updates")
-def log_update(rid: str, body: LogUpdate) -> dict:
+def log_update(rid: str, body: LogUpdate, request: Request) -> dict:
+    user = current_user(request)
     repo = get_repo()
     try:
-        new = apply_update(_get(rid), body, actor="coordinator", source=body.source, today=clock.today(repo))
+        new = apply_update(_get(rid), body, actor=_actor(user), source=body.source, today=clock.today(repo),
+                           by=user.name, user_id=user.id)
     except UpdateError as e:
         raise HTTPException(422, str(e)) from e
     except InvalidTransition as e:
@@ -183,24 +194,26 @@ class BarrierBody(BaseModel):
 
 
 @router.post("/referrals/{rid}/barriers", status_code=201)
-def add_barrier(rid: str, body: BarrierBody) -> dict:
+def add_barrier(rid: str, body: BarrierBody, request: Request) -> dict:
+    user = current_user(request)
     repo = get_repo()
     ref = _get(rid)
     today = clock.today(repo)
     if any(b.type == body.type and b.status == "open" for b in ref.barriers):
         raise HTTPException(409, f"A {BARRIER_LABELS[body.type].lower()} barrier is already open")
-    new = record_field_update(ref, "barrier", at=today, actor="coordinator",
+    new = record_field_update(ref, "barrier", at=today, actor=_actor(user), by=user.name, user_id=user.id,
                               note=f"{BARRIER_LABELS[body.type]} barrier: {body.note.strip()}".rstrip(": "))
     new.barriers.append(Barrier(type=body.type, status="open", opened=today, note=body.note.strip()))
     return _save(new)
 
 
 @router.post("/referrals/{rid}/barriers/{btype}/address")
-def address_barrier(rid: str, btype: BarrierType) -> dict:
+def address_barrier(rid: str, btype: BarrierType, request: Request) -> dict:
+    user = current_user(request)
     repo = get_repo()
     ref = _get(rid)
     today = clock.today(repo)
-    new = record_field_update(ref, "barrier", at=today, actor="coordinator",
+    new = record_field_update(ref, "barrier", at=today, actor=_actor(user), by=user.name, user_id=user.id,
                               note=f"{BARRIER_LABELS[btype]} barrier addressed")
     hit = False
     for b in new.barriers:
@@ -220,7 +233,8 @@ PT1_LABELS = {"not_started": "not started", "requested": "requested", "confirmed
 
 
 @router.post("/referrals/{rid}/transport")
-def set_transport(rid: str, body: TransportBody) -> dict:
+def set_transport(rid: str, body: TransportBody, request: Request) -> dict:
+    user = current_user(request)
     repo = get_repo()
     ref = _get(rid)
     notes = []
@@ -230,7 +244,8 @@ def set_transport(rid: str, body: TransportBody) -> dict:
         notes.append("Transportation plan updated")
     if not notes:
         raise HTTPException(422, "Nothing to update")
-    new = record_field_update(ref, "transport", at=clock.today(repo), actor="coordinator", note=". ".join(notes))
+    new = record_field_update(ref, "transport", at=clock.today(repo), actor=_actor(user), by=user.name,
+                              user_id=user.id, note=". ".join(notes))
     if body.pt1_status is not None:
         new.pt1_status = body.pt1_status
     if body.transport_plan is not None:
@@ -243,11 +258,12 @@ class PhoneBody(BaseModel):
 
 
 @router.post("/referrals/{rid}/office-phone")
-def set_office_phone(rid: str, body: PhoneBody) -> dict:
+def set_office_phone(rid: str, body: PhoneBody, request: Request) -> dict:
+    user = current_user(request)
     repo = get_repo()
     ref = _get(rid)
-    new = record_field_update(ref, "phone", at=clock.today(repo), actor="coordinator",
-                              note=f"Office scheduling phone: {body.phone.strip()}")
+    new = record_field_update(ref, "phone", at=clock.today(repo), actor=_actor(user), by=user.name,
+                              user_id=user.id, note=f"Office scheduling phone: {body.phone.strip()}")
     new.performer.phone = body.phone.strip()
     return _save(new)
 
@@ -283,9 +299,10 @@ class SendMessage(BaseModel):
 
 
 @router.post("/referrals/{rid}/communications", status_code=201)
-def send_message(rid: str, body: SendMessage) -> dict:
+def send_message(rid: str, body: SendMessage, request: Request) -> dict:
+    user = current_user(request)
     ref = _get(rid)
-    new = _comm(ref, recipient=body.recipient, text=body.text, kind=body.kind, channel=body.channel,
+    new = _comm(ref, user, recipient=body.recipient, text=body.text, kind=body.kind, channel=body.channel,
                 rule=body.rule,
                 edited=bool(body.drafted_text) and body.text.strip() != body.drafted_text.strip())
     return {**_save(new), "communication_id": new.communications[-1].id}
@@ -309,11 +326,13 @@ class CloseBody(BaseModel):
 
 
 @router.post("/referrals/{rid}/close")
-def close(rid: str, body: CloseBody) -> dict:
+def close(rid: str, body: CloseBody, request: Request) -> dict:
+    """Only a clinician can acknowledge a returned plan and close the loop."""
+    user = require_role(request, "clinician", "acknowledge and close a referral")
     repo = get_repo()
     ref = _get(rid)
     try:
-        new = transition(ref, "closed", at=clock.today(repo), actor="pcp", by=ref.requester.clinician,
+        new = transition(ref, "closed", at=clock.today(repo), actor="pcp", by=user.name, user_id=user.id,
                          note=body.note.strip())
     except InvalidTransition as e:
         raise HTTPException(409, str(e)) from e

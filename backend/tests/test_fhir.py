@@ -87,7 +87,7 @@ def test_archetype_bundle_validates(refs, rid):
     assert DIRECTORY_TAG not in org["meta"]["tag"]
 
 
-def test_real_mode_referral_bundle_validates(client):
+def test_real_mode_referral_bundle_validates(client, clinician):
     """Hand-entered patient → office link updates → follow-up → PCP close. Directory org,
     Communications, Composition, closed Task, appointment time; no synthetic tag."""
     pid = client.post("/api/patients", json={"name": "Maria Santos", "town": "Orange",
@@ -111,7 +111,7 @@ def test_real_mode_referral_bundle_validates(client):
         assert r.status_code == 200, (body, r.text)
     client.post(f"/api/referrals/{rid}/communications",
                 json={"recipient": "specialist", "text": "Thanks.", "channel": "copy"})
-    client.post(f"/api/referrals/{rid}/close", json={"note": "Reviewed"})
+    assert clinician.post(f"/api/referrals/{rid}/close", json={"note": "Reviewed"}).status_code == 200
     resp = client.get(f"/api/referrals/{rid}/fhir")
     assert resp.headers["content-type"].startswith("application/fhir+json")
     b = resp.json()
@@ -126,6 +126,16 @@ def test_real_mode_referral_bundle_validates(client):
     assert t["Condition"][0]["code"] == {"text": "Chest pain on exertion"}
     assert t["Patient"][0]["name"][0]["family"] == "Santos"
     assert len(t["Communication"]) == 2
+    people = {p["id"]: p["name"][0]["text"] for p in t["Practitioner"]}
+    assert {"Casey Reed", "Dr. Jo Park"} <= set(people.values())
+    closing = next(p for p in t["Provenance"] if p["activity"]["text"] == "Stage → Closed")
+    assert people[closing["agent"][0]["who"]["reference"].split("/")[1]] == "Dr. Jo Park"
+    sent = next(p for p in t["Provenance"] if p["activity"]["text"] == "Stage → Sent")
+    assert sent["agent"][0]["who"]["display"] == "Casey Reed"
+    office = next(p for p in t["Provenance"] if p["activity"]["text"] == "Stage → Received (via link)")
+    assert office["agent"][0]["who"]["reference"].startswith("Organization/")
+    comp = t["Composition"][0]
+    assert comp["attester"][0]["party"]["display"] == "Dr. Jo Park"
     assert {p["activity"]["text"] for p in t["Provenance"]} >= {"Stage → Received (via link)",
                                                                "Stage → Patient contacted (via link)",
                                                                "Update: authorization (via link)"}

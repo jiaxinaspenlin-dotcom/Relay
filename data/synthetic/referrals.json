@@ -71,7 +71,8 @@
           "actor": "coordinator",
           "note": "",
           "source": null,
-          "kind": "stage"
+          "kind": "stage",
+          "by": "Sam Ortiz"
         }
       ],
       "appointment": null,
@@ -124,7 +125,8 @@
           "actor": "coordinator",
           "note": "",
           "source": null,
-          "kind": "stage"
+          "kind": "stage",
+          "by": "Sam Ortiz"
         },
         {
           "stage": "received",
@@ -132,7 +134,8 @@
           "actor": "specialist",
           "note": "",
           "source": "fax",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         }
       ],
       "appointment": null,
@@ -196,7 +199,8 @@
           "actor": "coordinator",
           "note": "",
           "source": null,
-          "kind": "stage"
+          "kind": "stage",
+          "by": "Sam Ortiz"
         },
         {
           "stage": "received",
@@ -204,7 +208,8 @@
           "actor": "specialist",
           "note": "",
           "source": "fax",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "patient_contacted",
@@ -212,7 +217,8 @@
           "actor": "specialist",
           "note": "Office called the patient.",
           "source": "phone",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "scheduled",
@@ -220,7 +226,8 @@
           "actor": "specialist",
           "note": "",
           "source": "phone",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         }
       ],
       "appointment": {
@@ -288,7 +295,8 @@
           "actor": "coordinator",
           "note": "",
           "source": null,
-          "kind": "stage"
+          "kind": "stage",
+          "by": "Sam Ortiz"
         },
         {
           "stage": "received",
@@ -296,7 +304,8 @@
           "actor": "specialist",
           "note": "",
           "source": "fax",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "patient_contacted",
@@ -304,7 +313,8 @@
           "actor": "specialist",
           "note": "Patient told to call.",
           "source": "fax",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "scheduled",
@@ -312,7 +322,8 @@
           "actor": "specialist",
           "note": "",
           "source": "phone",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "seen",
@@ -320,7 +331,8 @@
           "actor": "specialist",
           "note": "",
           "source": "phone",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         }
       ],
       "appointment": {
@@ -381,7 +393,8 @@
           "actor": "coordinator",
           "note": "",
           "source": null,
-          "kind": "stage"
+          "kind": "stage",
+          "by": "Sam Ortiz"
         },
         {
           "stage": "received",
@@ -389,7 +402,8 @@
           "actor": "specialist",
           "note": "",
           "source": "fax",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "patient_contacted",
@@ -397,7 +411,8 @@
           "actor": "specialist",
           "note": "",
           "source": "phone",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "scheduled",
@@ -405,7 +420,8 @@
           "actor": "specialist",
           "note": "",
           "source": "phone",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "seen",
@@ -413,7 +429,8 @@
           "actor": "specialist",
           "note": "",
           "source": "phone",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "plan_returned",
@@ -421,7 +438,8 @@
           "actor": "specialist",
           "note": "",
           "source": "fax",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         }
       ],
       "appointment": {
@@ -493,7 +511,8 @@
           "actor": "coordinator",
           "note": "",
           "source": null,
-          "kind": "stage"
+          "kind": "stage",
+          "by": "Sam Ortiz"
         },
         {
           "stage": "received",
@@ -501,7 +520,8 @@
           "actor": "specialist",
           "note": "",
           "source": "fax",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "patient_contacted",
@@ -509,7 +529,8 @@
           "actor": "specialist",
           "note": "",
           "source": "phone",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "scheduled",
@@ -517,7 +538,8 @@
           "actor": "specialist",
           "note": "",
           "source": "phone",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "seen",
@@ -525,7 +547,8 @@
           "actor": "specialist",
           "note": "",
           "source": "phone",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "plan_returned",
@@ -533,7 +556,8 @@
           "actor": "specialist",
           "note": "",
           "source": "fax",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "closed",
@@ -541,7 +565,8 @@
           "actor": "pcp",
           "note": "Plan reviewed; added to problem list.",
           "source": null,
-          "kind": "stage"
+          "kind": "stage",
+          "by": "Dr. Avery Lin"
         }
       ],
       "appointment": {
@@ -618,7 +643,8 @@
           "actor": "coordinator",
           "note": "",
           "source": null,
-          "kind": "stage"
+          "kind": "stage",
+          "by": "Sam Ortiz"
         },
         {
           "stage": "declined",
@@ -626,7 +652,8 @@
           "actor": "specialist",
           "note": "No new-patient capacity this quarter.",
           "source": "fax",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         }
       ],
       "appointment": null,
@@ -679,7 +706,8 @@
           "actor": "coordinator",
           "note": "",
           "source": null,
-          "kind": "stage"
+          "kind": "stage",
+          "by": "Sam Ortiz"
         },
         {
           "stage": "received",
@@ -687,7 +715,8 @@
           "actor": "specialist",
           "note": "",
           "source": "fax",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "patient_contacted",
@@ -695,7 +724,8 @@
           "actor": "specialist",
           "note": "",
           "source": "phone",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "scheduled",
@@ -703,7 +733,8 @@
           "actor": "specialist",
           "note": "",
           "source": "phone",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         },
         {
           "stage": "no_show",
@@ -711,7 +742,8 @@
           "actor": "specialist",
           "note": "",
           "source": "phone",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         }
       ],
       "appointment": {
@@ -779,7 +811,8 @@
           "actor": "coordinator",
           "note": "",
           "source": null,
-          "kind": "stage"
+          "kind": "stage",
+          "by": "Sam Ortiz"
         },
         {
           "stage": "received",
@@ -787,7 +820,8 @@
           "actor": "specialist",
           "note": "Need last two office notes and recent labs.",
           "source": "fax",
-          "kind": "stage"
+          "kind": "stage",
+          "by": ""
         }
       ],
       "appointment": null,

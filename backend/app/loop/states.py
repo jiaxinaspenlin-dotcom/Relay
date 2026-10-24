@@ -120,6 +120,7 @@ def transition(
     receipt: Optional[Receipt] = None,
     contact_mode: Optional[str] = None,
     closure_reason: Optional[str] = None,
+    user_id: str = "",
 ) -> Referral:
     """Return a copy of `ref` moved to stage `to`, with a dated event appended.
 
@@ -169,26 +170,26 @@ def transition(
     elif to == "closed":
         if new.plan is None:
             raise InvalidTransition("Closing needs a returned plan, or cancel with a closure reason")
-        new.closure = Closure(at=at, by=by or actor, reason="plan_received", note=note)
+        new.closure = Closure(at=at, by=by or actor, by_id=user_id, reason="plan_received", note=note)
     elif to == "cancelled":
         if closure_reason not in CANCEL_REASONS:
             raise InvalidTransition(f"Cancelling needs a closure reason: {', '.join(sorted(CANCEL_REASONS))}")
-        new.closure = Closure(at=at, by=by or actor, reason=closure_reason, note=note)
+        new.closure = Closure(at=at, by=by or actor, by_id=user_id, reason=closure_reason, note=note)
         if new.appointment is not None and new.appointment.status == "booked":
             new.appointment.status = "cancelled"
 
     new.stage = to
     new.task_status, new.business_status = task_codes(new, to)
-    new.events.append(make_event(to, at, actor, note, source))
+    new.events.append(make_event(to, at, actor, note, source, by=by, user_id=user_id))
     return new
 
 
 def record_field_update(ref: Referral, kind: str, *, at: date, actor: Actor, note: str,
-                        source: Optional[str] = None) -> Referral:
+                        source: Optional[str] = None, by: str = "", user_id: str = "") -> Referral:
     """Append a non-stage event (authorization, barrier, transport, phone). Stage is unchanged."""
     _check_date(ref, at)
     new = ref.model_copy(deep=True)
-    ev = make_event(ref.stage, at, actor, note, source)
+    ev = make_event(ref.stage, at, actor, note, source, by=by, user_id=user_id)
     ev.kind = kind
     new.events.append(ev)
     return new

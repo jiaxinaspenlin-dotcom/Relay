@@ -7,8 +7,9 @@ from typing import Optional
 from app.models import Actor, Event, Referral
 
 
-def make_event(stage: str, at: date, actor: Actor, note: str = "", source=None) -> Event:
-    return Event(stage=stage, at=at, actor=actor, note=note, source=source)
+def make_event(stage: str, at: date, actor: Actor, note: str = "", source=None, by: str = "",
+               user_id: str = "") -> Event:
+    return Event(stage=stage, at=at, actor=actor, note=note, source=source, by=by, user_id=user_id)
 
 
 def _stage_events(ref: Referral) -> list[Event]:
@@ -45,7 +46,7 @@ def timeline(ref: Referral) -> list[dict]:
     """Events and sent communications merged in date order (stable: events first on ties)."""
     items = [
         {"kind": "event", "event_kind": ev.kind, "at": ev.at, "stage": ev.stage, "actor": ev.actor,
-         "note": ev.note, "source": ev.source}
+         "note": ev.note, "source": ev.source, "by": ev.by}
         for ev in ref.events
     ]
     items += [

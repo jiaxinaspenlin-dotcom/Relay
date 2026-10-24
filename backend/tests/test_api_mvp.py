@@ -63,10 +63,12 @@ def test_starts_empty(client):
 
 
 def test_data_persists_in_sqlite_file(tmp_path, real_today):
+    from conftest import COORD, signed_in
     db = tmp_path / "relay.db"
-    set_repo(Repo(db))
-    from app.main import app
-    c = TestClient(app)
+    r = Repo(db)
+    r.users.create(name=COORD["name"], email=COORD["email"], role="coordinator", practice="P", password=COORD["password"])
+    set_repo(r)
+    c = signed_in(COORD)
     rid, _ = _create_and_send(c, _add_patient(c)["id"])
     set_repo(Repo(db))  # restart
     assert c.get(f"/api/referrals/{rid}").json()["card"]["stage"] == "sent"
@@ -192,7 +194,7 @@ def test_d4_not_scheduled_then_contacted_scheduled_seen(client, real_today):
 
 # ---------------------------------------------------------------- D5: plan back, loop closes
 
-def test_d5_plan_back_close_fhir(client):
+def test_d5_plan_back_close_fhir(client, clinician):
     rid, token = _create_and_send(client, _add_patient(client)["id"])
     for body in ({"action": "received"}, {"action": "patient_contacted", "contact_mode": "patient_told_to_call"},
                  {"action": "scheduled", "appointment_date": "2026-11-03", "appointment_time": "10:15"},
@@ -203,7 +205,10 @@ def test_d5_plan_back_close_fhir(client):
     items = {i["card"]["id"]: i for i in client.get("/api/inbox").json()["items"]}
     assert items[rid]["plan"]["plan"] == PLAN["plan"] and items[rid]["reason_text"].startswith("New exertional")
     assert before["unread_plans"] == 1
-    assert client.post(f"/api/referrals/{rid}/close", json={"note": "Reviewed"}).status_code == 200
+    assert client.post(f"/api/referrals/{rid}/close", json={"note": "Reviewed"}).status_code == 403  # coordinator
+    assert clinician.post(f"/api/referrals/{rid}/close", json={"note": "Reviewed"}).status_code == 200
+    closed = client.get(f"/api/referrals/{rid}").json()["referral"]
+    assert closed["closure"]["by"] == "Dr. Jo Park" and closed["events"][-1]["by"] == "Dr. Jo Park"
     after = client.get("/api/dashboard").json()["summary"]
     assert (after["closed_this_month"], after["unread_plans"], after["open"]) == (
         before["closed_this_month"] + 1, 0, before["open"] - 1)

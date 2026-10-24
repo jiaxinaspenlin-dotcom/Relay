@@ -143,5 +143,7 @@ export function ActionDrawers({ state, setState }: { state: DrawerState; setStat
 /** "Call office" opens the AI call when voice is configured; otherwise it opens Log update. */
 export function useCallKind(): DrawerKind {
   const cfg = useQuery({ queryKey: ["config"], queryFn: api.config, staleTime: Infinity });
-  return cfg.data?.voice_enabled ? "call" : "update";
+  const me = useQuery({ queryKey: ["me"], queryFn: api.me, retry: false, staleTime: 60_000 });
+  // AI calls need a signed-in coordinator; everyone else gets Log update.
+  return cfg.data?.voice_enabled && me.data?.user.role === "coordinator" ? "call" : "update";
 }

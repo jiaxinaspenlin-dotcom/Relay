@@ -76,6 +76,8 @@ export type TimelineItem = {
   actor?: string;
   note?: string;
   source?: string | null;
+  by?: string;
+  sent_by?: string;
   recipient?: string;
   text?: string;
   edited?: boolean;
@@ -244,8 +246,15 @@ export type UpdateBody = {
   plan?: { visit_date: string | null; assessment: string; plan: string; actions_for_pcp: string; questions_contact: string };
 };
 
+export type User = { id: string; name: string; email: string; role: "coordinator" | "clinician"; practice: string; sample: boolean };
+export type AuthStatus = { has_users: boolean; has_sample: boolean; sample_accounts: { role: string; email: string }[] };
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, { ...init, headers: { "Content-Type": "application/json", ...(init?.headers || {}) } });
+  const res = await fetch(path, { credentials: "same-origin", ...init, headers: { "Content-Type": "application/json", ...(init?.headers || {}) } });
+  // Session ended or never started: go to sign-in (office and print pages never call protected APIs).
+  if (res.status === 401 && !path.startsWith("/api/auth/") && window.location.pathname !== "/sign-in") {
+    window.location.assign("/sign-in");
+  }
   if (!res.ok) {
     let detail = res.statusText;
     try {
@@ -270,6 +279,12 @@ export const LIVE = { refetchInterval: 5000, refetchOnWindowFocus: true } as con
 export type FinderParams = { maxMiles: number | null; acceptsOnly: boolean; limit: number };
 
 export const api = {
+  me: () => request<{ user: User; home: string }>("/api/auth/me"),
+  authStatus: () => request<AuthStatus>("/api/auth/status"),
+  signIn: (email: string, password: string) => post<{ user: User; home: string }>("/api/auth/sign-in", { email, password }),
+  sampleSignIn: (role: "coordinator" | "clinician") => post<{ user: User; home: string }>("/api/auth/sample-sign-in", { role }),
+  setup: (body: { name: string; email: string; password: string; practice: string }) => post<{ user: User; home: string }>("/api/auth/setup", body),
+  signOut: () => post<{ ok: boolean }>("/api/auth/sign-out", {}),
   config: () => request<{ voice_enabled: boolean }>("/api/config"),
   dashboard: () => request<Dashboard>("/api/dashboard"),
   settings: () => request<Settings>("/api/settings"),

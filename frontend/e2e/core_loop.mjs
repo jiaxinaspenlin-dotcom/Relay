@@ -27,20 +27,16 @@ const step = async (name, fn) => {
 };
 
 const h = await (await coord.request.get(`${WEB}/api/health`)).json();
-if (h.db !== "relay-e2e.db") throw new Error(`Refusing to delete data in '${h.db}'`);
-await coord.request.post(`${WEB}/api/clear-data`, { data: { confirm: "DELETE" } });
-async function signIn(page, who) {
-  const cfg = await (await page.request.get(`${WEB}/api/auth/me`)).status();
-  if (cfg === 404) return; // sign-in not built yet
-  await page.request.post(`${WEB}/api/auth/sample-users`).catch(() => {});
+if (h.db !== "relay-e2e.db") throw new Error(`Refusing to touch '${h.db}'`);
+await coord.request.post(`${WEB}/api/test/reset`);
+await coord.request.post(`${WEB}/api/sample-data`); // brand-new install: gives the sample accounts
+async function signIn(page, role) {
   await page.goto(`${WEB}/sign-in`);
-  await page.getByLabel("Email").fill(who.email);
-  await page.getByLabel("Password").fill(who.password);
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.getByRole("button", { name: `Sign in as ${role} (sample)` }).click();
   await page.waitForURL((u) => !u.pathname.startsWith("/sign-in"), { timeout: T });
 }
-const SAM = { email: "sam.ortiz@quabbinhills.example", password: process.env.SAM_PASSWORD ?? "relay-coordinator" };
-const AVERY = { email: "avery.lin@quabbinhills.example", password: process.env.AVERY_PASSWORD ?? "relay-clinician" };
+const SAM = "coordinator";
+const AVERY = "clinician";
 
 let rid, href;
 const row = () => coord.getByTestId(`row-${rid}`);
@@ -59,6 +55,7 @@ async function seesOnDashboard(text) {
 await step("sign in as coordinator", () => signIn(coord, SAM));
 await step("new referral: add patient inline, specialty, finder, send", async () => {
   await coord.goto(`${WEB}/new`);
+  await coord.getByRole("button", { name: "Add new patient" }).click();
   const form = coord.getByRole("form", { name: "Add new patient" });
   await form.waitFor({ timeout: T });
   await form.getByLabel("Full name").fill("Rosa Delgado");
@@ -144,6 +141,6 @@ print('valid')`, file]).toString();
   execFileSync("rm", ["-f", file]);
   assert(out.startsWith("valid"), out);
 });
-await coord.request.post(`${WEB}/api/clear-data`, { data: { confirm: "DELETE" } });
+await coord.request.post(`${WEB}/api/test/reset`);
 await browser.close();
 console.log("CORE LOOP PASS");
