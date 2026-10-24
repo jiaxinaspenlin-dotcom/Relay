@@ -30,6 +30,14 @@ Deferred until all five pass: patient view, map, LLM, readmissions drawer, Speci
 - [x] M5 Log "plan received" → PCP inbox beside reason → Acknowledge & close → FHIR bundle (test_fhir.py)
 - Guards: no page imports `src/mock/`; no backend real-clock calls outside config.py.
 
+## Real mode (after MVP)
+- [x] P1 SQLite persistence, empty start, Load sample data, add-patient form, real clock, Demo mode in Settings
+- [x] P2 Office update link /office/{token} (actor=office, source=link); coordinator Log update kept
+- [x] P3 Real Send: Copy text / Open in email / Print (fax-ready), each recorded as a Communication
+- [x] P4 Finder fixes: address/org dedupe, title case, "In {town}", plurals, 25/50/100 + Medicare filters, pages of 10, hospital once per town
+- [x] P5 design.md applied to shell, dashboard route track, new referral, detail, inbox, office, print
+- [x] M1–M5 rerun in real mode (`make dev-api-e2e` + `make e2e`): all pass
+
 ## Block 1 — Data (0:00–1:00)
 - [x] 1.1 Scaffold the repo per structure.md: FastAPI, Vite React TS + Tailwind, Makefile (`setup`,
   `data`, `dev`, `test`, `check-copy`), with the copy guard in `make test`. Set `DEMO_TODAY` in config.

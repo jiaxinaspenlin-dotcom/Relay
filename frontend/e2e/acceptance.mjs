@@ -154,12 +154,12 @@ const tests = {
     await officeDo(page, officeHref, [
       { button: "Accept referral", expect: "Accepted" },
       { button: "Set appointment", expect: "Scheduled", fill: async (p) => {
-        await p.getByLabel("Date").fill("2026-12-01");
-        await p.getByLabel("Time").fill("10:15");
+        await p.getByLabel("Date", { exact: true }).fill("2026-12-01");
+        await p.getByLabel("Time", { exact: true }).fill("10:15");
       } },
       { button: "Patient was seen", expect: "Seen" },
       { button: "Return the visit plan", expect: "Plan returned", fill: async (p) => {
-        await p.getByLabel("Assessment").fill("Exertional symptoms reviewed; stress test ordered.");
+        await p.getByLabel("Assessment", { exact: true }).fill("Exertional symptoms reviewed; stress test ordered.");
         await p.getByLabel("Plan", { exact: true }).fill("Stress echo in 2 weeks, ordered by cardiology. Follow-up visit after results.");
       } },
     ]);

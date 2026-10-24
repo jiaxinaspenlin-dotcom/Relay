@@ -33,3 +33,25 @@
   routine or urgent, so Relay never sets priority (product.md hard boundary).
 - 2026-10-24 — Added `playwright-core` 1.49.1 (dev, pinned; no browser download, uses installed
   Chrome) for `make e2e`: M1–M5 run through the real UI. All five pass.
+- 2026-10-24 — Direction change to real mode: SQLite (`data/relay.db`), empty start, "Load sample
+  data" (dates shifted so the sample reads as of today), real clock by default, Demo mode in
+  Settings, office update links (`/office/{token}`, 192-bit token, actor=office, source=link),
+  Copy / email / print sending recorded as Communications. `(synthetic)` removed from generated text.
+- 2026-10-24 — Demo clock is now real date + forward offset, so it can never move behind the real
+  date and back-date events (a fixed DEMO_TODAY would have broken logging on any later real day).
+- 2026-10-24 — Finder dedupe test caught Pittsfield showing 4 rows for 2 buildings
+  ("725 N Street Berkshire OB/GYN Of", "777 N Street 4TH Floor"). Address key now cuts after the
+  street suffix; floors, suites, and department names are dropped.
+- 2026-10-24 — FHIR: a module-level "sample" flag in fhir.py would race across FastAPI's
+  threadpool. Replaced with a per-bundle closure. Empty `meta` objects are dropped (FHIR JSON
+  forbids `{}`). Synthetic tag now only on sample records.
+- 2026-10-24 — Follow-up drawer: the focus effect depended on a parent callback recreated every
+  render, which would have pulled focus out of the textarea on each keystroke. Pinned via a ref.
+- 2026-10-24 — e2e safety: the script wipes data, so it refuses unless `/api/health` reports the
+  `relay-e2e.db` file (`make dev-api-e2e`).
+- 2026-10-24 — `.kiro/steering/design.md` arrived mid-task and was applied to every screen. Field
+  labels wrapping a `<select>` gave accessible names like "Specialty Cardiology"; M2 caught it.
+  Fields now pair `<label for>` with an id.
+- 2026-10-24 — Deviation: stuck messages keep "—" in the API (tests, drafts); the UI renders them as
+  design.md sentences ("Accepted 7 days ago, no appointment yet."). UI dates are "Oct 15"; text
+  that leaves Relay uses "Oct 15, 2026".

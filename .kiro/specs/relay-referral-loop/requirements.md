@@ -40,9 +40,12 @@ ones first, so that nothing falls through.
    to scheduled. All are computed from the (synthetic) data and labeled as such.
 4. THE SYSTEM SHALL show a persistent banner: "Synthetic patients and referrals. Specialist responses
    and delivery are simulated."
-5. THE SYSTEM SHALL show a header "Demo clock — simulates time passing" with the current demo date
-   and controls +1 day, +7 days, and reset. It changes the in-memory demo date only (base:
-   `DEMO_TODAY` in config). No backend code SHALL read the real clock.
+5. THE SYSTEM SHALL use the real date by default. Settings → "Demo mode" (off by default) adds a
+   forward offset (+1 day, +7 days, back to today); while on, a banner reads "Demo mode: simulated
+   date". Only `config.real_today()` reads the real clock.
+6. THE SYSTEM SHALL persist data in SQLite, start empty ("No referrals yet", "Add a referral",
+   "Load sample data"), and let the coordinator add a patient (name, Massachusetts town from
+   towns.csv, coverage, optional date of birth). Sample records carry a "Sample" tag.
 
 ## R2 — Loop states and stuck rules (MUST)
 1. THE SYSTEM SHALL model each referral as a FHIR-shaped `ServiceRequest` + `Task`, with the stages and
@@ -123,9 +126,10 @@ for likely barriers. It is never a judgment about the patient.
 3. Context SHALL never appear in messages to specialists or patients.
 
 ## R7 — Plan back (MUST) and Specialist office (simulated portal) (DEFERRED)
-1. (DEFERRED until the MVP passes) THE SYSTEM SHALL provide a "Specialist office (simulated portal)"
-   view where a demo operator can accept or decline the referral, set an appointment date, mark the
-   visit seen or no-show, and return a plan. Until then, R2.5 "Log update" is the input path.
+1. THE SYSTEM SHALL create an unguessable office update link (/office/{token}) per referral. The
+   page (no login) shows the referral summary and lets the office accept, decline (reason required),
+   schedule (date and time), mark seen or no-show, and return the plan. Each action goes through
+   design.md §3 with actor = office, source = link. R2.5 "Log update" remains for phone/fax/other.
 2. The returned plan SHALL use sections shaped by the CMS care-update template: Patient, From,
    Reason/Conditions, Visit date, Assessment, Plan, Actions for the PCP (optional), Questions/contact.
    ACCESS-specific fields (track, OAP measures) are omitted and the omission is noted.
