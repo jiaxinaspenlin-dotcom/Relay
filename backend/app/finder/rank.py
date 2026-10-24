@@ -12,6 +12,7 @@ from app.config import FINDER_SPECIALTIES
 from app.finder.distance import miles_between
 from app.finder.practices import practices_for
 from app.finder.towns import resolve_town
+from app.models import MEDICARE
 
 TELEHEALTH_NOTE = "Ask the office whether a telehealth visit is offered"
 MAX_MILES_CHOICES = (25, 50, 100)
@@ -69,7 +70,7 @@ def find(specialty: str, patient_town: str, *, coverage: Optional[str] = None,
         "patient_town_point": {"lat": origin.lat, "lon": origin.lon},
         "sort": "distance",
         "distance_basis": "Straight-line miles between town centers",
-        "medicare_prominent": coverage == "medicare",
+        "medicare_prominent": coverage in MEDICARE,
         "telehealth_note": TELEHEALTH_NOTE,
         "filters": {"max_miles": max_miles, "accepts_only": accepts_only},
         "total_unfiltered": unfiltered,

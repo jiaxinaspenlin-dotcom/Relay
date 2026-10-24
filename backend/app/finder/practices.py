@@ -20,7 +20,7 @@ from app.finder.towns import Town, _key, resolve_town
 # Columns read from clinicians_ma.csv. `telehlth` is deliberately absent. `npi` is used only to
 # count distinct clinicians and is never output.
 USECOLS = ["npi", "pri_spec", "facility_name", "org_pac_id", "adr_ln_1", "city_town", "state",
-           "zip_code", "ind_assgn", "grp_assgn"]
+           "zip_code", "telephone_number", "ind_assgn", "grp_assgn"]
 
 MEDICARE_LABELS = {
     # CMS data dictionary: Y = accepts the Medicare-approved amount as payment in full;
@@ -49,6 +49,7 @@ class Practice:
     lat: Optional[float]
     lon: Optional[float]
     nearest_hospital: Optional[dict]  # hospital card relative to the practice town
+    phone: str = ""  # most common CMS telephone_number at this location, as 413-555-0142
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -75,6 +76,13 @@ def _clinicians() -> pd.DataFrame:
     df["org_key"] = df["facility_name"].map(org_key)
     df["addr_key"] = df["adr_ln_1"].map(address_key)
     return df
+
+
+def format_phone(raw: str) -> str:
+    digits = "".join(ch for ch in str(raw) if ch.isdigit())
+    if len(digits) == 11 and digits[0] == "1":
+        digits = digits[1:]
+    return f"{digits[:3]}-{digits[3:6]}-{digits[6:]}" if len(digits) == 10 else ""
 
 
 def medicare_assignment(values: list[str]) -> str:
@@ -113,5 +121,6 @@ def practices_for(pri_spec: str) -> tuple[Practice, ...]:
             medicare_assignment=assign, medicare_label=MEDICARE_LABELS[assign],
             lat=town.lat if town else None, lon=town.lon if town else None,
             nearest_hospital=hospital,
+            phone=next((f for f in (format_phone(x) for x in g["telephone_number"].value_counts().index) if f), ""),
         ))
     return tuple(out)

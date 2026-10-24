@@ -235,11 +235,11 @@ def test_sorted_by_distance_only(specialty):
 
 
 def test_limit_and_metadata():
-    out = find("Cardiology", "North Adams", coverage="medicare", limit=5)
+    out = find("Cardiology", "North Adams", coverage="dual", limit=5)
     assert len(out["results"]) == 5 and out["total"] > 5
     assert out["medicare_prominent"] is True
     assert out["telehealth_note"] == TELEHEALTH_NOTE
-    assert find("Cardiology", "North Adams", coverage="commercial")["medicare_prominent"] is False
+    assert find("Cardiology", "North Adams", coverage="commercial_ppo")["medicare_prominent"] is False
 
 
 def test_no_banned_wording_in_output():

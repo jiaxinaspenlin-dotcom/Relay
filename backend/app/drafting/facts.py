@@ -12,8 +12,8 @@ from datetime import date
 
 from app.dates import long
 from app.loop.states import STAGE_LABELS
-from app.loop.stuck import BARRIER_LABELS, StuckFlag
-from app.loop.timeline import last_event_date
+from app.loop.stuck import BARRIER_LABELS, StuckFlag, missing_text
+from app.loop.timeline import first_event_date, last_event_date
 from app.models import Referral
 
 DATE_RE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2}, \d{4}\b")
@@ -44,14 +44,15 @@ class Fact:
 
 
 ELAPSED_PHRASE = {
-    "sent_no_response": "since sending",
-    "accepted_no_appointment": "since acceptance",
-    "appointment_not_confirmed": "since the appointment date",
-    "no_show": "since the missed appointment",
+    "sent_no_receipt": "since sending",
+    "received_incomplete": "since the office asked for more",
+    "authorization_pending": "with authorization pending",
+    "not_scheduled": "since the office received the referral",
     "seen_no_plan": "since the visit",
     "plan_not_acknowledged": "since the plan arrived",
     "declined_not_rerouted": "since the decline",
-    "barrier_open": "since the barrier was noted",
+    "no_show": "since the missed appointment",
+    "pt1_not_requested": "until the appointment",
 }
 
 
@@ -70,6 +71,16 @@ def build_facts(ref: Referral, today: date, flag: StuckFlag | None = None,
     add("priority", "Priority (set by PCP)", ref.priority, "Referral")
     stage_date = long(ref.events[-1].at) if ref.events else ""
     add("stage", "Current stage", f"{STAGE_LABELS[ref.stage]} on {stage_date}", "Referral timeline")
+    received = first_event_date(ref, "received")
+    if received:
+        add("received", "Received by the office", f"Received on {long(received)}", "Referral timeline")
+    if ref.receipt is not None and not ref.receipt.complete:
+        add("missing", "Missing items", missing_text(ref.receipt.missing), "Office update")
+    if ref.authorization == "pending" and ref.authorization_since:
+        add("authorization", "Authorization", f"Pending since {long(ref.authorization_since)}",
+            "Referral")
+    if ref.performer.phone:
+        add("phone", "Office scheduling phone", ref.performer.phone, "CMS directory or coordinator")
     if ref.appointment:
         add("appointment", "Appointment", f"Appointment on {long(ref.appointment.start)}",
             "Referral timeline")
@@ -88,7 +99,7 @@ def build_facts(ref: Referral, today: date, flag: StuckFlag | None = None,
         n = flag.days
         unit = unit[:-1] if n == 1 else unit
         add("elapsed", "Elapsed time",
-            f"{n} {unit} {ELAPSED_PHRASE[flag.rule]}, as of {long(today)}", "Demo clock")
+            f"{n} {unit} {ELAPSED_PHRASE[flag.rule]}, as of {long(today)}", "Relay date")
     if office_url:
         add("office_link", "Office update link", office_url, "Relay")
     add("requester", "Referring practice",

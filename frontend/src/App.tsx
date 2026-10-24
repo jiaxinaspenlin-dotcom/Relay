@@ -1,9 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { Inbox, LayoutGrid, SlidersHorizontal, type LucideIcon } from "lucide-react";
 import { NavLink, Outlet, Route, Routes } from "react-router-dom";
 import { api } from "./api";
 import { copy } from "./copy";
 import { shortDate } from "./format";
-import { Button, RouteGlyph } from "./components/ui";
+import { RouteGlyph } from "./components/ui";
 import Dashboard from "./pages/Dashboard";
 import NewReferral from "./pages/NewReferral";
 import ReferralDetail from "./pages/ReferralDetail";
@@ -12,66 +13,59 @@ import SettingsPage from "./pages/Settings";
 import OfficePage from "./pages/Office";
 import PrintPage from "./pages/Print";
 
-export function Wordmark() {
+export function Wordmark({ color = "#FFFFFF" }: { color?: string }) {
   return (
-    <span className="inline-flex items-center gap-2 text-section font-bold text-ink">
-      <RouteGlyph />
+    <span className="inline-flex items-center gap-2 text-[20px] font-bold leading-none" style={{ color }}>
+      <RouteGlyph color={color} />
       {copy.appName}
     </span>
   );
 }
 
-/** Demo date + controls, shown in the header only while Demo mode is on (toggle in Settings). */
-function DemoClock() {
-  const qc = useQueryClient();
-  const s = useQuery({ queryKey: ["settings"], queryFn: api.settings });
-  const refresh = () => qc.invalidateQueries();
-  const plus1 = useMutation({ mutationFn: () => api.advanceClock(1), onSuccess: refresh });
-  const plus7 = useMutation({ mutationFn: () => api.advanceClock(7), onSuccess: refresh });
-  const reset = useMutation({ mutationFn: api.resetClock, onSuccess: refresh });
-  if (!s.data?.clock.demo_mode) return null;
+function RailLink({ to, icon: Icon, label, count, end }: { to: string; icon: LucideIcon; label: string; count?: number; end?: boolean }) {
   return (
-    <div role="group" aria-label={copy.clock.demoDate} className="flex flex-wrap items-center gap-2">
-      <span className="text-caption text-muted">{copy.clock.demoDate}</span>
-      <output data-testid="demo-today" data-iso={s.data.clock.today} className="font-semibold">{shortDate(s.data.clock.today)}</output>
-      <Button onClick={() => plus1.mutate()} className="min-h-[36px] px-3">{copy.clock.plus1}</Button>
-      <Button onClick={() => plus7.mutate()} className="min-h-[36px] px-3">{copy.clock.plus7}</Button>
-      <Button variant="quiet" onClick={() => reset.mutate()}>{copy.clock.reset}</Button>
-    </div>
+    <NavLink
+      to={to}
+      end={end}
+      aria-label={count ? `${label}, ${count}` : label}
+      className={({ isActive }) =>
+        `flex min-h-[40px] items-center gap-3 rounded-control px-3 transition-colors focus-visible:outline-white ${
+          isActive ? "bg-white/[.16] text-white" : "text-white/[.82] hover:bg-white/[.08]"}`}
+    >
+      <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
+      <span className="max-[859px]:sr-only">{label}</span>
+      {!!count && (
+        <span aria-hidden="true" className="ml-auto rounded-full bg-white px-2 text-caption font-semibold text-hemlock max-[859px]:ml-0">
+          {count}
+        </span>
+      )}
+    </NavLink>
   );
 }
 
 function Shell() {
   const s = useQuery({ queryKey: ["settings"], queryFn: api.settings });
-  const link = ({ isActive }: { isActive: boolean }) =>
-    `flex min-h-[40px] items-center rounded-control px-3 ${isActive ? "bg-hemlock-tint font-semibold text-hemlock" : "text-ink hover:text-hemlock"}`;
+  const d = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard });
   return (
-    <div className="min-h-screen min-[900px]:flex">
-      <aside className="border-b border-line bg-surface min-[900px]:sticky min-[900px]:top-0 min-[900px]:h-screen min-[900px]:w-[220px] min-[900px]:shrink-0 min-[900px]:border-b-0 min-[900px]:border-r">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 min-[900px]:block min-[900px]:px-4 min-[900px]:py-5">
-          <div className="min-[900px]:mb-6"><Wordmark /></div>
-          <nav aria-label={copy.nav.label} className="flex flex-wrap gap-1 min-[900px]:flex-col">
-            <NavLink to="/" end className={link}>{copy.nav.dashboard}</NavLink>
-            <NavLink to="/new" className={link}>{copy.nav.newReferral}</NavLink>
-            <NavLink to="/inbox" className={link}>{copy.nav.inbox}</NavLink>
-            <NavLink to="/settings" className={link}>{copy.nav.settings}</NavLink>
+    <div className="min-h-screen min-[860px]:flex">
+      <aside className="bg-hemlock min-[860px]:sticky min-[860px]:top-0 min-[860px]:flex min-[860px]:h-screen min-[860px]:w-[216px] min-[860px]:shrink-0 min-[860px]:flex-col">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 min-[860px]:block min-[860px]:px-4 min-[860px]:py-7">
+          <div className="min-[860px]:mb-8 min-[860px]:px-3"><Wordmark /></div>
+          <nav aria-label={copy.nav.label} className="flex gap-1 min-[860px]:flex-col">
+            <RailLink to="/" end icon={LayoutGrid} label={copy.nav.dashboard} count={d.data?.summary.stuck} />
+            <RailLink to="/inbox" icon={Inbox} label={copy.nav.inbox} count={d.data?.summary.unread_plans} />
+            <RailLink to="/settings" icon={SlidersHorizontal} label={copy.nav.settings} />
           </nav>
         </div>
+        <div className="mt-auto hidden px-7 pb-7 text-caption text-white/75 min-[860px]:block">{s.data?.practice.practice}</div>
       </aside>
-      <div className="min-w-0 flex-1">
+      <div className="relative min-w-0 flex-1 overflow-x-hidden bg-paper">
         {s.data?.clock.demo_mode && (
-          <div role="status" data-testid="demo-banner" className="border-b border-line bg-hemlock-tint px-6 py-1.5 text-caption text-hemlock">
-            {copy.demoBanner}, {shortDate(s.data.clock.today)}.
+          <div role="status" data-testid="demo-banner" className="border-b border-line bg-surface px-12 py-1.5 text-caption text-muted max-[859px]:px-5">
+            {copy.demoBanner}, {shortDate(s.data.clock.today)}
           </div>
         )}
-        {s.data?.has_sample && (
-          <div role="status" className="border-b border-line bg-surface px-6 py-1.5 text-caption text-muted">{copy.sampleBanner}</div>
-        )}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-6 pt-5">
-          <span className="font-semibold">{s.data?.practice.practice}</span>
-          <DemoClock />
-        </div>
-        <main className="max-w-[1180px] px-6 py-5">
+        <main className="relative mx-auto max-w-[1000px] px-12 py-10 max-[859px]:px-5 max-[859px]:py-6">
           <Outlet />
         </main>
       </div>
@@ -82,7 +76,7 @@ function Shell() {
 export default function App() {
   return (
     <Routes>
-      {/* The office link and print pages use minimal chrome. */}
+      {/* The office link and print pages use no app chrome. */}
       <Route path="/office/:token" element={<OfficePage />} />
       <Route path="/print/:rid/:commId" element={<PrintPage />} />
       <Route element={<Shell />}>

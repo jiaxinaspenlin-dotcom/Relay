@@ -5,3 +5,4 @@ pandas==2.2.3
 fhir.resources==8.0.0
 pytest==8.3.5
 httpx==0.28.1
+python-dotenv==1.0.1

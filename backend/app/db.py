@@ -182,6 +182,15 @@ class Repo:
             self.token_for(r.id)
         return len(seed["referrals"])
 
+    def reset_sample(self, today: date) -> int:
+        """Delete sample referrals and sample patients, then load the sample again."""
+        with self._lock:
+            self.conn.executescript(
+                "DELETE FROM office_tokens WHERE referral_id IN (SELECT id FROM referrals WHERE sample = 1);"
+                "DELETE FROM referrals WHERE sample = 1; DELETE FROM patients WHERE sample = 1;")
+            self.conn.commit()
+        return self.load_sample(today)
+
     def clear_all(self) -> None:
         with self._lock:
             self.conn.executescript("DELETE FROM office_tokens; DELETE FROM referrals; "
@@ -210,4 +219,6 @@ def shift_dates(ref: Referral, delta: timedelta) -> Referral:
         r.plan.visit_date += delta
     if r.closure:
         r.closure.at += delta
+    if r.authorization_since:
+        r.authorization_since += delta
     return r

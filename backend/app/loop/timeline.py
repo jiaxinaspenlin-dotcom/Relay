@@ -11,26 +11,41 @@ def make_event(stage: str, at: date, actor: Actor, note: str = "", source=None) 
     return Event(stage=stage, at=at, actor=actor, note=note, source=source)
 
 
+def _stage_events(ref: Referral) -> list[Event]:
+    return [e for e in ref.events if e.kind == "stage"]
+
+
 def last_event_date(ref: Referral, stage: str) -> Optional[date]:
-    """Date of the most recent event for `stage`, or None."""
-    for ev in reversed(ref.events):
+    """Date of the most recent stage event for `stage`, or None."""
+    for ev in reversed(_stage_events(ref)):
         if ev.stage == stage:
             return ev.at
     return None
 
 
 def first_event_date(ref: Referral, stage: str) -> Optional[date]:
-    for ev in ref.events:
+    for ev in _stage_events(ref):
         if ev.stage == stage:
             return ev.at
     return None
 
 
+def stage_entered(ref: Referral) -> Optional[date]:
+    """When the referral entered its current stage (first event of the current run of that stage)."""
+    evs = _stage_events(ref)
+    if not evs:
+        return None
+    i = len(evs) - 1
+    while i > 0 and evs[i - 1].stage == evs[-1].stage:
+        i -= 1
+    return evs[i].at
+
+
 def timeline(ref: Referral) -> list[dict]:
     """Events and sent communications merged in date order (stable: events first on ties)."""
     items = [
-        {"kind": "event", "at": ev.at, "stage": ev.stage, "actor": ev.actor, "note": ev.note,
-         "source": ev.source}
+        {"kind": "event", "event_kind": ev.kind, "at": ev.at, "stage": ev.stage, "actor": ev.actor,
+         "note": ev.note, "source": ev.source}
         for ev in ref.events
     ]
     items += [

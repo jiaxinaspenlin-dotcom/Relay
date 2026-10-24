@@ -33,4 +33,4 @@ export function routeLine(from: string, to: string, miles: number | null): strin
 }
 
 // The two challenge failures get rust; every other stuck rule is amber.
-export const FAILURE_RULES = new Set(["accepted_no_appointment", "seen_no_plan"]);
+export const FAILURE_RULES = new Set(["not_scheduled", "seen_no_plan"]);

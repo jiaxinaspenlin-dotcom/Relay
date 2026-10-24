@@ -13,7 +13,7 @@ from zoneinfo import ZoneInfo
 
 from app.chart import patient_resource
 from app.loop.states import STAGE_LABELS
-from app.models import Referral
+from app.models import AUTH_LABELS, COVERAGE_LABELS, MISSING_LABELS, Referral
 
 BASE = "https://relay.local/fhir"
 ORIGIN = f"{BASE}/CodeSystem/data-origin"
@@ -97,6 +97,7 @@ def build_bundle(ref: Referral, patient: dict, today: date) -> dict:
         "task": f"Task/task-{rid}",
         "appt": f"Appointment/appt-{rid}",
         "comp": f"Composition/plan-{rid}",
+        "coverage": f"Coverage/cov-{rid}",
     }
     R = lambda k, display=None: {"reference": refs[k], **({"display": display} if display else {})}  # noqa: E731
 
@@ -112,6 +113,13 @@ def build_bundle(ref: Referral, patient: dict, today: date) -> dict:
                   "text": cond.display} if cond.code else {"text": cond.display}),
         "subject": R("patient"),
         **({"onsetDateTime": cond.onset.isoformat()} if cond.onset else {}),
+    })
+    cov_code = patient.get("coverage", "unknown")
+    res.append({
+        "resourceType": "Coverage", "id": f"cov-{rid}", "meta": _meta(), "status": "active",
+        "type": {"text": COVERAGE_LABELS.get(cov_code, "Unknown")},
+        "beneficiary": R("patient"),
+        "payor": [{"display": COVERAGE_LABELS.get(cov_code, "Unknown")}],
     })
     res += [
         {"resourceType": "Practitioner", "id": "pcp", "meta": _meta(),
@@ -150,6 +158,7 @@ def build_bundle(ref: Referral, patient: dict, today: date) -> dict:
         "requester": R("pcp", ref.requester.clinician),
         "performer": [R("perf_org", ref.performer.name)],
         "reasonReference": [R("condition", cond.display)],
+        "insurance": [R("coverage")],
         "note": [{"text": ref.reason_text}],
         **({"replaces": [{"reference": f"ServiceRequest/sr-{_id(ref.replaces)}"}]} if ref.replaces else {}),
     })
@@ -166,6 +175,19 @@ def build_bundle(ref: Referral, patient: dict, today: date) -> dict:
     }
     if ref.plan:
         task["output"] = [{"type": {"text": "Returned plan"}, "valueReference": R("comp")}]
+    if ref.receipt is not None and not ref.receipt.complete:
+        task["statusReason"] = {"text": "Missing " + ", ".join(MISSING_LABELS[m] for m in ref.receipt.missing)
+                                        + (f". {ref.receipt.note}" if ref.receipt.note else "")}
+    inputs = [{"type": {"text": "Authorization status"}, "valueString": AUTH_LABELS[ref.authorization]}]
+    if ref.contact_mode:
+        inputs.append({"type": {"text": "Patient contact"},
+                       "valueString": {"office_called": "Office called the patient",
+                                       "patient_told_to_call": "Patient told to call"}[ref.contact_mode]})
+    if ref.pt1_status != "not_started" or ref.transport_plan:
+        inputs.append({"type": {"text": "Transportation"},
+                       "valueString": (f"MassHealth ride (PT-1): {ref.pt1_status.replace('_', ' ')}"
+                                       if ref.pt1_status != "not_started" else ref.transport_plan)})
+    task["input"] = inputs
     res.append(task)
 
     if ref.appointment:
@@ -188,7 +210,8 @@ def build_bundle(ref: Referral, patient: dict, today: date) -> dict:
             "sent": c.sent.isoformat(), "payload": [{"contentString": c.text}],
             "medium": [{"text": {"copy": "Copied text", "email": "Email", "print": "Printed for fax",
                                  "manual": "Recorded in Relay"}[c.channel]}],
-            "category": [{"text": "Referral" if c.kind == "referral" else "Follow-up"}],
+            "category": [{"text": {"referral": "Referral", "follow_up": "Follow-up",
+                                   "patient_message": "Patient message"}[c.kind]}],
             **({"note": [{"text": "Edited by sender before sending"}]} if c.edited else {}),
         })
 
@@ -222,8 +245,8 @@ def build_bundle(ref: Referral, patient: dict, today: date) -> dict:
         prov = {
             "resourceType": "Provenance", "id": f"prov-{rid}-{i}", "meta": _meta(),
             "target": [R("task")], "recorded": _instant(ev.at),
-            "activity": {"text": f"Stage → {STAGE_LABELS.get(ev.stage, ev.stage)}"
-                                 + (f" (via {ev.source})" if ev.source else "")},
+            "activity": {"text": (f"Stage → {STAGE_LABELS.get(ev.stage, ev.stage)}" if ev.kind == "stage"
+                                  else f"Update: {ev.kind}") + (f" (via {ev.source})" if ev.source else "")},
             "agent": [{"who": R(actors[ev.actor])}],
         }
         if ev.note:

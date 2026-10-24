@@ -13,8 +13,8 @@ from app.models import Referral
 CLOSED_STAGES = frozenset({"closed", "cancelled"})
 
 # Dashboard pipeline columns (R1.1). Declined and Patient barrier are shown as their own columns.
-PIPELINE = ["draft", "sent", "accepted", "scheduled", "no_show", "seen", "plan_returned", "declined",
-            "patient_barrier"]
+PIPELINE = ["draft", "sent", "received", "patient_contacted", "scheduled", "no_show", "seen",
+            "plan_returned", "declined", "patient_barrier"]
 
 
 def days_sent_to_scheduled(ref: Referral) -> Optional[int]:
@@ -25,9 +25,10 @@ def days_sent_to_scheduled(ref: Referral) -> Optional[int]:
     return (sched - sent).days
 
 
-def summary(referrals: list[Referral], today: date) -> dict:
+def summary(referrals: list[Referral], today: date,
+            coverage_by_patient: Optional[dict[str, str]] = None) -> dict:
     open_refs = [r for r in referrals if r.stage not in CLOSED_STAGES]
-    stuck = needs_attention(referrals, today)
+    stuck = needs_attention(referrals, today, coverage_by_patient)
     closed_this_month = sum(
         1 for r in referrals
         if r.stage == "closed" and r.closure is not None
@@ -38,6 +39,8 @@ def summary(referrals: list[Referral], today: date) -> dict:
         "as_of": today.isoformat(),
         "open": len(open_refs),
         "stuck": len(stuck),
+        "lost": sum(1 for r in stuck if r["failure"]),
+        "unread_plans": sum(1 for r in referrals if r.stage == "plan_returned"),
         "closed_this_month": closed_this_month,
         "median_days_sent_to_scheduled": median(durations) if durations else None,
         "median_basis_n": len(durations),

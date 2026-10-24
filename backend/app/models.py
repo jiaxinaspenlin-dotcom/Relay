@@ -17,11 +17,49 @@ from app.config import DATA_SYNTHETIC
 Actor = Literal["pcp", "coordinator", "specialist", "office", "patient", "system"]
 BarrierType = Literal["transportation", "coverage", "language", "schedule_work", "cost", "other"]
 # How an update reached the practice. "link" = the office used its update link.
-UpdateSource = Literal["phone", "fax", "portal", "link", "other"]
+UpdateSource = Literal["phone", "fax", "portal", "link", "ai_call", "email", "other"]
 Channel = Literal["copy", "email", "print", "manual"]
-Coverage = Literal["medicare", "medicaid", "commercial", "other", "unknown"]
-COVERAGE_LABELS = {"medicare": "Medicare", "medicaid": "Medicaid", "commercial": "Commercial",
-                   "other": "Other", "unknown": "Unknown"}
+
+# Massachusetts insurance types (patient form and data).
+Coverage = Literal[
+    "original_medicare", "medicare_advantage", "masshealth_pcc", "masshealth_pcaco",
+    "masshealth_acpp", "masshealth_mco", "dual", "commercial_hmo", "commercial_ppo", "unknown",
+]
+COVERAGE_LABELS: dict[str, str] = {
+    "original_medicare": "Original Medicare",
+    "medicare_advantage": "Medicare Advantage",
+    "masshealth_pcc": "MassHealth PCC Plan",
+    "masshealth_pcaco": "MassHealth Primary Care ACO",
+    "masshealth_acpp": "MassHealth Accountable Care Partnership Plan",
+    "masshealth_mco": "MassHealth MCO",
+    "dual": "Dual eligible (Medicare + MassHealth)",
+    "commercial_hmo": "Commercial HMO",
+    "commercial_ppo": "Commercial PPO/other",
+    "unknown": "Unknown",
+}
+MASSHEALTH = frozenset({"masshealth_pcc", "masshealth_pcaco", "masshealth_acpp", "masshealth_mco", "dual"})
+MEDICARE = frozenset({"original_medicare", "medicare_advantage", "dual"})
+
+
+def coverage_from_synthea(payer: str | None) -> str:
+    """Synthea payer -> MA insurance type. Plan type for Medicaid isn't in Synthea, so MCO is a
+    placeholder the coordinator can correct."""
+    p = (payer or "").strip().lower()
+    if p == "medicare":
+        return "original_medicare"
+    if p == "dual eligible":
+        return "dual"
+    if p in ("medicaid", "masshealth"):
+        return "masshealth_mco"
+    return "commercial_ppo"
+
+
+MissingItem = Literal["records", "insurance_authorization", "test_results", "other"]
+MISSING_LABELS = {"records": "records", "insurance_authorization": "insurance authorization",
+                  "test_results": "test results", "other": "other items"}
+Authorization = Literal["not_set", "not_required", "pending", "approved", "denied"]
+AUTH_LABELS = {"not_set": "Not set", "not_required": "Not required", "pending": "Pending",
+               "approved": "Approved", "denied": "Denied"}
 
 
 class _Model(BaseModel):
@@ -29,11 +67,13 @@ class _Model(BaseModel):
 
 
 class Event(_Model):
-    stage: str
+    stage: str  # stage after this event (unchanged for non-stage updates)
     at: date
     actor: Actor
     note: str = ""
     source: Optional[UpdateSource] = None
+    # "stage" = a stage transition; others record field changes without moving the stage.
+    kind: Literal["stage", "authorization", "barrier", "transport", "phone"] = "stage"
 
 
 class Appointment(_Model):
@@ -50,13 +90,19 @@ class Barrier(_Model):
     addressed: Optional[date] = None
 
 
+class Receipt(_Model):
+    complete: bool
+    missing: list[MissingItem] = []
+    note: str = ""
+
+
 class Communication(_Model):
     id: str = ""
     sent: date
     recipient: Literal["specialist", "patient", "pcp"]
     text: str
     sent_by: str
-    kind: Literal["referral", "follow_up"] = "follow_up"
+    kind: Literal["referral", "follow_up", "patient_message"] = "follow_up"
     channel: Channel = "manual"
     ai_drafted: bool = False
     rule: str = ""  # stuck rule the draft addressed, if any
@@ -108,6 +154,7 @@ class Performer(_Model):
     address: str = ""
     zip5: str = ""
     org_pac_id: str = ""
+    phone: str = ""  # scheduling phone: CMS telephone_number, or entered by the coordinator
 
 
 class Referral(_Model):
@@ -133,6 +180,12 @@ class Referral(_Model):
     plan: Optional[Plan] = None
     closure: Optional[Closure] = None
     replaces: Optional[str] = None  # set when this referral re-routes a declined one
+    receipt: Optional[Receipt] = None  # set when the office confirms receipt
+    contact_mode: Optional[Literal["office_called", "patient_told_to_call"]] = None
+    authorization: Authorization = "not_set"  # a field, not a stage
+    authorization_since: Optional[date] = None
+    pt1_status: Literal["not_started", "requested", "confirmed"] = "not_started"
+    transport_plan: str = ""  # free text for non-MassHealth patients
 
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
@@ -181,7 +234,7 @@ def load_patients(path: Path | None = None) -> dict[str, dict]:
             "name": _display_name(p["synthetic_name"]),
             "town": p["town"],
             "county": p["county"],
-            "coverage": "medicare" if p.get("payer") in ("Medicare", "Dual Eligible") else "unknown",
+            "coverage": coverage_from_synthea(p.get("payer")),
             "dob": res.get("birthDate"),
             "sex": p.get("sex"),
             "sample": True,

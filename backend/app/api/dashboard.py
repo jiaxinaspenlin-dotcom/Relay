@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app import clock
+from app.config import voice_enabled
 from app.db import SampleAlreadyLoaded
 from app.store import get_repo
 from app.views import dashboard_view
@@ -85,6 +86,23 @@ def load_sample() -> dict:
     except SampleAlreadyLoaded as e:
         raise HTTPException(409, str(e)) from e
     return {"loaded": n, **_settings()}
+
+
+@router.post("/sample-data/reset")
+def reset_sample() -> dict:
+    """Demo mode: put the sample referrals back as they were (dated relative to today)."""
+    repo = get_repo()
+    if not repo.setting("demo_mode"):
+        raise HTTPException(409, "Turn on Demo mode in Settings to reset sample data")
+    clock.reset(repo)
+    n = repo.reset_sample(clock.today(repo))
+    return {"loaded": n, **_settings()}
+
+
+@router.get("/config")
+def config() -> dict:
+    """Feature switches for the UI. Never returns secrets."""
+    return {"voice_enabled": voice_enabled()}
 
 
 class ClearBody(BaseModel):

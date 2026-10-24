@@ -1,20 +1,22 @@
-"""API-level checks for the five acceptance tests, in real mode (SQLite, real clock), plus the
-persistence, sample-data, office-link, and send behaviors they rely on."""
+"""API-level versions of the five acceptance tests (D1–D5), starting from an empty app in real
+mode, plus persistence, sample data, office link, and Massachusetts-specific behavior."""
 from __future__ import annotations
 
 from datetime import date, timedelta
+
+from fastapi.testclient import TestClient
 
 from app.db import Repo
 from app.store import set_repo
 
 from conftest import TODAY
 
-PLAN = {"assessment": "Findings reviewed at visit.", "plan": "Echo in 6 weeks, ordered by cardiology.",
+PLAN = {"assessment": "Exertional symptoms reviewed.", "plan": "Stress echo in 2 weeks, ordered by cardiology.",
         "actions_for_pcp": "Update problem list.", "questions_contact": "Office line"}
 
 
 def _add_patient(c, **kw) -> dict:
-    body = {"name": "Maria Santos", "town": "Athol", "coverage": "medicare", "dob": "1951-03-02", **kw}
+    body = {"name": "Maria Santos", "town": "Orange", "coverage": "dual", "dob": "1951-03-02", **kw}
     r = c.post("/api/patients", json=body)
     assert r.status_code == 201, r.text
     return r.json()
@@ -22,25 +24,42 @@ def _add_patient(c, **kw) -> dict:
 
 def _create_and_send(c, pid: str, channel: str = "copy") -> tuple[str, str]:
     f = c.get("/api/finder", params={"specialty": "Cardiology", "patient_id": pid}).json()
+    practice = next(p for p in f["results"] if p["phone"])
     r = c.post("/api/referrals", json={
-        "patient_id": pid, "specialty": "Cardiology", "practice_id": f["results"][0]["id"],
+        "patient_id": pid, "specialty": "Cardiology", "practice_id": practice["id"],
         "reason_text": "New exertional chest discomfort; please evaluate.", "priority": "routine",
         "condition_text": "Chest pain on exertion"})
     assert r.status_code == 201, r.text
     d = r.json()
-    rid = d["card"]["id"]
     assert d["card"]["stage"] == "draft"
-    s = c.post(f"/api/referrals/{rid}/send", json={"channel": channel})
+    s = c.post(f"/api/referrals/{d['card']['id']}/send", json={"channel": channel})
     assert s.status_code == 200, s.text
-    return rid, d["office_path"].rsplit("/", 1)[1]
+    return d["card"]["id"], d["office_path"].rsplit("/", 1)[1]
+
+
+def _office(c, token, **body):
+    r = c.post(f"/api/office/{token}", json=body)
+    assert r.status_code == 200, r.text
+    return r.json()
+
+
+def _demo_skip(c, days):
+    c.post("/api/settings", json={"demo_mode": True})
+    for _ in range(days // 7):
+        c.post("/api/clock", json={"advance_days": 7})
+    for _ in range(days % 7):
+        c.post("/api/clock", json={"advance_days": 1})
+
+
+def _row(c, rid):
+    return next((r for r in c.get("/api/dashboard").json()["needs_attention"] if r["referral_id"] == rid), None)
 
 
 # ---------------------------------------------------------------- empty start + persistence
 
 def test_starts_empty(client):
     d = client.get("/api/dashboard").json()
-    assert d["total"] == 0 and d["needs_attention"] == [] and d["has_sample"] is False
-    assert client.get("/api/patients").json()["patients"] == []
+    assert d["total"] == 0 and d["needs_attention"] == []
     s = client.get("/api/settings").json()
     assert s["clock"]["demo_mode"] is False and s["clock"]["today"] == TODAY.isoformat()
 
@@ -48,162 +67,183 @@ def test_starts_empty(client):
 def test_data_persists_in_sqlite_file(tmp_path, real_today):
     db = tmp_path / "relay.db"
     set_repo(Repo(db))
-    from fastapi.testclient import TestClient
     from app.main import app
     c = TestClient(app)
-    p = _add_patient(c)
-    rid, _ = _create_and_send(c, p["id"])
-    set_repo(Repo(db))  # simulate a restart
-    d = c.get(f"/api/referrals/{rid}").json()
-    assert d["card"]["stage"] == "sent" and d["card"]["patient"]["name"] == "Maria Santos"
+    rid, _ = _create_and_send(c, _add_patient(c)["id"])
+    set_repo(Repo(db))  # restart
+    assert c.get(f"/api/referrals/{rid}").json()["card"]["stage"] == "sent"
     set_repo(None)
 
 
-# ---------------------------------------------------------------- M1: dashboard (sample data)
-
-def test_m1_dashboard_with_sample(client):
+def test_sample_data_and_reset(client):
     assert client.post("/api/sample-data").status_code == 200
-    assert client.post("/api/sample-data").status_code == 409  # only once
+    assert client.post("/api/sample-data").status_code == 409
     d = client.get("/api/dashboard").json()
-    msgs = {row["referral_id"]: [f["message"] for f in row["flags"]] for row in d["needs_attention"]}
-    assert "Accepted 14 days ago — no appointment yet" in msgs["R-102"]
-    assert "Seen 12 days ago — plan not received" in msgs["R-104"]
-    s = d["summary"]
-    assert (s["open"], s["stuck"], s["closed_this_month"]) == (7, 5, 1)
-    assert all(row["card"]["sample"] for row in d["needs_attention"])
+    statuses = {r["referral_id"]: [f["status"] for f in r["flags"]] for r in d["needs_attention"]}
+    assert "Not scheduled, 14 days" in statuses["R-102"] and "No plan back, 12 days" in statuses["R-104"]
+    assert d["summary"]["lost"] == 2
+    assert client.post("/api/sample-data/reset").status_code == 409  # demo mode only
+    client.post("/api/settings", json={"demo_mode": True})
+    client.post("/api/office/" + client.get("/api/referrals/R-102").json()["office_path"].split("/")[-1],
+                json={"action": "patient_contacted", "contact_mode": "office_called"})
+    assert client.post("/api/sample-data/reset").status_code == 200
+    assert client.get("/api/referrals/R-102").json()["card"]["stage"] == "received"
 
 
 def test_sample_dates_shift_to_today(client, real_today):
-    later = TODAY + timedelta(days=40)
-    real_today(later)
+    real_today(TODAY + timedelta(days=40))
     client.post("/api/sample-data")
-    d = client.get("/api/dashboard").json()
-    msgs = {row["referral_id"]: [f["message"] for f in row["flags"]] for row in d["needs_attention"]}
-    assert "Accepted 14 days ago — no appointment yet" in msgs["R-102"]
-    ev = client.get("/api/referrals/R-102").json()["referral"]["events"][-1]
-    assert ev["at"] == (date(2026, 10, 10) + timedelta(days=40)).isoformat()
+    assert "Not scheduled, 14 days" in [f["status"] for f in _row(client, "R-102")["flags"]]
 
 
-def test_no_synthetic_suffix_in_generated_text(client):
+def test_no_synthetic_suffix_and_sample_tag(client):
     client.post("/api/sample-data")
     d = client.get("/api/referrals/R-102/draft").json()
-    assert "(synthetic" not in d["text"]
-    assert "Lajuana Wilkinson" in d["text"]
+    assert "(synthetic" not in d["text"] and "Lajuana Wilkinson" in d["text"]
+    assert client.get("/api/referrals/R-102").json()["card"]["sample"] is True
 
 
-# ---------------------------------------------------------------- M2: add patient → referral → send
+# ---------------------------------------------------------------- D1: coordinator enters a real referral
 
-def test_m2_add_patient_referral_send(client):
-    assert client.post("/api/patients", json={"name": "X", "town": "Atlantis"}).status_code == 422
+def test_d1_enter_referral(client):
     p = _add_patient(client)
-    assert (p["town"], p["county"], p["coverage_label"], p["sample"]) == ("Athol", "Worcester", "Medicare", False)
+    assert (p["town"], p["county"], p["coverage_label"], p["masshealth"], p["medicare"]) == (
+        "Orange", "Franklin", "Dual eligible (Medicare + MassHealth)", True, True)
     f = client.get("/api/finder", params={"specialty": "Cardiology", "patient_id": p["id"]}).json()
-    assert f["medicare_prominent"] is True and len(f["results"]) == 10 and f["has_more"]
-    rid, token = _create_and_send(client, p["id"], channel="email")
+    assert f["medicare_prominent"] and len(f["results"]) == 10 and f["has_more"]
+    first = f["results"][0]
+    assert first["miles"] is not None and first["nearest_hospital"]["beds_label"]
+    rid, _ = _create_and_send(client, p["id"])
+    open_ids = {i for c in client.get("/api/dashboard").json()["pipeline"] for i in c["referral_ids"]}
+    assert rid in open_ids
+
+
+# ---------------------------------------------------------------- D2: may not have arrived → missing
+
+def test_d2_not_confirmed_received_then_missing(client):
+    rid, token = _create_and_send(client, _add_patient(client)["id"])
+    assert _row(client, rid) is None
+    _demo_skip(client, 3)  # Sat 10-24 → Tue 10-27: 2 business days
+    row = _row(client, rid)
+    assert row and row["flags"][0]["status"].startswith("Not confirmed received")
+    assert row["card"]["can_call"] is True
+    v = _office(client, token, action="missing", missing=["records"], note="Last two office notes")
+    assert v["status_label"] == "Missing records"
+    assert client.get(f"/api/referrals/{rid}").json()["card"]["status_label"] == "Missing records"
+
+
+# ---------------------------------------------------------------- D3: patient next step + PT-1
+
+def test_d3_patient_message_and_pt1(client):
+    rid, token = _create_and_send(client, _add_patient(client)["id"])
+    assert client.get(f"/api/referrals/{rid}/patient-message").status_code == 409
+    _office(client, token, action="received")
+    m = client.get(f"/api/referrals/{rid}/patient-message").json()
+    ref = client.get(f"/api/referrals/{rid}").json()["referral"]
+    assert m["phone"] == ref["performer"]["phone"] and m["phone"] in m["text"]
+    assert f"Your referral to {ref['performer']['name']} was received. Please call {m['phone']} to schedule." in m["text"]
+    r = client.post(f"/api/referrals/{rid}/communications", json={
+        "recipient": "patient", "text": m["text"], "kind": "patient_message", "channel": "print",
+        "drafted_text": m["text"]})
+    assert r.json()["timeline"][-1]["message_kind"] == "patient_message"
     d = client.get(f"/api/referrals/{rid}").json()
-    assert d["card"]["stage"] == "sent" and d["card"]["sample"] is False
-    comm = d["referral"]["communications"][0]
-    assert (comm["kind"], comm["channel"], comm["recipient"]) == ("referral", "email", "specialist")
-    assert f"/office/{token}" in comm["text"] and "Maria Santos" in comm["text"]
-    sent = next(c for c in client.get("/api/dashboard").json()["pipeline"] if c["stage"] == "sent")
-    assert rid in sent["referral_ids"]
-    # resend records another Communication but stays Sent
-    client.post(f"/api/referrals/{rid}/send", json={"channel": "print"})
+    assert d["transport"]["show_pt1"] is False
+    client.post(f"/api/referrals/{rid}/barriers", json={"type": "transportation", "note": "No car"})
     d = client.get(f"/api/referrals/{rid}").json()
-    assert d["card"]["stage"] == "sent" and len(d["referral"]["communications"]) == 2
-    assert len(token) >= 32
+    assert d["transport"]["show_pt1"] is True and d["transport"]["pt1_url"].startswith("https://www.mass.gov/")
+    d = client.post(f"/api/referrals/{rid}/transport", json={"pt1_status": "requested"}).json()
+    assert d["transport"]["pt1_status"] == "requested"
 
 
-def test_referral_needs_condition(client):
-    p = _add_patient(client)
-    f = client.get("/api/finder", params={"specialty": "Cardiology", "patient_id": p["id"]}).json()
-    r = client.post("/api/referrals", json={"patient_id": p["id"], "specialty": "Cardiology",
-                                           "practice_id": f["results"][0]["id"], "reason_text": "x",
-                                           "priority": "routine"})
-    assert r.status_code == 422
+def test_non_masshealth_gets_transport_plan_note(client):
+    rid, _ = _create_and_send(client, _add_patient(client, coverage="commercial_ppo")["id"])
+    client.post(f"/api/referrals/{rid}/barriers", json={"type": "transportation", "note": "No car"})
+    t = client.get(f"/api/referrals/{rid}").json()["transport"]
+    assert (t["show_pt1"], t["show_plan_note"]) == (False, True)
 
 
-# ---------------------------------------------------------------- M3: office link → demo +7 → stuck
+def test_phone_entered_when_directory_has_none(client):
+    rid, token = _create_and_send(client, _add_patient(client)["id"])
+    _office(client, token, action="received")
+    d = client.post(f"/api/referrals/{rid}/office-phone", json={"phone": "978-555-0100"}).json()
+    assert d["referral"]["performer"]["phone"] == "978-555-0100"
 
-def test_m3_office_accepts_then_demo_clock(client):
-    p = _add_patient(client)
-    rid, token = _create_and_send(client, p["id"])
-    o = client.get(f"/api/office/{token}").json()
-    assert o["referral_id"] == rid and "accepted" in o["actions"] and o["patient"]["name"] == "Maria Santos"
-    assert client.post(f"/api/office/{token}", json={"action": "accepted"}).status_code == 200
-    ev = client.get(f"/api/referrals/{rid}").json()["referral"]["events"][-1]
-    assert (ev["stage"], ev["actor"], ev["source"]) == ("accepted", "office", "link")
-    # Clock only moves in Demo mode
-    assert client.post("/api/clock", json={"advance_days": 7}).status_code == 409
-    client.post("/api/settings", json={"demo_mode": True})
-    assert client.post("/api/clock", json={"advance_days": 7}).json()["today"] == "2026-10-31"
-    rows = {r["referral_id"]: r for r in client.get("/api/dashboard").json()["needs_attention"]}
-    assert rows[rid]["flags"][0]["message"] == "Accepted 7 days ago — no appointment yet"
-    client.post("/api/settings", json={"demo_mode": False})
-    assert client.get("/api/clock").json()["today"] == TODAY.isoformat()
 
+# ---------------------------------------------------------------- D4: lost in the handoff
+
+def test_d4_not_scheduled_then_contacted_scheduled_seen(client):
+    rid, token = _create_and_send(client, _add_patient(client)["id"])
+    _office(client, token, action="received")
+    _demo_skip(client, 7)
+    row = _row(client, rid)
+    assert row["failure"] and row["flags"][0]["status"] == "Not scheduled, 7 days"
+    _office(client, token, action="patient_contacted", contact_mode="office_called")
+    _office(client, token, action="scheduled", appointment_date="2026-12-01", appointment_time="10:15")
+    v = _office(client, token, action="seen")
+    assert v["stage"] == "seen" and "plan_returned" in v["actions"]
+    ev = client.get(f"/api/referrals/{rid}").json()["referral"]["events"]
+    assert all(e["actor"] == "office" and e["source"] == "link" for e in ev[1:])
+
+
+# ---------------------------------------------------------------- D5: plan back, loop closes
+
+def test_d5_plan_back_close_fhir(client):
+    rid, token = _create_and_send(client, _add_patient(client)["id"])
+    for body in ({"action": "received"}, {"action": "patient_contacted", "contact_mode": "patient_told_to_call"},
+                 {"action": "scheduled", "appointment_date": "2026-11-03", "appointment_time": "10:15"},
+                 {"action": "seen"}, {"action": "plan_returned", "plan": PLAN}):
+        v = _office(client, token, **body)
+    assert v["actions"] == []
+    before = client.get("/api/dashboard").json()["summary"]
+    items = {i["card"]["id"]: i for i in client.get("/api/inbox").json()["items"]}
+    assert items[rid]["plan"]["plan"] == PLAN["plan"] and items[rid]["reason_text"].startswith("New exertional")
+    assert before["unread_plans"] == 1
+    assert client.post(f"/api/referrals/{rid}/close", json={"note": "Reviewed"}).status_code == 200
+    after = client.get("/api/dashboard").json()["summary"]
+    assert (after["closed_this_month"], after["unread_plans"], after["open"]) == (
+        before["closed_this_month"] + 1, 0, before["open"] - 1)
+    assert client.get(f"/api/referrals/{rid}/fhir").json()["resourceType"] == "Bundle"
+
+
+# ---------------------------------------------------------------- office link and Log update rules
 
 def test_office_link_rules(client):
     assert client.get("/api/office/not-a-real-token").status_code == 404
-    p = _add_patient(client)
-    rid, token = _create_and_send(client, p["id"])
+    rid, token = _create_and_send(client, _add_patient(client)["id"])
     assert client.post(f"/api/office/{token}", json={"action": "seen"}).status_code == 409
-    assert client.post(f"/api/office/{token}", json={"action": "declined"}).status_code == 422  # reason
-    client.post(f"/api/office/{token}", json={"action": "accepted"})
+    assert client.post(f"/api/office/{token}", json={"action": "declined"}).status_code == 422
+    assert client.post(f"/api/office/{token}", json={"action": "missing"}).status_code == 422
+    v = _office(client, token, action="authorization", authorization="pending")
+    assert v["authorization"] == "pending" and v["stage"] == "sent"
+    _office(client, token, action="received")
     assert client.post(f"/api/office/{token}", json={"action": "scheduled",
                                                     "appointment_date": "2026-11-12"}).status_code == 422
-    r = client.post(f"/api/office/{token}", json={"action": "scheduled", "appointment_date": "2026-11-12",
-                                                 "appointment_time": "09:30"})
-    assert r.json()["appointment"] == {"start": "2026-11-12", "time": "09:30", "status": "booked"}
 
 
-def test_sample_referrals_have_working_office_links(client):
-    client.post("/api/sample-data")
-    path = client.get("/api/referrals/R-102").json()["office_path"]
-    o = client.get(f"/api{path}").json()
-    assert o["referral_id"] == "R-102" and o["sample"] is True and "scheduled" in o["actions"]
+def test_log_update_sources(client):
+    rid, _ = _create_and_send(client, _add_patient(client)["id"])
+    r = client.post(f"/api/referrals/{rid}/updates", json={"action": "received", "source": "fax"})
+    assert r.json()["referral"]["events"][-1]["source"] == "fax"
+    r = client.post(f"/api/referrals/{rid}/updates", json={"action": "patient_contacted", "source": "ai_call",
+                                                          "contact_mode": "office_called"})
+    assert r.json()["referral"]["events"][-1]["source"] == "ai_call"
+    assert client.post(f"/api/referrals/{rid}/updates", json={"action": "seen", "source": "link"}).status_code == 422
 
 
-def test_coordinator_log_update_still_works(client):
-    p = _add_patient(client)
-    rid, _ = _create_and_send(client, p["id"])
-    r = client.post(f"/api/referrals/{rid}/updates", json={"action": "accepted", "source": "phone"})
-    assert r.json()["referral"]["events"][-1]["source"] == "phone"
+def test_referral_hint_by_insurance(client):
+    hints = {}
+    for cov in ("original_medicare", "masshealth_pcc", "masshealth_pcaco", "commercial_hmo", "dual"):
+        rid, _ = _create_and_send(client, _add_patient(client, coverage=cov)["id"])
+        hints[cov] = client.get(f"/api/referrals/{rid}").json()["hint"]
+    assert hints["original_medicare"].startswith("Original Medicare generally doesn't require")
+    assert "130 CMR 450.118(J)" in hints["masshealth_pcc"] and hints["masshealth_pcc"] == hints["masshealth_pcaco"]
+    assert hints["commercial_hmo"] == hints["dual"] == "Referral and authorization rules depend on the plan. Check with the plan."
 
 
-# ---------------------------------------------------------------- M4: follow-up
-
-def test_m4_follow_up(client):
-    p = _add_patient(client)
-    rid, token = _create_and_send(client, p["id"])
-    client.post(f"/api/office/{token}", json={"action": "accepted"})
-    client.post("/api/settings", json={"demo_mode": True})
-    client.post("/api/clock", json={"advance_days": 7})
+def test_follow_up_draft_verifies(client):
+    rid, token = _create_and_send(client, _add_patient(client)["id"])
+    _office(client, token, action="received")
+    _demo_skip(client, 7)
     d = client.get(f"/api/referrals/{rid}/draft").json()
     assert d["verified"], d["problems"]
-    assert d["rule"] == "accepted_no_appointment" and "[F" in d["text"] and f"/office/{token}" in d["text"]
-    edited = d["text"] + "\nThank you."
-    r = client.post(f"/api/referrals/{rid}/communications", json={
-        "recipient": d["recipient"], "text": edited, "rule": d["rule"], "drafted_text": d["text"],
-        "channel": "email"})
-    comms = [t for t in r.json()["timeline"] if t["kind"] == "communication"]
-    assert comms[-1]["edited"] is True and comms[-1]["channel"] == "email"
-
-
-# ---------------------------------------------------------------- M5: plan via link → close → FHIR
-
-def test_m5_plan_via_link_close_fhir(client):
-    p = _add_patient(client)
-    rid, token = _create_and_send(client, p["id"])
-    for body in ({"action": "accepted"},
-                 {"action": "scheduled", "appointment_date": "2026-11-03", "appointment_time": "10:15"},
-                 {"action": "seen"},
-                 {"action": "plan_returned", "plan": PLAN}):
-        r = client.post(f"/api/office/{token}", json=body)
-        assert r.status_code == 200, (body, r.text)
-    assert r.json()["actions"] == []
-    items = {i["card"]["id"]: i for i in client.get("/api/inbox").json()["items"]}
-    assert items[rid]["reason_text"].startswith("New exertional") and items[rid]["plan"]["plan"] == PLAN["plan"]
-    assert client.post(f"/api/referrals/{rid}/close", json={"note": "Reviewed"}).status_code == 200
-    fh = client.get(f"/api/referrals/{rid}/fhir")
-    assert fh.status_code == 200 and fh.json()["resourceType"] == "Bundle"
+    assert d["rule"] == "not_scheduled" and f"/office/{token}" in d["text"] and "Mass HIway" in d["text"]

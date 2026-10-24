@@ -47,6 +47,14 @@ BANNED: list[tuple[str, str]] = [
     (r"\b(BSeR|360X)[- ](compliant|conformant|certified)\b", "do not claim conformance"),
     (r"\bHIPAA[- ]compliant\b", "the demo makes no compliance claim"),
     (r"\breal patients?\b", "all patient data are synthetic"),
+    # scheduling happens between the patient and the specialist office, never by Relay or AI
+    (r"\byour appointment is booked\b", "Relay never books; the office and patient schedule"),
+    (r"\bwe scheduled\b", "Relay never books; the office and patient schedule"),
+    (r"\bbooked by AI\b", "the AI assistant never books"),
+    (r"\bconfirmed your appointment\b", "Relay never confirms appointments for the office"),
+    # referral requirements: only the B2 hint wording is allowed
+    (r"\bno referral (is )?needed\b", "state referral rules only as the plan-specific hint"),
+    (r"\breferral (is )?required\b", "state referral rules only as the plan-specific hint"),
 ]
 ALLOW_MARK = "copy-guard: allow"
 

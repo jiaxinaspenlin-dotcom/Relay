@@ -12,10 +12,10 @@ from conftest import TODAY
 def test_dashboard_view(refs):
     v = dashboard_view(list(refs.values()), load_patients(), TODAY)
     json.dumps(v)
-    assert v["total"] == 8 and v["has_sample"] is True
+    assert v["total"] == 9 and v["has_sample"] is True
     top = v["needs_attention"][0]
     assert top["referral_id"] == "R-102"
-    assert top["card"]["stuck"][0]["message"] == "Accepted 14 days ago — no appointment yet"
+    assert top["card"]["stuck"][0]["message"] == "Received 14 days ago, patient not contacted"
     assert top["card"]["miles"] is not None
     assert v["practice_settings"]["label"] == "Practice setting"
 

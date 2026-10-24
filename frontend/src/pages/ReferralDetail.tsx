@@ -1,92 +1,216 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronLeft } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { api } from "../api";
+import { api, type Detail } from "../api";
 import { copy } from "../copy";
-import { FAILURE_RULES, routeLine, shortDate, time12 } from "../format";
-import { FollowUp } from "../components/FollowUp";
-import { LogUpdate } from "../components/LogUpdate";
-import { PlaceContext } from "../components/PlaceContext";
-import { RouteTrack } from "../components/RouteTrack";
-import { SendPanel } from "../components/SendPanel";
+import { FAILURE_RULES } from "../format";
+import { ActionDrawers, useCallKind, type DrawerState } from "../components/ActionDrawers";
+import { RouteTrack, primaryFlag } from "../components/RouteTrack";
+import { SendButtons } from "../components/SendButtons";
+import { copyText } from "../components/sendActions";
 import { ErrorNote, Loading } from "../components/Status";
 import { Timeline } from "../components/Timeline";
-import { Button, Chip, Muted, Panel, SampleTag } from "../components/ui";
+import { Button, Chip, Field, Muted, Panel, SampleTag, btn, inputCls } from "../components/ui";
+
+function SendPanel({ d }: { d: Detail }) {
+  const qc = useQueryClient();
+  const rid = d.card.id;
+  const msg = useQuery({ queryKey: ["message", rid], queryFn: () => api.referralMessage(rid) });
+  const send = useMutation({
+    mutationFn: async (c: "copy" | "email" | "print") => (await api.sendReferral(rid, c)).communication_id,
+    onSuccess: () => qc.invalidateQueries(),
+  });
+  const draft = d.card.stage === "draft";
+  return (
+    <Panel title={draft ? copy.send.draftTitle : copy.send.sendAgain} id="send-h" className={draft ? "border-hemlock" : ""}>
+      {draft && <p className="mb-3">{copy.send.draftNote}</p>}
+      <SendButtons rid={rid} subject={msg.data?.subject ?? ""} text={msg.data?.text ?? ""} primary={draft ? "copy" : null}
+        disabled={!msg.data || send.isPending} send={(c) => send.mutateAsync(c)} />
+      <Muted className="mt-3 block">{copy.delivery}</Muted>
+    </Panel>
+  );
+}
+
+function OfficeLink({ path }: { path: string }) {
+  const [copied, setCopied] = useState(false);
+  const url = `${window.location.origin}${path}`;
+  return (
+    <div className="border-t border-line pt-4">
+      <div className="font-semibold">{copy.send.officeLink}</div>
+      <a href={path} target="_blank" rel="noreferrer" data-testid="office-link" className="mt-1 block break-all text-caption text-hemlock underline">{url}</a>
+      <div className="mt-1 flex items-center gap-2">
+        <Button variant="quiet" onClick={async () => setCopied(await copyText(url))}>{copied ? copy.send.copied : copy.send.copyLink}</Button>
+      </div>
+      <Muted>{copy.send.officeLinkHelp}</Muted>
+    </div>
+  );
+}
+
+function BarrierForm({ rid, onDone }: { rid: string; onDone: () => void }) {
+  const qc = useQueryClient();
+  const [type, setType] = useState("transportation");
+  const [note, setNote] = useState("");
+  const add = useMutation({ mutationFn: () => api.addBarrier(rid, type, note), onSuccess: () => { qc.invalidateQueries(); onDone(); } });
+  return (
+    <form aria-label={copy.detail.logBarrier} className="space-y-3 rounded-control border border-line p-4" onSubmit={(e) => { e.preventDefault(); add.mutate(); }}>
+      <Field label={copy.detail.barrierType}>
+        <select className={inputCls} value={type} onChange={(e) => setType(e.target.value)}>
+          {Object.entries(copy.barrierTypes).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+        </select>
+      </Field>
+      <Field label={copy.detail.barrierNote}><input className={inputCls} value={note} onChange={(e) => setNote(e.target.value)} /></Field>
+      <Button variant="primary" type="submit" disabled={add.isPending}>{copy.detail.addBarrier}</Button>
+      {add.error && <ErrorNote error={add.error} />}
+    </form>
+  );
+}
+
+function Transport({ d }: { d: Detail }) {
+  const qc = useQueryClient();
+  const tr = d.transport;
+  const [plan, setPlan] = useState(tr.transport_plan);
+  const set = useMutation({ mutationFn: (body: { pt1_status?: string; transport_plan?: string }) => api.setTransport(d.card.id, body), onSuccess: () => qc.invalidateQueries() });
+  const t = copy.detail;
+  if (!tr.show_pt1 && !tr.show_plan_note) return null;
+  return (
+    <Panel title={t.transportation} id="tr-h">
+      {tr.show_pt1 ? (
+        <div className="space-y-3">
+          <label className="flex min-h-[40px] items-start gap-3">
+            <input type="checkbox" className="mt-1 h-4 w-4 accent-hemlock" checked={tr.pt1_status !== "not_started"}
+              onChange={(e) => set.mutate({ pt1_status: e.target.checked ? "requested" : "not_started" })} />
+            <span>
+              <span className="block font-semibold">{t.pt1}</span>
+              <span className="block text-caption text-muted">{t.pt1Sub}</span>
+            </span>
+          </label>
+          <a className="block text-caption text-hemlock underline" href={tr.pt1_url} target="_blank" rel="noreferrer">{t.pt1Link}</a>
+          <Field label="Status">
+            <select className={inputCls} value={tr.pt1_status} onChange={(e) => set.mutate({ pt1_status: e.target.value })}>
+              {Object.entries(t.pt1Status).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          </Field>
+        </div>
+      ) : (
+        <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); set.mutate({ transport_plan: plan }); }}>
+          <Field label={t.transportPlan}><textarea className={inputCls} rows={2} value={plan} onChange={(e) => setPlan(e.target.value)} /></Field>
+          <Button type="submit">{t.save}</Button>
+        </form>
+      )}
+      {set.error && <ErrorNote error={set.error} />}
+    </Panel>
+  );
+}
+
+function County({ d }: { d: Detail }) {
+  const t = copy.detail;
+  const hrsa = d.place_context.items.find((i) => i.kind === "hrsa");
+  const places = d.place_context.items.find((i) => i.kind === "places");
+  const checkup = places?.values?.find((v) => v.measure.startsWith("Visits to doctor for routine checkup"));
+  const shortage = hrsa?.designations?.some((x) => x.includes_town) ? t.yesIncludes : hrsa?.designations?.length ? t.yesCounty : t.no;
+  return (
+    <Panel title={t.county(d.place_context.county)} id="county-h">
+      <dl className="space-y-2">
+        <div className="flex justify-between gap-3"><dt className="text-muted">{t.shortage}</dt><dd className="text-right">{shortage}</dd></div>
+        {checkup && <div className="flex justify-between gap-3"><dt className="text-muted">{t.checkup}</dt><dd>{checkup.value}%</dd></div>}
+      </dl>
+      <Muted className="mt-3 block">{t.countySource}</Muted>
+    </Panel>
+  );
+}
 
 export default function ReferralDetail() {
   const { rid = "" } = useParams();
   const [params, setParams] = useSearchParams();
   const q = useQuery({ queryKey: ["referral", rid], queryFn: () => api.referral(rid) });
+  const [drawer, setDrawer] = useState<DrawerState>(null);
+  const [barrier, setBarrier] = useState(false);
+  const callKind = useCallKind();
   if (q.isLoading) return <Loading />;
   if (q.error) return <ErrorNote error={q.error} />;
   const d = q.data!;
   const c = d.card;
-  const r = d.referral;
-  const stuck = c.stuck.length > 0;
-  const showFollowUp = params.get("followup") === "1" && stuck;
-  const failure = c.stuck.some((f) => FAILURE_RULES.has(f.rule));
   const t = copy.detail;
-  const appt = c.appointment;
+  const flag = c.stuck.length ? primaryFlag(c.stuck) : undefined;
+  const failure = flag ? FAILURE_RULES.has(flag.rule) : false;
+  const unit = (f: typeof flag) => (f!.unit === "business days" ? (f!.threshold === 1 ? "business day" : "business days") : f!.threshold === 1 ? "day" : "days");
+  const route = c.miles === null ? `${c.patient.town} to ${c.performer.town}` : c.miles === 0 ? `${c.patient.town}, same town` : `${c.patient.town} to ${c.performer.town}, ${c.miles} mi`;
+  const followUpAvailable = c.stuck.some((f) => f.rule !== "pt1_not_requested");
+  if (params.get("followup") === "1" && !drawer && followUpAvailable) {
+    setTimeout(() => { setDrawer({ kind: "follow_up", rid }); setParams({}); }, 0);
+  }
 
   return (
-    <div className="space-y-5">
-      <Link to="/" className="inline-flex min-h-[40px] items-center text-hemlock hover:underline">{t.back}</Link>
+    <div className="space-y-6">
+      <Link to="/" className="inline-flex min-h-[40px] items-center gap-1 text-hemlock hover:underline">
+        <ChevronLeft size={18} strokeWidth={1.8} aria-hidden="true" />{t.back}
+      </Link>
 
-      <header className="space-y-4 rounded-panel border border-line bg-surface p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-3">
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-page font-bold">{c.patient.name}</h1>
-              <SampleTag show={c.sample} />
-            </div>
+            <h1 className="text-page font-bold">{c.patient.name}</h1>
             <p className="text-muted">
-              {c.specialty} referral {c.id}. {routeLine(c.patient.town, c.performer.town, c.miles)}. {c.stage_label}.
+              {t.at(c.specialty, c.performer.name)}
+              {c.performer.fictional && <> {copy.fictional}</>}
             </p>
           </div>
-          {stuck && !showFollowUp && <Button onClick={() => setParams({ followup: "1" })}>{copy.dashboard.draftFollowUp}</Button>}
+          <div className="flex flex-wrap gap-2">
+            <Chip>{route}</Chip>
+            <Chip>{c.patient.coverage_label}</Chip>
+            {c.authorization !== "not_set" && <Chip>{t.authorization}: {c.authorization_label.toLowerCase()}</Chip>}
+            <SampleTag show={c.sample} />
+          </div>
         </div>
-        <RouteTrack steps={c.stepper} flags={c.stuck} size="lg" />
-        {stuck && (
-          <p data-testid="stuck-now" className={`font-semibold ${failure ? "text-rust" : "text-amber"}`}>
-            {c.stuck.map((f) => f.message.replace(" — ", ", ") + ".").join(" ")}
-          </p>
+        {c.can_call && (
+          <button type="button" className={btn("primary")} onClick={() => setDrawer({ kind: callKind, rid })}>
+            {callKind === "call" ? t.callAi : t.logUpdate}
+          </button>
         )}
       </header>
 
-      {showFollowUp && <FollowUp rid={rid} onClose={() => setParams({})} />}
-      {d.can_send && c.stage === "draft" && <SendPanel rid={rid} stage={c.stage} officePath={d.office_path} />}
+      <Panel>
+        <RouteTrack steps={c.stepper} flags={c.stuck} labels />
+        <p className={`mt-4 ${flag ? (failure ? "text-rust" : "text-amber") : "text-muted"} font-semibold`} data-testid="status-line">
+          {flag ? `${flag.message}. ${t.limit(flag.threshold, unit(flag))}` : c.status_label}
+        </p>
+        {c.stuck.length > 1 && (
+          <ul className="mt-1 text-caption text-muted">
+            {c.stuck.filter((f) => f !== flag).map((f) => <li key={f.rule}>{f.message}.</li>)}
+          </ul>
+        )}
+      </Panel>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[1fr_24rem]">
-        <div className="space-y-5">
-          <Panel title={t.timeline} id="tl-h" actions={
-            <a href={api.fhirUrl(rid)} download className="inline-flex min-h-[40px] items-center text-hemlock hover:underline">{t.downloadFhir}</a>
-          }>
+      {c.stage === "draft" && <SendPanel d={d} />}
+
+      <div className="grid items-start gap-6 min-[860px]:grid-cols-[1.3fr_1fr]">
+        <div className="space-y-6">
+          <Panel title={t.timeline} id="tl-h" actions={<a href={api.fhirUrl(rid)} download className="inline-flex min-h-[40px] items-center text-hemlock hover:underline">{t.downloadFhir}</a>}>
             <Timeline items={d.timeline} />
           </Panel>
-          <Panel title={t.referral} id="ref-h">
-            <dl className="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-2">
-              <dt className="text-muted">{t.performer}</dt>
-              <dd>
-                {r.performer.name} {r.performer.fictional && <span className="text-muted">{copy.fictional}</span>}
-                <div className="text-caption text-muted">{r.performer.address ? `${r.performer.address}, ` : ""}{r.performer.town}</div>
-              </dd>
-              <dt className="text-muted">{t.condition}</dt><dd>{r.reason_condition.display}</dd>
-              <dt className="text-muted">{t.reason}</dt><dd>{r.reason_text}</dd>
-              <dt className="text-muted">{t.priority}</dt><dd className="capitalize">{r.priority}</dd>
-              {appt && (<><dt className="text-muted">{t.appointment}</dt><dd>{shortDate(appt.start)}{appt.time ? `, ${time12(appt.time)}` : ""} ({appt.status})</dd></>)}
-            </dl>
-          </Panel>
-          {d.can_send && c.stage !== "draft" && <SendPanel rid={rid} stage={c.stage} officePath={d.office_path} />}
+          {d.can_send && c.stage !== "draft" && <SendPanel d={d} />}
         </div>
-        <div className="space-y-5">
-          <LogUpdate rid={rid} actions={d.log_update_actions} />
-          <Panel title={t.barriers} id="bar-h">
-            {c.open_barriers.length === 0
-              ? <Muted>{t.noBarriers}</Muted>
-              : <div className="flex flex-wrap gap-2">{c.open_barriers.map((b) => <Chip key={b.type}>{b.label}, open since {shortDate(b.opened)}</Chip>)}</div>}
+        <div className="space-y-6">
+          <Panel title={t.nextStep} id="next-h">
+            <div className="space-y-2">
+              {d.update_actions.length > 0 && <Button className="w-full" onClick={() => setDrawer({ kind: "update", rid })}>{t.logUpdate}</Button>}
+              {d.can_message_patient && <Button className="w-full" onClick={() => setDrawer({ kind: "patient", rid })}>{t.messagePatient}</Button>}
+              {followUpAvailable && <Button className="w-full" onClick={() => setDrawer({ kind: "follow_up", rid })}>{t.followUp}</Button>}
+              {d.can_send && <Button className="w-full" onClick={() => setBarrier(!barrier)} aria-expanded={barrier}>{t.logBarrier}</Button>}
+              {barrier && <BarrierForm rid={rid} onDone={() => setBarrier(false)} />}
+              {c.open_barriers.length > 0 && (
+                <p className="pt-1 text-caption text-muted">{t.barriers}: {c.open_barriers.map((b) => b.label.toLowerCase()).join(", ")}</p>
+              )}
+            </div>
+            {c.stage !== "draft" && <div className="mt-4"><OfficeLink path={d.office_path} /></div>}
           </Panel>
-          <PlaceContext items={d.place_context.items} town={d.place_context.town} />
+          <Transport d={d} />
+          <Panel title={t.hintTitle} id="hint-h"><p data-testid="referral-hint">{d.hint}</p></Panel>
+          <County d={d} />
         </div>
       </div>
+      <ActionDrawers state={drawer} setState={setDrawer} />
     </div>
   );
 }

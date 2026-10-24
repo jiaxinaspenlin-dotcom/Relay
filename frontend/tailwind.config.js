@@ -23,7 +23,7 @@ export default {
         body: ["15px", "22px"],
         caption: ["13px", "18px"],
       },
-      borderRadius: { control: "6px", panel: "10px" },
+      borderRadius: { control: "8px", panel: "12px", tile: "10px" },
       boxShadow: { pop: "0 8px 24px rgba(28, 43, 51, 0.12)" },
     },
   },

@@ -1,8 +1,7 @@
 """Referrals: create (draft), send (copy / email / print), detail, coordinator Log update,
-follow-up drafts and sending, PCP close, FHIR export."""
+barriers, transportation, office phone, follow-ups, patient messages, PCP close, FHIR export."""
 from __future__ import annotations
 
-from datetime import date
 from typing import Literal, Optional
 
 from fastapi import APIRouter, HTTPException, Request
@@ -13,18 +12,18 @@ from app import clock
 from app.chart import active_conditions
 from app.config import FINDER_SPECIALTIES
 from app.drafting.draft import NotStuck, make_draft
-from app.drafting.templates import referral_message
+from app.drafting.templates import patient_message, referral_message
 from app.export.fhir import build_bundle
 from app.finder.practices import practices_for
-from app.loop.states import STAGES, InvalidTransition, transition
-from app.models import (Channel, Communication, Condition, Party, Performer, Plan, Referral,
-                        UpdateSource)
+from app.loop.states import STAGES, InvalidTransition, record_field_update, transition
+from app.loop.stuck import BARRIER_LABELS
+from app.models import (Barrier, BarrierType, Channel, Communication, Condition, Party, Performer,
+                        Referral)
 from app.store import get_repo
-from app.views import LOG_ACTIONS, patient_brief, referral_detail_view
+from app.updates import UpdateBody, UpdateError, apply_update
+from app.views import patient_brief, referral_detail_view
 
 router = APIRouter(prefix="/api")
-
-OMITTED_NOTE = "ACCESS-specific fields (track, OAP measures) omitted: not an ACCESS referral."
 
 
 def office_url(request: Request, token: str) -> str:
@@ -54,6 +53,21 @@ def _detail(ref: Referral) -> dict:
 
 def _rerouted() -> set[str]:
     return {r.replaces for r in get_repo().all() if r.replaces}
+
+
+def _save(ref: Referral) -> dict:
+    get_repo().put(ref)
+    return _detail(ref)
+
+
+def _comm(ref: Referral, *, recipient: str, text: str, kind: str, channel: str, rule: str = "",
+          edited: bool = False) -> Referral:
+    new = ref.model_copy(deep=True)
+    new.communications.append(Communication(
+        id=f"{ref.id}-C{len(ref.communications) + 1}", sent=clock.today(get_repo()), recipient=recipient,
+        text=text.strip(), sent_by=ref.requester.coordinator, kind=kind, channel=channel, rule=rule,
+        edited=edited))
+    return new
 
 
 @router.get("/referrals/{rid}")
@@ -106,7 +120,7 @@ def create_referral(body: NewReferral) -> dict:
         requester=Party(**repo.setting("practice")),
         performer=Performer(id=practice.id, name=practice.label, town=practice.town or practice.city_raw,
                             fictional=False, address=practice.address, zip5=practice.zip5,
-                            org_pac_id=practice.org_pac_id),
+                            org_pac_id=practice.org_pac_id, phone=practice.phone),
         stage="draft", task_status=STAGES["draft"][0], business_status=STAGES["draft"][1],
         authored_on=today, events=[], replaces=body.replaces,
     )
@@ -129,89 +143,116 @@ class SendReferral(BaseModel):
 
 @router.post("/referrals/{rid}/send")
 def send_referral(rid: str, body: SendReferral, request: Request) -> dict:
-    """Record that a person sent the referral (copied it, opened it in email, or printed it for
-    fax). The first send moves Draft → Sent; later sends are recorded as resends."""
+    """Record that a person sent the referral. The first send moves Draft to Sent."""
     repo = get_repo()
     ref = _get(rid)
     if ref.stage in ("closed", "cancelled", "declined"):
         raise HTTPException(409, f"Referral is {ref.stage}; nothing to send")
-    today = clock.today(repo)
     msg = referral_message(ref, _patient(ref), office_url(request, repo.token_for(rid)))
     new = ref
     if ref.stage == "draft":
-        try:
-            new = transition(ref, "sent", at=today, actor="coordinator", by=ref.requester.coordinator,
-                             note=f"Sent by {body.channel}")
-        except InvalidTransition as e:
-            raise HTTPException(409, str(e)) from e
-    new = new.model_copy(deep=True)
-    new.communications.append(Communication(
-        id=f"{ref.id}-C{len(ref.communications) + 1}", sent=today, recipient="specialist",
-        text=msg["text"], sent_by=ref.requester.coordinator, kind="referral", channel=body.channel))
-    repo.put(new)
-    return {**_detail(new), "message": msg, "communication_id": new.communications[-1].id}
+        new = transition(ref, "sent", at=clock.today(repo), actor="coordinator",
+                         by=ref.requester.coordinator, note=f"Sent by {body.channel}")
+    new = _comm(new, recipient="specialist", text=msg["text"], kind="referral", channel=body.channel)
+    return {**_save(new), "message": msg, "communication_id": new.communications[-1].id}
 
 
 # ---------------------------------------------------------------- coordinator Log update (R2.5)
 
-class PlanForm(BaseModel):
-    visit_date: Optional[date] = None
-    assessment: str = Field(min_length=1, max_length=8000)
-    plan: str = Field(min_length=1, max_length=8000)
-    actions_for_pcp: str = Field(default="", max_length=4000)
-    questions_contact: str = Field(default="", max_length=1000)
-
-
-def make_plan(ref: Referral, form: PlanForm, today: date) -> Plan:
-    visit = form.visit_date or (ref.appointment.start if ref.appointment else today)
-    return Plan.model_validate({
-        "returned_on": today, "from": ref.performer.name, "visit_date": visit,
-        "reason": ref.reason_condition.display, "assessment": form.assessment.strip(),
-        "plan": form.plan.strip(), "actions_for_pcp": form.actions_for_pcp.strip(),
-        "questions_contact": form.questions_contact.strip(), "omitted_fields_note": OMITTED_NOTE,
-    })
-
-
-class LogUpdate(BaseModel):
-    action: Literal["accepted", "declined", "scheduled", "seen", "no_show", "plan_received"]
-    source: UpdateSource
-    note: str = Field(default="", max_length=2000)
-    appointment_date: Optional[date] = None
-    appointment_time: Optional[str] = Field(default=None, pattern=r"^\d{2}:\d{2}$")
-    plan: Optional[PlanForm] = None
-
-
-def apply_update(ref: Referral, stage: str, *, actor: str, source: str, note: str, today: date,
-                 appointment_date: Optional[date] = None, appointment_time: Optional[str] = None,
-                 plan_form: Optional[PlanForm] = None) -> Referral:
-    plan = None
-    if stage == "plan_returned":
-        if plan_form is None:
-            raise HTTPException(422, "Returning a plan needs the plan form")
-        plan = make_plan(ref, plan_form, today)
-    if stage == "declined" and actor == "office" and not note.strip():
-        raise HTTPException(422, "Add a reason for declining")
-    try:
-        new = transition(ref, stage, at=today, actor=actor, note=note.strip(), source=source,
-                         appointment_start=appointment_date, plan=plan)
-    except InvalidTransition as e:
-        raise HTTPException(409, str(e)) from e
-    if stage == "scheduled" and appointment_time:
-        new.appointment.time = appointment_time
-    return new
+class LogUpdate(UpdateBody):
+    source: Literal["phone", "fax", "email", "ai_call", "other"]
 
 
 @router.post("/referrals/{rid}/updates")
 def log_update(rid: str, body: LogUpdate) -> dict:
     repo = get_repo()
+    try:
+        new = apply_update(_get(rid), body, actor="coordinator", source=body.source, today=clock.today(repo))
+    except UpdateError as e:
+        raise HTTPException(422, str(e)) from e
+    except InvalidTransition as e:
+        raise HTTPException(409, str(e)) from e
+    return _save(new)
+
+
+# ---------------------------------------------------------------- barriers, transport, phone
+
+class BarrierBody(BaseModel):
+    type: BarrierType
+    note: str = Field(default="", max_length=1000)
+
+
+@router.post("/referrals/{rid}/barriers", status_code=201)
+def add_barrier(rid: str, body: BarrierBody) -> dict:
+    repo = get_repo()
     ref = _get(rid)
-    new = apply_update(ref, LOG_ACTIONS[body.action], actor="coordinator", source=body.source,
-                       note=body.note, today=clock.today(repo), appointment_date=body.appointment_date,
-                       appointment_time=body.appointment_time, plan_form=body.plan)
-    return _detail(repo.put(new))
+    today = clock.today(repo)
+    if any(b.type == body.type and b.status == "open" for b in ref.barriers):
+        raise HTTPException(409, f"A {BARRIER_LABELS[body.type].lower()} barrier is already open")
+    new = record_field_update(ref, "barrier", at=today, actor="coordinator",
+                              note=f"{BARRIER_LABELS[body.type]} barrier: {body.note.strip()}".rstrip(": "))
+    new.barriers.append(Barrier(type=body.type, status="open", opened=today, note=body.note.strip()))
+    return _save(new)
 
 
-# ---------------------------------------------------------------- follow-up drafts (R4.3, R4.4)
+@router.post("/referrals/{rid}/barriers/{btype}/address")
+def address_barrier(rid: str, btype: BarrierType) -> dict:
+    repo = get_repo()
+    ref = _get(rid)
+    today = clock.today(repo)
+    new = record_field_update(ref, "barrier", at=today, actor="coordinator",
+                              note=f"{BARRIER_LABELS[btype]} barrier addressed")
+    hit = False
+    for b in new.barriers:
+        if b.type == btype and b.status == "open":
+            b.status, b.addressed, hit = "addressed", today, True
+    if not hit:
+        raise HTTPException(404, "No open barrier of that type")
+    return _save(new)
+
+
+class TransportBody(BaseModel):
+    pt1_status: Optional[Literal["not_started", "requested", "confirmed"]] = None
+    transport_plan: Optional[str] = Field(default=None, max_length=1000)
+
+
+PT1_LABELS = {"not_started": "not started", "requested": "requested", "confirmed": "ride confirmed"}
+
+
+@router.post("/referrals/{rid}/transport")
+def set_transport(rid: str, body: TransportBody) -> dict:
+    repo = get_repo()
+    ref = _get(rid)
+    notes = []
+    if body.pt1_status is not None:
+        notes.append(f"MassHealth ride (PT-1): {PT1_LABELS[body.pt1_status]}")
+    if body.transport_plan is not None:
+        notes.append("Transportation plan updated")
+    if not notes:
+        raise HTTPException(422, "Nothing to update")
+    new = record_field_update(ref, "transport", at=clock.today(repo), actor="coordinator", note=". ".join(notes))
+    if body.pt1_status is not None:
+        new.pt1_status = body.pt1_status
+    if body.transport_plan is not None:
+        new.transport_plan = body.transport_plan.strip()
+    return _save(new)
+
+
+class PhoneBody(BaseModel):
+    phone: str = Field(pattern=r"^[0-9()+\-. ]{7,20}$")
+
+
+@router.post("/referrals/{rid}/office-phone")
+def set_office_phone(rid: str, body: PhoneBody) -> dict:
+    repo = get_repo()
+    ref = _get(rid)
+    new = record_field_update(ref, "phone", at=clock.today(repo), actor="coordinator",
+                              note=f"Office scheduling phone: {body.phone.strip()}")
+    new.performer.phone = body.phone.strip()
+    return _save(new)
+
+
+# ---------------------------------------------------------------- follow-ups and patient messages
 
 @router.get("/referrals/{rid}/draft")
 def draft(rid: str, request: Request, rule: Optional[str] = None) -> dict:
@@ -224,27 +265,30 @@ def draft(rid: str, request: Request, rule: Optional[str] = None) -> dict:
         raise HTTPException(409, str(e)) from e
 
 
+@router.get("/referrals/{rid}/patient-message")
+def patient_next_step(rid: str) -> dict:
+    ref = _get(rid)
+    if ref.stage not in ("received", "patient_contacted", "no_show", "scheduled"):
+        raise HTTPException(409, "The patient message is available after the office confirms receipt")
+    return patient_message(ref, _patient(ref))
+
+
 class SendMessage(BaseModel):
     recipient: Literal["specialist", "patient", "pcp"]
     text: str = Field(min_length=1, max_length=8000)
     channel: Channel = "manual"
+    kind: Literal["follow_up", "patient_message"] = "follow_up"
     rule: str = ""
     drafted_text: str = ""  # what Relay drafted, to record whether the sender edited it
 
 
 @router.post("/referrals/{rid}/communications", status_code=201)
 def send_message(rid: str, body: SendMessage) -> dict:
-    repo = get_repo()
     ref = _get(rid)
-    new = ref.model_copy(deep=True)
-    new.communications.append(Communication(
-        id=f"{ref.id}-C{len(ref.communications) + 1}", sent=clock.today(repo),
-        recipient=body.recipient, text=body.text.strip(), sent_by=ref.requester.coordinator,
-        kind="follow_up", channel=body.channel, ai_drafted=False, rule=body.rule,
-        edited=bool(body.drafted_text) and body.text.strip() != body.drafted_text.strip(),
-    ))
-    repo.put(new)
-    return {**_detail(new), "communication_id": new.communications[-1].id}
+    new = _comm(ref, recipient=body.recipient, text=body.text, kind=body.kind, channel=body.channel,
+                rule=body.rule,
+                edited=bool(body.drafted_text) and body.text.strip() != body.drafted_text.strip())
+    return {**_save(new), "communication_id": new.communications[-1].id}
 
 
 # ---------------------------------------------------------------- FHIR export (R10)
@@ -273,4 +317,4 @@ def close(rid: str, body: CloseBody) -> dict:
                          note=body.note.strip())
     except InvalidTransition as e:
         raise HTTPException(409, str(e)) from e
-    return _detail(repo.put(new))
+    return _save(new)

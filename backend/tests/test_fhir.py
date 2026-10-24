@@ -90,8 +90,8 @@ def test_archetype_bundle_validates(refs, rid):
 def test_real_mode_referral_bundle_validates(client):
     """Hand-entered patient → office link updates → follow-up → PCP close. Directory org,
     Communications, Composition, closed Task, appointment time; no synthetic tag."""
-    pid = client.post("/api/patients", json={"name": "Maria Santos", "town": "Athol",
-                                             "coverage": "medicare"}).json()["id"]
+    pid = client.post("/api/patients", json={"name": "Maria Santos", "town": "Orange",
+                                             "coverage": "dual"}).json()["id"]
     f = client.get("/api/finder", params={"specialty": "Cardiology", "patient_id": pid}).json()
     practice = next(p for p in f["results"] if p["org_pac_id"])
     d = client.post("/api/referrals", json={
@@ -100,11 +100,15 @@ def test_real_mode_referral_bundle_validates(client):
         "condition_text": "Chest pain on exertion"}).json()
     rid, token = d["card"]["id"], d["office_path"].rsplit("/", 1)[1]
     client.post(f"/api/referrals/{rid}/send", json={"channel": "print"})
-    for body in ({"action": "accepted"},
+    for body in ({"action": "missing", "missing": ["records"], "note": "Office notes"},
+                 {"action": "authorization", "authorization": "approved"},
+                 {"action": "received"},
+                 {"action": "patient_contacted", "contact_mode": "office_called"},
                  {"action": "scheduled", "appointment_date": "2026-11-03", "appointment_time": "14:30"},
                  {"action": "seen"},
                  {"action": "plan_returned", "plan": {"assessment": "A.", "plan": "P."}}):
-        assert client.post(f"/api/office/{token}", json=body).status_code == 200
+        r = client.post(f"/api/office/{token}", json=body)
+        assert r.status_code == 200, (body, r.text)
     client.post(f"/api/referrals/{rid}/communications",
                 json={"recipient": "specialist", "text": "Thanks.", "channel": "copy"})
     client.post(f"/api/referrals/{rid}/close", json={"note": "Reviewed"})
@@ -122,5 +126,11 @@ def test_real_mode_referral_bundle_validates(client):
     assert t["Condition"][0]["code"] == {"text": "Chest pain on exertion"}
     assert t["Patient"][0]["name"][0]["family"] == "Santos"
     assert len(t["Communication"]) == 2
-    assert {p["activity"]["text"] for p in t["Provenance"]} >= {"Stage → Accepted (via link)"}
+    assert {p["activity"]["text"] for p in t["Provenance"]} >= {"Stage → Received (via link)",
+                                                               "Stage → Patient contacted (via link)",
+                                                               "Update: authorization (via link)"}
+    assert t["Coverage"][0]["type"]["text"] == "Dual eligible (Medicare + MassHealth)"
+    assert t["ServiceRequest"][0]["insurance"][0]["reference"] == "Coverage/" + t["Coverage"][0]["id"]
+    inputs = {i["type"]["text"]: i["valueString"] for i in t["Task"][0]["input"]}
+    assert inputs["Authorization status"] == "Approved" and inputs["Patient contact"] == "Office called the patient"
     json.dumps(b)

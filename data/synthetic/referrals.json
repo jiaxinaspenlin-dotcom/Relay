@@ -1,44 +1,47 @@
 {
-  "note": "SYNTHETIC referrals. Specialist practices are fictional; responses are simulated.",
+  "note": "Sample referrals: synthetic patients, fictional practices and phone numbers.",
   "demo_today": "2026-10-24",
   "pcp": {
-    "practice": "Quabbin Hills Family Medicine (fictional)",
-    "clinician": "Dr. Avery Lin (synthetic)",
-    "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+    "practice": "Quabbin Hills Family Medicine",
+    "clinician": "Dr. Avery Lin",
+    "coordinator": "Sam Ortiz, referral coordinator"
   },
   "fictional_practices": [
     {
       "id": "fx-cardio",
-      "name": "Pioneer Valley Heart Associates (fictional)",
-      "town": "Springfield"
+      "name": "Pioneer Valley Heart Associates",
+      "town": "Springfield",
+      "phone": "413-555-0142"
     },
     {
       "id": "fx-neph",
-      "name": "Central Mass Kidney Care (fictional)",
-      "town": "Worcester"
+      "name": "Central Mass Kidney Care",
+      "town": "Worcester",
+      "phone": "508-555-0167"
     },
     {
       "id": "fx-gi",
-      "name": "Berkshire Digestive Health (fictional)",
-      "town": "Pittsfield"
+      "name": "Berkshire Digestive Health",
+      "town": "Pittsfield",
+      "phone": "413-555-0118"
     },
     {
       "id": "fx-endo",
-      "name": "Connecticut River Endocrine Group (fictional)",
-      "town": "Northampton"
+      "name": "Connecticut River Endocrine Group",
+      "town": "Northampton",
+      "phone": "413-555-0193"
     }
   ],
-  "live_demo_patient": "46ee9d82-b52c-856d-069b-5064ff052225",
   "referrals": [
     {
       "id": "R-101",
-      "synthetic": true,
+      "sample": true,
       "patient_id": "6c82ee38-33d8-5667-c9c7-a4c869857230",
       "patient_town": "Athol",
       "specialty": "Endocrinology",
       "pri_spec": "ENDOCRINOLOGY",
       "priority": "routine",
-      "reason_text": "Please evaluate: Neuropathy due to type 2 diabetes mellitus (disorder) (synthetic referral).",
+      "reason_text": "Please evaluate: Neuropathy due to type 2 diabetes mellitus (disorder).",
       "reason_condition": {
         "code": "368581000119106",
         "system": "SNOMED-CT",
@@ -46,14 +49,15 @@
         "onset": "2004-12-21"
       },
       "requester": {
-        "practice": "Quabbin Hills Family Medicine (fictional)",
-        "clinician": "Dr. Avery Lin (synthetic)",
-        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+        "practice": "Quabbin Hills Family Medicine",
+        "clinician": "Dr. Avery Lin",
+        "coordinator": "Sam Ortiz, referral coordinator"
       },
       "performer": {
         "id": "fx-endo",
-        "name": "Connecticut River Endocrine Group (fictional)",
+        "name": "Connecticut River Endocrine Group",
         "town": "Northampton",
+        "phone": "413-555-0193",
         "fictional": true
       },
       "stage": "sent",
@@ -64,58 +68,71 @@
         {
           "stage": "sent",
           "at": "2026-10-17",
-          "actor": "pcp",
-          "note": ""
+          "actor": "coordinator",
+          "note": "",
+          "source": null,
+          "kind": "stage"
         }
       ],
       "appointment": null,
       "barriers": [],
       "communications": [],
       "plan": null,
-      "closure": null
+      "closure": null,
+      "receipt": null,
+      "contact_mode": null,
+      "authorization": "not_set",
+      "authorization_since": null,
+      "pt1_status": "not_started",
+      "transport_plan": ""
     },
     {
       "id": "R-102",
-      "synthetic": true,
+      "sample": true,
       "patient_id": "a94cbdb3-6379-0fdc-1a9b-28ae9399782c",
       "patient_town": "Great Barrington",
-      "specialty": "Nephrology",
-      "pri_spec": "NEPHROLOGY",
+      "specialty": "Cardiology",
+      "pri_spec": "CARDIOVASCULAR DISEASE (CARDIOLOGY)",
       "priority": "routine",
-      "reason_text": "Please evaluate: Chronic kidney disease stage 3 (disorder) (synthetic referral).",
+      "reason_text": "Please evaluate: History of myocardial infarction (situation).",
       "reason_condition": {
-        "code": "433144002",
+        "code": "399211009",
         "system": "SNOMED-CT",
-        "display": "Chronic kidney disease stage 3 (disorder)",
-        "onset": "2025-03-27"
+        "display": "History of myocardial infarction (situation)",
+        "onset": "2018-11-05"
       },
       "requester": {
-        "practice": "Quabbin Hills Family Medicine (fictional)",
-        "clinician": "Dr. Avery Lin (synthetic)",
-        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+        "practice": "Quabbin Hills Family Medicine",
+        "clinician": "Dr. Avery Lin",
+        "coordinator": "Sam Ortiz, referral coordinator"
       },
       "performer": {
-        "id": "fx-neph",
-        "name": "Central Mass Kidney Care (fictional)",
-        "town": "Worcester",
+        "id": "fx-cardio",
+        "name": "Pioneer Valley Heart Associates",
+        "town": "Springfield",
+        "phone": "413-555-0142",
         "fictional": true
       },
-      "stage": "accepted",
-      "task_status": "accepted",
-      "business_status": "accepted",
+      "stage": "received",
+      "task_status": "received",
+      "business_status": "received-complete",
       "authored_on": "2026-10-06",
       "events": [
         {
           "stage": "sent",
           "at": "2026-10-06",
-          "actor": "pcp",
-          "note": ""
+          "actor": "coordinator",
+          "note": "",
+          "source": null,
+          "kind": "stage"
         },
         {
-          "stage": "accepted",
+          "stage": "received",
           "at": "2026-10-10",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "fax",
+          "kind": "stage"
         }
       ],
       "appointment": null,
@@ -124,37 +141,48 @@
           "type": "transportation",
           "status": "open",
           "opened": "2026-10-12",
-          "note": "No car; daughter works weekdays (synthetic)."
+          "note": "No car; daughter works weekdays."
         }
       ],
       "communications": [],
       "plan": null,
-      "closure": null
+      "closure": null,
+      "receipt": {
+        "complete": true,
+        "missing": [],
+        "note": ""
+      },
+      "contact_mode": null,
+      "authorization": "not_set",
+      "authorization_since": null,
+      "pt1_status": "not_started",
+      "transport_plan": "Daughter may be able to drive on a Friday."
     },
     {
       "id": "R-103",
-      "synthetic": true,
-      "patient_id": "76b20010-c318-5754-8c85-983aa538522f",
-      "patient_town": "Greenfield",
-      "specialty": "Gastroenterology",
-      "pri_spec": "GASTROENTEROLOGY",
+      "sample": true,
+      "patient_id": "a4fd2a0e-8bd8-d073-c7bf-38b30dbfab69",
+      "patient_town": "Orange",
+      "specialty": "Cardiology",
+      "pri_spec": "CARDIOVASCULAR DISEASE (CARDIOLOGY)",
       "priority": "routine",
-      "reason_text": "Please evaluate: Polyp of colon (disorder) (synthetic referral).",
+      "reason_text": "Please evaluate: Abnormal findings diagnostic imaging heart+coronary circulat (finding).",
       "reason_condition": {
-        "code": "68496003",
+        "code": "274531002",
         "system": "SNOMED-CT",
-        "display": "Polyp of colon (disorder)",
-        "onset": "2010-10-05"
+        "display": "Abnormal findings diagnostic imaging heart+coronary circulat (finding)",
+        "onset": "2001-12-09"
       },
       "requester": {
-        "practice": "Quabbin Hills Family Medicine (fictional)",
-        "clinician": "Dr. Avery Lin (synthetic)",
-        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+        "practice": "Quabbin Hills Family Medicine",
+        "clinician": "Dr. Avery Lin",
+        "coordinator": "Sam Ortiz, referral coordinator"
       },
       "performer": {
-        "id": "fx-gi",
-        "name": "Berkshire Digestive Health (fictional)",
-        "town": "Pittsfield",
+        "id": "fx-cardio",
+        "name": "Pioneer Valley Heart Associates",
+        "town": "Springfield",
+        "phone": "413-555-0142",
         "fictional": true
       },
       "stage": "scheduled",
@@ -165,55 +193,88 @@
         {
           "stage": "sent",
           "at": "2026-10-01",
-          "actor": "pcp",
-          "note": ""
+          "actor": "coordinator",
+          "note": "",
+          "source": null,
+          "kind": "stage"
         },
         {
-          "stage": "accepted",
+          "stage": "received",
           "at": "2026-10-03",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "fax",
+          "kind": "stage"
+        },
+        {
+          "stage": "patient_contacted",
+          "at": "2026-10-06",
+          "actor": "specialist",
+          "note": "Office called the patient.",
+          "source": "phone",
+          "kind": "stage"
         },
         {
           "stage": "scheduled",
           "at": "2026-10-08",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "phone",
+          "kind": "stage"
         }
       ],
       "appointment": {
         "start": "2026-11-03",
+        "time": "10:30",
         "status": "booked"
       },
-      "barriers": [],
+      "barriers": [
+        {
+          "type": "transportation",
+          "status": "open",
+          "opened": "2026-10-08",
+          "note": "Doesn't drive; lives alone."
+        }
+      ],
       "communications": [],
       "plan": null,
-      "closure": null
+      "closure": null,
+      "receipt": {
+        "complete": true,
+        "missing": [],
+        "note": ""
+      },
+      "contact_mode": "office_called",
+      "authorization": "approved",
+      "authorization_since": "2026-10-07",
+      "pt1_status": "not_started",
+      "transport_plan": ""
     },
     {
       "id": "R-104",
-      "synthetic": true,
-      "patient_id": "a4fd2a0e-8bd8-d073-c7bf-38b30dbfab69",
-      "patient_town": "Orange",
+      "sample": true,
+      "patient_id": "b7791785-0a80-6c8f-9111-d0d6eae834f1",
+      "patient_town": "Greenfield",
       "specialty": "Cardiology",
       "pri_spec": "CARDIOVASCULAR DISEASE (CARDIOLOGY)",
       "priority": "routine",
-      "reason_text": "Please evaluate: Abnormal findings diagnostic imaging heart+coronary circulat (finding) (synthetic referral).",
+      "reason_text": "Please evaluate: History of myocardial infarction (situation).",
       "reason_condition": {
-        "code": "274531002",
+        "code": "399211009",
         "system": "SNOMED-CT",
-        "display": "Abnormal findings diagnostic imaging heart+coronary circulat (finding)",
-        "onset": "2001-12-09"
+        "display": "History of myocardial infarction (situation)",
+        "onset": "2019-07-21"
       },
       "requester": {
-        "practice": "Quabbin Hills Family Medicine (fictional)",
-        "clinician": "Dr. Avery Lin (synthetic)",
-        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+        "practice": "Quabbin Hills Family Medicine",
+        "clinician": "Dr. Avery Lin",
+        "coordinator": "Sam Ortiz, referral coordinator"
       },
       "performer": {
         "id": "fx-cardio",
-        "name": "Pioneer Valley Heart Associates (fictional)",
+        "name": "Pioneer Valley Heart Associates",
         "town": "Springfield",
+        "phone": "413-555-0142",
         "fictional": true
       },
       "stage": "seen",
@@ -224,46 +285,73 @@
         {
           "stage": "sent",
           "at": "2026-09-15",
-          "actor": "pcp",
-          "note": ""
+          "actor": "coordinator",
+          "note": "",
+          "source": null,
+          "kind": "stage"
         },
         {
-          "stage": "accepted",
+          "stage": "received",
           "at": "2026-09-17",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "fax",
+          "kind": "stage"
+        },
+        {
+          "stage": "patient_contacted",
+          "at": "2026-09-18",
+          "actor": "specialist",
+          "note": "Patient told to call.",
+          "source": "fax",
+          "kind": "stage"
         },
         {
           "stage": "scheduled",
           "at": "2026-09-19",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "phone",
+          "kind": "stage"
         },
         {
           "stage": "seen",
           "at": "2026-10-12",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "phone",
+          "kind": "stage"
         }
       ],
       "appointment": {
         "start": "2026-10-12",
+        "time": "09:00",
         "status": "fulfilled"
       },
       "barriers": [],
       "communications": [],
       "plan": null,
-      "closure": null
+      "closure": null,
+      "receipt": {
+        "complete": true,
+        "missing": [],
+        "note": ""
+      },
+      "contact_mode": "patient_told_to_call",
+      "authorization": "not_set",
+      "authorization_since": null,
+      "pt1_status": "not_started",
+      "transport_plan": ""
     },
     {
       "id": "R-105",
-      "synthetic": true,
+      "sample": true,
       "patient_id": "3a3de94d-c3ab-76c1-1893-d73a17848fc1",
       "patient_town": "Ware",
       "specialty": "Endocrinology",
       "pri_spec": "ENDOCRINOLOGY",
       "priority": "routine",
-      "reason_text": "Please evaluate: Nonproliferative diabetic retinopathy due to type II diabetes mellitus (synthetic referral).",
+      "reason_text": "Please evaluate: Nonproliferative diabetic retinopathy due to type II diabetes mellitus.",
       "reason_condition": {
         "code": "1551000119108",
         "system": "SNOMED-CT",
@@ -271,14 +359,15 @@
         "onset": "2005-12-05"
       },
       "requester": {
-        "practice": "Quabbin Hills Family Medicine (fictional)",
-        "clinician": "Dr. Avery Lin (synthetic)",
-        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+        "practice": "Quabbin Hills Family Medicine",
+        "clinician": "Dr. Avery Lin",
+        "coordinator": "Sam Ortiz, referral coordinator"
       },
       "performer": {
         "id": "fx-endo",
-        "name": "Connecticut River Endocrine Group (fictional)",
+        "name": "Connecticut River Endocrine Group",
         "town": "Northampton",
+        "phone": "413-555-0193",
         "fictional": true
       },
       "stage": "plan_returned",
@@ -289,36 +378,55 @@
         {
           "stage": "sent",
           "at": "2026-09-08",
-          "actor": "pcp",
-          "note": ""
+          "actor": "coordinator",
+          "note": "",
+          "source": null,
+          "kind": "stage"
         },
         {
-          "stage": "accepted",
+          "stage": "received",
           "at": "2026-09-10",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "fax",
+          "kind": "stage"
+        },
+        {
+          "stage": "patient_contacted",
+          "at": "2026-09-11",
+          "actor": "specialist",
+          "note": "",
+          "source": "phone",
+          "kind": "stage"
         },
         {
           "stage": "scheduled",
           "at": "2026-09-12",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "phone",
+          "kind": "stage"
         },
         {
           "stage": "seen",
           "at": "2026-10-15",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "phone",
+          "kind": "stage"
         },
         {
           "stage": "plan_returned",
           "at": "2026-10-22",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "fax",
+          "kind": "stage"
         }
       ],
       "appointment": {
         "start": "2026-10-15",
+        "time": "13:15",
         "status": "fulfilled"
       },
       "barriers": [],
@@ -326,26 +434,36 @@
       "plan": {
         "simulated": true,
         "returned_on": "2026-10-22",
-        "from": "Connecticut River Endocrine Group (fictional)",
+        "from": "Connecticut River Endocrine Group",
         "visit_date": "2026-10-15",
         "reason": "Nonproliferative diabetic retinopathy due to type II diabetes mellitus",
-        "assessment": "Diabetes-related findings reviewed (synthetic).",
+        "assessment": "Diabetes-related findings reviewed.",
         "plan": "Follow-up in 3 months. Endocrinology will send updated lab orders to the PCP.",
-        "actions_for_pcp": "Please review and update the problem list (synthetic).",
-        "questions_contact": "Connecticut River Endocrine Group (fictional) referral line (fictional)",
+        "actions_for_pcp": "Please review and update the problem list.",
+        "questions_contact": "Connecticut River Endocrine Group, 413-555-0193",
         "omitted_fields_note": "ACCESS-specific fields (track, OAP measures) omitted: not an ACCESS referral."
       },
-      "closure": null
+      "closure": null,
+      "receipt": {
+        "complete": true,
+        "missing": [],
+        "note": ""
+      },
+      "contact_mode": "office_called",
+      "authorization": "not_set",
+      "authorization_since": null,
+      "pt1_status": "not_started",
+      "transport_plan": ""
     },
     {
       "id": "R-106",
-      "synthetic": true,
+      "sample": true,
       "patient_id": "c86c400e-ff88-a1e3-2e23-caa4d8311f47",
       "patient_town": "North Adams",
       "specialty": "Nephrology",
       "pri_spec": "NEPHROLOGY",
       "priority": "routine",
-      "reason_text": "Please evaluate: Chronic kidney disease stage 3 (disorder) (synthetic referral).",
+      "reason_text": "Please evaluate: Chronic kidney disease stage 3 (disorder).",
       "reason_condition": {
         "code": "433144002",
         "system": "SNOMED-CT",
@@ -353,14 +471,15 @@
         "onset": "2026-06-02"
       },
       "requester": {
-        "practice": "Quabbin Hills Family Medicine (fictional)",
-        "clinician": "Dr. Avery Lin (synthetic)",
-        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+        "practice": "Quabbin Hills Family Medicine",
+        "clinician": "Dr. Avery Lin",
+        "coordinator": "Sam Ortiz, referral coordinator"
       },
       "performer": {
         "id": "fx-neph",
-        "name": "Central Mass Kidney Care (fictional)",
+        "name": "Central Mass Kidney Care",
         "town": "Worcester",
+        "phone": "508-555-0167",
         "fictional": true
       },
       "stage": "closed",
@@ -371,42 +490,63 @@
         {
           "stage": "sent",
           "at": "2026-08-25",
-          "actor": "pcp",
-          "note": ""
+          "actor": "coordinator",
+          "note": "",
+          "source": null,
+          "kind": "stage"
         },
         {
-          "stage": "accepted",
+          "stage": "received",
+          "at": "2026-08-26",
+          "actor": "specialist",
+          "note": "",
+          "source": "fax",
+          "kind": "stage"
+        },
+        {
+          "stage": "patient_contacted",
           "at": "2026-08-27",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "phone",
+          "kind": "stage"
         },
         {
           "stage": "scheduled",
           "at": "2026-08-29",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "phone",
+          "kind": "stage"
         },
         {
           "stage": "seen",
           "at": "2026-09-23",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "phone",
+          "kind": "stage"
         },
         {
           "stage": "plan_returned",
           "at": "2026-09-30",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "fax",
+          "kind": "stage"
         },
         {
           "stage": "closed",
           "at": "2026-10-05",
           "actor": "pcp",
-          "note": "Plan reviewed; added to problem list (synthetic)."
+          "note": "Plan reviewed; added to problem list.",
+          "source": null,
+          "kind": "stage"
         }
       ],
       "appointment": {
         "start": "2026-09-23",
+        "time": "11:00",
         "status": "fulfilled"
       },
       "barriers": [],
@@ -414,31 +554,41 @@
       "plan": {
         "simulated": true,
         "returned_on": "2026-09-30",
-        "from": "Central Mass Kidney Care (fictional)",
+        "from": "Central Mass Kidney Care",
         "visit_date": "2026-09-23",
         "reason": "Chronic kidney disease stage 3 (disorder)",
-        "assessment": "Kidney function reviewed; stable at this visit (synthetic).",
-        "plan": "Repeat kidney labs in 3 months, ordered by nephrology. Follow-up in 6 months; telehealth acceptable if labs are drawn locally.",
-        "actions_for_pcp": "Please review and update the problem list (synthetic).",
-        "questions_contact": "Central Mass Kidney Care (fictional) referral line (fictional)",
+        "assessment": "Kidney function reviewed; stable at this visit.",
+        "plan": "Repeat kidney labs in 3 months, ordered by nephrology. Follow-up in 6 months.",
+        "actions_for_pcp": "Please review and update the problem list.",
+        "questions_contact": "Central Mass Kidney Care, 508-555-0167",
         "omitted_fields_note": "ACCESS-specific fields (track, OAP measures) omitted: not an ACCESS referral."
       },
       "closure": {
         "at": "2026-10-05",
-        "by": "Dr. Avery Lin (synthetic)",
+        "by": "Dr. Avery Lin",
         "reason": "plan_received",
-        "note": "Plan reviewed; added to problem list (synthetic)."
-      }
+        "note": "Plan reviewed; added to problem list."
+      },
+      "receipt": {
+        "complete": true,
+        "missing": [],
+        "note": ""
+      },
+      "contact_mode": "office_called",
+      "authorization": "not_set",
+      "authorization_since": null,
+      "pt1_status": "not_started",
+      "transport_plan": ""
     },
     {
       "id": "R-107",
-      "synthetic": true,
+      "sample": true,
       "patient_id": "aa616abe-1761-0c9a-7959-07544679dafd",
       "patient_town": "Great Barrington",
       "specialty": "Gastroenterology",
       "pri_spec": "GASTROENTEROLOGY",
       "priority": "routine",
-      "reason_text": "Please evaluate: Polyp of colon (disorder) (synthetic referral).",
+      "reason_text": "Please evaluate: Polyp of colon (disorder).",
       "reason_condition": {
         "code": "68496003",
         "system": "SNOMED-CT",
@@ -446,14 +596,15 @@
         "onset": "1993-12-09"
       },
       "requester": {
-        "practice": "Quabbin Hills Family Medicine (fictional)",
-        "clinician": "Dr. Avery Lin (synthetic)",
-        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+        "practice": "Quabbin Hills Family Medicine",
+        "clinician": "Dr. Avery Lin",
+        "coordinator": "Sam Ortiz, referral coordinator"
       },
       "performer": {
         "id": "fx-gi",
-        "name": "Berkshire Digestive Health (fictional)",
+        "name": "Berkshire Digestive Health",
         "town": "Pittsfield",
+        "phone": "413-555-0118",
         "fictional": true
       },
       "stage": "declined",
@@ -464,46 +615,57 @@
         {
           "stage": "sent",
           "at": "2026-10-14",
-          "actor": "pcp",
-          "note": ""
+          "actor": "coordinator",
+          "note": "",
+          "source": null,
+          "kind": "stage"
         },
         {
           "stage": "declined",
           "at": "2026-10-20",
           "actor": "specialist",
-          "note": "No new-patient capacity this quarter (synthetic)."
+          "note": "No new-patient capacity this quarter.",
+          "source": "fax",
+          "kind": "stage"
         }
       ],
       "appointment": null,
       "barriers": [],
       "communications": [],
       "plan": null,
-      "closure": null
+      "closure": null,
+      "receipt": null,
+      "contact_mode": null,
+      "authorization": "not_set",
+      "authorization_since": null,
+      "pt1_status": "not_started",
+      "transport_plan": ""
     },
     {
       "id": "R-108",
-      "synthetic": true,
-      "patient_id": "b7791785-0a80-6c8f-9111-d0d6eae834f1",
+      "sample": true,
+      "patient_id": "76b20010-c318-5754-8c85-983aa538522f",
       "patient_town": "Greenfield",
-      "specialty": "Cardiology",
-      "pri_spec": "CARDIOVASCULAR DISEASE (CARDIOLOGY)",
+      "specialty": "Gastroenterology",
+      "pri_spec": "GASTROENTEROLOGY",
       "priority": "routine",
-      "reason_text": "Please evaluate: History of myocardial infarction (situation) (synthetic referral).",
+      "reason_text": "Please evaluate: Polyp of colon (disorder).",
       "reason_condition": {
-        "code": "399211009",
+        "code": "68496003",
         "system": "SNOMED-CT",
-        "display": "History of myocardial infarction (situation)",
-        "onset": "2019-07-21"
+        "display": "Polyp of colon (disorder)",
+        "onset": "2010-10-05"
       },
       "requester": {
-        "practice": "Quabbin Hills Family Medicine (fictional)",
-        "clinician": "Dr. Avery Lin (synthetic)",
-        "coordinator": "Sam Ortiz, referral coordinator (synthetic)"
+        "practice": "Quabbin Hills Family Medicine",
+        "clinician": "Dr. Avery Lin",
+        "coordinator": "Sam Ortiz, referral coordinator"
       },
       "performer": {
-        "id": "fx-cardio",
-        "name": "Pioneer Valley Heart Associates (fictional)",
-        "town": "Springfield",
+        "id": "fx-gi",
+        "name": "Berkshire Digestive Health",
+        "town": "Pittsfield",
+        "phone": "413-555-0118",
         "fictional": true
       },
       "stage": "no_show",
@@ -514,30 +676,47 @@
         {
           "stage": "sent",
           "at": "2026-09-22",
-          "actor": "pcp",
-          "note": ""
+          "actor": "coordinator",
+          "note": "",
+          "source": null,
+          "kind": "stage"
         },
         {
-          "stage": "accepted",
+          "stage": "received",
+          "at": "2026-09-23",
+          "actor": "specialist",
+          "note": "",
+          "source": "fax",
+          "kind": "stage"
+        },
+        {
+          "stage": "patient_contacted",
           "at": "2026-09-24",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "phone",
+          "kind": "stage"
         },
         {
           "stage": "scheduled",
           "at": "2026-09-26",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "phone",
+          "kind": "stage"
         },
         {
           "stage": "no_show",
           "at": "2026-10-15",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": "phone",
+          "kind": "stage"
         }
       ],
       "appointment": {
         "start": "2026-10-15",
+        "time": "08:30",
         "status": "noshow"
       },
       "barriers": [
@@ -545,12 +724,89 @@
           "type": "schedule_work",
           "status": "open",
           "opened": "2026-10-16",
-          "note": "Works weekday shifts; asked about late-day slots (synthetic)."
+          "note": "Works weekday shifts; asked about late-day slots."
         }
       ],
       "communications": [],
       "plan": null,
-      "closure": null
+      "closure": null,
+      "receipt": {
+        "complete": true,
+        "missing": [],
+        "note": ""
+      },
+      "contact_mode": "office_called",
+      "authorization": "not_set",
+      "authorization_since": null,
+      "pt1_status": "not_started",
+      "transport_plan": ""
+    },
+    {
+      "id": "R-109",
+      "sample": true,
+      "patient_id": "2256d4ea-bced-66a5-4c23-50cbdca2708e",
+      "patient_town": "Orange",
+      "specialty": "Endocrinology",
+      "pri_spec": "ENDOCRINOLOGY",
+      "priority": "routine",
+      "reason_text": "Please evaluate: Proteinuria due to type 2 diabetes mellitus (disorder).",
+      "reason_condition": {
+        "code": "157141000119108",
+        "system": "SNOMED-CT",
+        "display": "Proteinuria due to type 2 diabetes mellitus (disorder)",
+        "onset": "2002-01-03"
+      },
+      "requester": {
+        "practice": "Quabbin Hills Family Medicine",
+        "clinician": "Dr. Avery Lin",
+        "coordinator": "Sam Ortiz, referral coordinator"
+      },
+      "performer": {
+        "id": "fx-endo",
+        "name": "Connecticut River Endocrine Group",
+        "town": "Northampton",
+        "phone": "413-555-0193",
+        "fictional": true
+      },
+      "stage": "received",
+      "task_status": "received",
+      "business_status": "received-incomplete",
+      "authored_on": "2026-10-19",
+      "events": [
+        {
+          "stage": "sent",
+          "at": "2026-10-19",
+          "actor": "coordinator",
+          "note": "",
+          "source": null,
+          "kind": "stage"
+        },
+        {
+          "stage": "received",
+          "at": "2026-10-21",
+          "actor": "specialist",
+          "note": "Need last two office notes and recent labs.",
+          "source": "fax",
+          "kind": "stage"
+        }
+      ],
+      "appointment": null,
+      "barriers": [],
+      "communications": [],
+      "plan": null,
+      "closure": null,
+      "receipt": {
+        "complete": false,
+        "missing": [
+          "records"
+        ],
+        "note": "Need last two office notes and recent labs."
+      },
+      "contact_mode": null,
+      "authorization": "pending",
+      "authorization_since": "2026-10-21",
+      "pt1_status": "not_started",
+      "transport_plan": ""
     }
   ]
 }

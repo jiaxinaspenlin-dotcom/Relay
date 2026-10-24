@@ -10,58 +10,60 @@ from datetime import date
 from app.dates import long
 from app.drafting.facts import Fact
 from app.loop.stuck import BARRIER_LABELS, StuckFlag
-from app.loop.timeline import last_event_date
+from app.loop.timeline import first_event_date, last_event_date
 from app.models import Referral
 
 PATIENT_TOKEN = "[PATIENT]"
 
-RECIPIENT = {
-    "sent_no_response": "specialist",
-    "accepted_no_appointment": "specialist",
-    "appointment_not_confirmed": "specialist",
-    "seen_no_plan": "specialist",
-    "no_show": "patient",
-    "barrier_open": "patient",
-    "plan_not_acknowledged": "pcp",
-    "declined_not_rerouted": "pcp",
-}
-
 SIGNATURE = ("— {coordinator}, {practice}", ["requester"])
-OFFICE_LINK = ("You can update the referral status here, no login needed: {office_url}", ["office_link"])
+OFFICE_LINK = ("For offices not yet on Mass HIway, you can update the status here, no login needed: "
+               "{office_url}", ["office_link"])
 BARRIER_LINE = ("The patient has an open {barrier_label} barrier: {barrier_note}", ["barrier"])
 # Patient-facing messages address the patient directly.
 PATIENT_BARRIER_LINE = ("We noted a {barrier_label} barrier: {barrier_note}", ["barrier"])
+PATIENT_CALL_OFFICE = ("To schedule, please call {performer} at {phone}.", ["performer", "phone"])
 
 TEMPLATES: dict[str, list[tuple[str, list[str]]]] = {
-    "sent_no_response": [
+    "sent_no_receipt": [
         ("We sent a {specialty} referral for [PATIENT] to {performer} on {sent_date}.",
          ["referral", "performer"]),
-        ("As of {today}, we have no response, {n} {unit} after sending.", ["elapsed"]),
-        ("Please let us know whether you can accept the referral, or what else you need from us.",
-         ["referral"]),
-        ("Reason for referral: {reason}", ["reason"]),
+        ("As of {today}, we have no confirmation that it was received, {n} {unit} after sending.",
+         ["elapsed"]),
+        ("Please confirm you received it, or tell us what is missing.", ["referral"]),
         OFFICE_LINK,
         SIGNATURE,
     ],
-    "accepted_no_appointment": [
-        ("Thank you for accepting the {specialty} referral for [PATIENT] on {stage_date}.",
-         ["stage"]),
-        ("As of {today}, we have no appointment date on file, {n} {unit} after acceptance.",
+    "received_incomplete": [
+        ("Thank you for confirming receipt of the {specialty} referral for [PATIENT].", ["received"]),
+        ("You asked for {missing}.", ["missing"]),
+        ("We will send {missing} separately. Please tell us if anything else is needed.", ["missing"]),
+        OFFICE_LINK,
+        SIGNATURE,
+    ],
+    "authorization_pending": [
+        ("Authorization for the {specialty} referral for [PATIENT] has been pending since {auth_since}.",
+         ["authorization"]),
+        ("As of {today}, that is {n} {unit}.", ["elapsed"]),
+        ("Please tell us if the plan needs anything from our office.", ["authorization"]),
+        OFFICE_LINK,
+        SIGNATURE,
+    ],
+    "not_scheduled": [
+        ("You confirmed receipt of the {specialty} referral for [PATIENT] on {received_date}.",
+         ["received"]),
+        ("As of {today}, we have no record that the patient has been contacted, {n} {unit} later.",
          ["elapsed"]),
         BARRIER_LINE,
-        ("Could you share an appointment date, or tell us what you need from us to schedule?",
-         ["stage"]),
+        ("Could you tell us when the office will reach the patient, or share the scheduling number "
+         "so the patient can call?", ["received"]),
         OFFICE_LINK,
         SIGNATURE,
     ],
-    "appointment_not_confirmed": [
-        ("Our records show [PATIENT] had a {specialty} appointment with you on {appt_date}.",
-         ["appointment"]),
-        ("As of {today}, we have no confirmation that the visit took place, {n} {unit} later.",
-         ["elapsed"]),
-        ("Could you confirm whether the visit happened, and send the plan if it did?",
-         ["appointment"]),
-        OFFICE_LINK,
+    "not_scheduled_patient": [
+        ("Your referral to {performer} for {specialty} was received on {received_date}.",
+         ["received", "performer"]),
+        PATIENT_CALL_OFFICE,
+        ("If something makes it hard to schedule, call us and we can help.", ["requester"]),
         SIGNATURE,
     ],
     "seen_no_plan": [
@@ -71,20 +73,6 @@ TEMPLATES: dict[str, list[tuple[str, list[str]]]] = {
          ["elapsed"]),
         ("Please send the visit summary and plan to {practice}.", ["requester"]),
         OFFICE_LINK,
-        SIGNATURE,
-    ],
-    "no_show": [
-        ("Our records show your {specialty} appointment with {performer} on {appt_date} was "
-         "missed.", ["appointment", "performer"]),
-        PATIENT_BARRIER_LINE,
-        ("Please call us so we can help you find a new appointment time.", ["appointment"]),
-        SIGNATURE,
-    ],
-    "barrier_open": [
-        ("On {barrier_opened}, we noted a {barrier_label} barrier for your {specialty} referral.",
-         ["barrier", "referral"]),
-        ("As of {today}, it is still open after {n} {unit}.", ["elapsed"]),
-        ("Please call us so we can work on it together.", ["barrier"]),
         SIGNATURE,
     ],
     "plan_not_acknowledged": [
@@ -101,13 +89,28 @@ TEMPLATES: dict[str, list[tuple[str, list[str]]]] = {
         ("If you want to re-route, choose another practice in the finder.", ["stage"]),
         SIGNATURE,
     ],
+    "no_show": [
+        ("Our records show your {specialty} appointment with {performer} on {appt_date} was "
+         "missed.", ["appointment", "performer"]),
+        PATIENT_BARRIER_LINE,
+        ("To find a new time, please call {performer} at {phone}.", ["performer", "phone"]),
+        ("If you need help, call us.", ["requester"]),
+        SIGNATURE,
+    ],
 }
+
+# Rules without a message template (the action is the coordinator's own, e.g. PT-1).
+NO_TEMPLATE = frozenset({"pt1_not_requested"})
+
+
+def template_key(flag: StuckFlag) -> str:
+    if flag.rule == "not_scheduled" and flag.recipient == "patient":
+        return "not_scheduled_patient"
+    return flag.rule
 
 
 def _barrier_for(ref: Referral, flag: StuckFlag):
     open_b = [b for b in ref.barriers if b.status == "open"]
-    if flag.rule == "barrier_open":
-        return next((b for b in open_b if flag.message.startswith(BARRIER_LABELS[b.type])), None)
     return open_b[0] if open_b else None
 
 
@@ -120,6 +123,7 @@ def render(ref: Referral, flag: StuckFlag, facts: list[Fact], today: date) -> st
     n = flag.days
     unit = ("business day" if flag.unit == "business days" else "day") + ("" if n == 1 else "s")
     sent = last_event_date(ref, "sent")
+    received = first_event_date(ref, "received")
     decline_note = by_key["decline_note"].value if "decline_note" in by_key else ""
     vars_ = {
         "specialty": ref.specialty,
@@ -139,9 +143,13 @@ def render(ref: Referral, flag: StuckFlag, facts: list[Fact], today: date) -> st
         "coordinator": ref.requester.coordinator,
         "practice": ref.requester.practice,
         "office_url": by_key["office_link"].value if "office_link" in by_key else "",
+        "received_date": long(received) if received else "",
+        "missing": by_key["missing"].value if "missing" in by_key else "",
+        "auth_since": long(ref.authorization_since) if ref.authorization_since else "",
+        "phone": ref.performer.phone,
     }
     lines = []
-    for sentence, keys in TEMPLATES[flag.rule]:
+    for sentence, keys in TEMPLATES[template_key(flag)]:
         if any(k not in by_key for k in keys):
             continue  # optional line (e.g. no open barrier, no decline note)
         cites = "".join(f"[{by_key[k].id}]" for k in keys)
@@ -171,10 +179,30 @@ def referral_message(ref: Referral, patient: dict, office_url: str) -> dict:
         f"Condition: {ref.reason_condition.display}",
         f"Reason for referral: {ref.reason_text}",
         "",
-        "Please let us know whether you can accept this referral, the appointment date once it is",
-        "set, and the visit plan afterward. You can do all of this at the link below, no login needed:",
+        "Please confirm you received this referral and tell us if anything is missing. After the",
+        "visit, please send the plan. For offices not yet on Mass HIway, you can do this at the",
+        "link below, no login needed:",
         office_url,
         "",
         "Or reply by phone or fax to the contact above.",
     ]
     return {"subject": subject, "text": "\n".join(lines)}
+
+
+# ---------------------------------------------------------------- patient next-step message
+
+def patient_message(ref: Referral, patient: dict) -> dict:
+    """After the office confirms receipt: tell the patient how to schedule. The office and the
+    patient schedule the visit; Relay only passes on the number."""
+    phone = ref.performer.phone
+    lines = [
+        f"Hello {patient['name']},",
+        "",
+        f"Your referral to {ref.performer.name} was received. Please call {phone} to schedule.",
+        "",
+        "If transportation or anything else makes it hard to get there, call us and we can help.",
+        "",
+        f"{ref.requester.coordinator}, {ref.requester.practice}",
+    ]
+    return {"subject": f"Your {ref.specialty} referral", "text": "\n".join(lines), "phone": phone,
+            "needs_phone": not phone}
