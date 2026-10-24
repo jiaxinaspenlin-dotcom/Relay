@@ -27,7 +27,7 @@ Deferred until all five pass: patient view, map, LLM, readmissions drawer, Speci
 - [x] M2 New referral (North Adams live patient → Cardiology → real practices → Send) shows as Sent
 - [x] M3 Log update (R2.5) + Demo clock (R1.5): accepted (phone) then +7 days → "Accepted 7 days ago — no appointment yet"
 - [x] M4 Template follow-up with [F#] citations → edit → Send → Communication on the timeline
-- [ ] M5 Log "plan received" → PCP inbox beside reason → Acknowledge & close → FHIR bundle (test_fhir.py)
+- [x] M5 Log "plan received" → PCP inbox beside reason → Acknowledge & close → FHIR bundle (test_fhir.py)
 - Guards: no page imports `src/mock/`; no backend real-clock calls outside config.py.
 
 ## Block 1 — Data (0:00–1:00)
@@ -74,24 +74,24 @@ Deferred until all five pass: patient view, map, LLM, readmissions drawer, Speci
 - [ ] 3.4 API: dashboard, referrals (get, create, transition, barriers, send message), finder,
   specialist actions, plan return, inbox acknowledge/close (with closure-reason rule), reset
   - _Requirements: 4.4, 5.1, 5.2, 7.1, 7.3, 8.2, 8.3_
-- [ ] 3.5 `export/fhir.py` + `test_fhir.py` validating a bundle for every archetype
+- [x] 3.5 `export/fhir.py` + `test_fhir.py` validating a bundle for every archetype
   - _Requirements: 10.1, 10.2_
 
 ## Block 4 — Interface (3:30–6:00)
 - [ ] 4.1 Put strings in `copy.ts`. Build layout + SyntheticBanner, LoopStepper, StuckBadge,
   FactChip, SourceChip
   - _Requirements: 1.4, 7.4_
-- [ ] 4.2 Dashboard (Needs attention, pipeline, counts)
+- [x] 4.2 Dashboard (Needs attention, pipeline, counts)
   - _Requirements: 1.1, 1.2, 1.3_
 - [ ] 4.3 Referral detail (stepper, timeline, packet, barriers, place context, follow-up drawer, FHIR download)
   - _Requirements: 4.1, 4.3, 4.4, 5.1, 5.2, 6.1, 6.2, 6.3, 10.1_
-- [ ] 4.4 New referral + finder cards + telehealth note
+- [x] 4.4 New referral + finder cards + telehealth note
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.7_
 - [ ] 4.5 (SHOULD) Mini-map
   - _Requirements: 3.6_
 - [ ] 4.6 (DEFERRED until MVP passes) Specialist office (simulated portal) with template-shaped plan form
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
-- [ ] 4.7 PCP inbox with acknowledge & close
+- [x] 4.7 PCP inbox with acknowledge & close
   - _Requirements: 8.1, 8.2, 8.3_
 - [ ] 4.8 (SHOULD) Patient status view
   - _Requirements: 9.1_

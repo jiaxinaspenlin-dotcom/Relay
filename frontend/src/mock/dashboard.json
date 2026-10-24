@@ -58,7 +58,10 @@
           "id": "fx-neph",
           "name": "Central Mass Kidney Care (fictional)",
           "town": "Worcester",
-          "fictional": true
+          "fictional": true,
+          "address": "",
+          "zip5": "",
+          "org_pac_id": ""
         },
         "stage": "accepted",
         "stage_label": "Accepted",
@@ -162,7 +165,10 @@
           "id": "fx-cardio",
           "name": "Pioneer Valley Heart Associates (fictional)",
           "town": "Springfield",
-          "fictional": true
+          "fictional": true,
+          "address": "",
+          "zip5": "",
+          "org_pac_id": ""
         },
         "stage": "seen",
         "stage_label": "Seen",
@@ -265,7 +271,10 @@
           "id": "fx-cardio",
           "name": "Pioneer Valley Heart Associates (fictional)",
           "town": "Springfield",
-          "fictional": true
+          "fictional": true,
+          "address": "",
+          "zip5": "",
+          "org_pac_id": ""
         },
         "stage": "no_show",
         "stage_label": "No-show",
@@ -372,7 +381,10 @@
           "id": "fx-endo",
           "name": "Connecticut River Endocrine Group (fictional)",
           "town": "Northampton",
-          "fictional": true
+          "fictional": true,
+          "address": "",
+          "zip5": "",
+          "org_pac_id": ""
         },
         "stage": "sent",
         "stage_label": "Sent",
@@ -460,7 +472,10 @@
           "id": "fx-gi",
           "name": "Berkshire Digestive Health (fictional)",
           "town": "Pittsfield",
-          "fictional": true
+          "fictional": true,
+          "address": "",
+          "zip5": "",
+          "org_pac_id": ""
         },
         "stage": "declined",
         "stage_label": "Declined",
@@ -540,7 +555,10 @@
             "id": "fx-endo",
             "name": "Connecticut River Endocrine Group (fictional)",
             "town": "Northampton",
-            "fictional": true
+            "fictional": true,
+            "address": "",
+            "zip5": "",
+            "org_pac_id": ""
           },
           "stage": "sent",
           "stage_label": "Sent",
@@ -619,7 +637,10 @@
             "id": "fx-neph",
             "name": "Central Mass Kidney Care (fictional)",
             "town": "Worcester",
-            "fictional": true
+            "fictional": true,
+            "address": "",
+            "zip5": "",
+            "org_pac_id": ""
           },
           "stage": "accepted",
           "stage_label": "Accepted",
@@ -714,7 +735,10 @@
             "id": "fx-gi",
             "name": "Berkshire Digestive Health (fictional)",
             "town": "Pittsfield",
-            "fictional": true
+            "fictional": true,
+            "address": "",
+            "zip5": "",
+            "org_pac_id": ""
           },
           "stage": "scheduled",
           "stage_label": "Scheduled",
@@ -785,7 +809,10 @@
             "id": "fx-cardio",
             "name": "Pioneer Valley Heart Associates (fictional)",
             "town": "Springfield",
-            "fictional": true
+            "fictional": true,
+            "address": "",
+            "zip5": "",
+            "org_pac_id": ""
           },
           "stage": "no_show",
           "stage_label": "No-show",
@@ -883,7 +910,10 @@
             "id": "fx-cardio",
             "name": "Pioneer Valley Heart Associates (fictional)",
             "town": "Springfield",
-            "fictional": true
+            "fictional": true,
+            "address": "",
+            "zip5": "",
+            "org_pac_id": ""
           },
           "stage": "seen",
           "stage_label": "Seen",
@@ -965,7 +995,10 @@
             "id": "fx-endo",
             "name": "Connecticut River Endocrine Group (fictional)",
             "town": "Northampton",
-            "fictional": true
+            "fictional": true,
+            "address": "",
+            "zip5": "",
+            "org_pac_id": ""
           },
           "stage": "plan_returned",
           "stage_label": "Plan returned",
@@ -1036,7 +1069,10 @@
             "id": "fx-gi",
             "name": "Berkshire Digestive Health (fictional)",
             "town": "Pittsfield",
-            "fictional": true
+            "fictional": true,
+            "address": "",
+            "zip5": "",
+            "org_pac_id": ""
           },
           "stage": "declined",
           "stage_label": "Declined",

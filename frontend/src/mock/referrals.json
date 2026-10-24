@@ -19,7 +19,10 @@
         "id": "fx-endo",
         "name": "Connecticut River Endocrine Group (fictional)",
         "town": "Northampton",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "sent",
       "stage_label": "Sent",
@@ -95,7 +98,10 @@
         "id": "fx-endo",
         "name": "Connecticut River Endocrine Group (fictional)",
         "town": "Northampton",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "sent",
       "task_status": "requested",
@@ -106,7 +112,8 @@
           "stage": "sent",
           "at": "2026-10-17",
           "actor": "pcp",
-          "note": ""
+          "note": "",
+          "source": null
         }
       ],
       "appointment": null,
@@ -136,9 +143,15 @@
         "at": "2026-10-17",
         "stage": "sent",
         "actor": "pcp",
-        "note": ""
+        "note": "",
+        "source": null
       }
     ],
+    "log_update_actions": [
+      "accepted",
+      "declined"
+    ],
+    "can_close": false,
     "place_context": {
       "town": "Athol",
       "county": "Worcester",
@@ -352,7 +365,10 @@
         "id": "fx-neph",
         "name": "Central Mass Kidney Care (fictional)",
         "town": "Worcester",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "accepted",
       "stage_label": "Accepted",
@@ -444,7 +460,10 @@
         "id": "fx-neph",
         "name": "Central Mass Kidney Care (fictional)",
         "town": "Worcester",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "accepted",
       "task_status": "accepted",
@@ -455,13 +474,15 @@
           "stage": "sent",
           "at": "2026-10-06",
           "actor": "pcp",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "accepted",
           "at": "2026-10-10",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         }
       ],
       "appointment": null,
@@ -499,16 +520,22 @@
         "at": "2026-10-06",
         "stage": "sent",
         "actor": "pcp",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-10-10",
         "stage": "accepted",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       }
     ],
+    "log_update_actions": [
+      "scheduled"
+    ],
+    "can_close": false,
     "place_context": {
       "town": "Great Barrington",
       "county": "Berkshire",
@@ -718,7 +745,10 @@
         "id": "fx-gi",
         "name": "Berkshire Digestive Health (fictional)",
         "town": "Pittsfield",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "scheduled",
       "stage_label": "Scheduled",
@@ -786,7 +816,10 @@
         "id": "fx-gi",
         "name": "Berkshire Digestive Health (fictional)",
         "town": "Pittsfield",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "scheduled",
       "task_status": "in-progress",
@@ -797,19 +830,22 @@
           "stage": "sent",
           "at": "2026-10-01",
           "actor": "pcp",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "accepted",
           "at": "2026-10-03",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "scheduled",
           "at": "2026-10-08",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         }
       ],
       "appointment": {
@@ -846,23 +882,31 @@
         "at": "2026-10-01",
         "stage": "sent",
         "actor": "pcp",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-10-03",
         "stage": "accepted",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-10-08",
         "stage": "scheduled",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       }
     ],
+    "log_update_actions": [
+      "seen",
+      "no_show"
+    ],
+    "can_close": false,
     "place_context": {
       "town": "Greenfield",
       "county": "Franklin",
@@ -1040,7 +1084,10 @@
         "id": "fx-cardio",
         "name": "Pioneer Valley Heart Associates (fictional)",
         "town": "Springfield",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "seen",
       "stage_label": "Seen",
@@ -1119,7 +1166,10 @@
         "id": "fx-cardio",
         "name": "Pioneer Valley Heart Associates (fictional)",
         "town": "Springfield",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "seen",
       "task_status": "in-progress",
@@ -1130,25 +1180,29 @@
           "stage": "sent",
           "at": "2026-09-15",
           "actor": "pcp",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "accepted",
           "at": "2026-09-17",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "scheduled",
           "at": "2026-09-19",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "seen",
           "at": "2026-10-12",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         }
       ],
       "appointment": {
@@ -1173,30 +1227,38 @@
         "at": "2026-09-15",
         "stage": "sent",
         "actor": "pcp",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-09-17",
         "stage": "accepted",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-09-19",
         "stage": "scheduled",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-10-12",
         "stage": "seen",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       }
     ],
+    "log_update_actions": [
+      "plan_received"
+    ],
+    "can_close": false,
     "place_context": {
       "town": "Orange",
       "county": "Franklin",
@@ -1370,7 +1432,10 @@
         "id": "fx-endo",
         "name": "Connecticut River Endocrine Group (fictional)",
         "town": "Northampton",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "plan_returned",
       "stage_label": "Plan returned",
@@ -1438,7 +1503,10 @@
         "id": "fx-endo",
         "name": "Connecticut River Endocrine Group (fictional)",
         "town": "Northampton",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "plan_returned",
       "task_status": "completed",
@@ -1449,31 +1517,36 @@
           "stage": "sent",
           "at": "2026-09-08",
           "actor": "pcp",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "accepted",
           "at": "2026-09-10",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "scheduled",
           "at": "2026-09-12",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "seen",
           "at": "2026-10-15",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "plan_returned",
           "at": "2026-10-22",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         }
       ],
       "appointment": {
@@ -1509,37 +1582,44 @@
         "at": "2026-09-08",
         "stage": "sent",
         "actor": "pcp",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-09-10",
         "stage": "accepted",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-09-12",
         "stage": "scheduled",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-10-15",
         "stage": "seen",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-10-22",
         "stage": "plan_returned",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       }
     ],
+    "log_update_actions": [],
+    "can_close": true,
     "place_context": {
       "town": "Ware",
       "county": "Hampshire",
@@ -1709,7 +1789,10 @@
         "id": "fx-neph",
         "name": "Central Mass Kidney Care (fictional)",
         "town": "Worcester",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "closed",
       "stage_label": "Closed",
@@ -1777,7 +1860,10 @@
         "id": "fx-neph",
         "name": "Central Mass Kidney Care (fictional)",
         "town": "Worcester",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "closed",
       "task_status": "completed",
@@ -1788,37 +1874,43 @@
           "stage": "sent",
           "at": "2026-08-25",
           "actor": "pcp",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "accepted",
           "at": "2026-08-27",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "scheduled",
           "at": "2026-08-29",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "seen",
           "at": "2026-09-23",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "plan_returned",
           "at": "2026-09-30",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "closed",
           "at": "2026-10-05",
           "actor": "pcp",
-          "note": "Plan reviewed; added to problem list (synthetic)."
+          "note": "Plan reviewed; added to problem list (synthetic).",
+          "source": null
         }
       ],
       "appointment": {
@@ -1854,44 +1946,52 @@
         "at": "2026-08-25",
         "stage": "sent",
         "actor": "pcp",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-08-27",
         "stage": "accepted",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-08-29",
         "stage": "scheduled",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-09-23",
         "stage": "seen",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-09-30",
         "stage": "plan_returned",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-10-05",
         "stage": "closed",
         "actor": "pcp",
-        "note": "Plan reviewed; added to problem list (synthetic)."
+        "note": "Plan reviewed; added to problem list (synthetic).",
+        "source": null
       }
     ],
+    "log_update_actions": [],
+    "can_close": false,
     "place_context": {
       "town": "North Adams",
       "county": "Berkshire",
@@ -2097,7 +2197,10 @@
         "id": "fx-gi",
         "name": "Berkshire Digestive Health (fictional)",
         "town": "Pittsfield",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "declined",
       "stage_label": "Declined",
@@ -2173,7 +2276,10 @@
         "id": "fx-gi",
         "name": "Berkshire Digestive Health (fictional)",
         "town": "Pittsfield",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "declined",
       "task_status": "rejected",
@@ -2184,13 +2290,15 @@
           "stage": "sent",
           "at": "2026-10-14",
           "actor": "pcp",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "declined",
           "at": "2026-10-20",
           "actor": "specialist",
-          "note": "No new-patient capacity this quarter (synthetic)."
+          "note": "No new-patient capacity this quarter (synthetic).",
+          "source": null
         }
       ],
       "appointment": null,
@@ -2207,16 +2315,20 @@
         "at": "2026-10-14",
         "stage": "sent",
         "actor": "pcp",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-10-20",
         "stage": "declined",
         "actor": "specialist",
-        "note": "No new-patient capacity this quarter (synthetic)."
+        "note": "No new-patient capacity this quarter (synthetic).",
+        "source": null
       }
     ],
+    "log_update_actions": [],
+    "can_close": false,
     "place_context": {
       "town": "Great Barrington",
       "county": "Berkshire",
@@ -2426,7 +2538,10 @@
         "id": "fx-cardio",
         "name": "Pioneer Valley Heart Associates (fictional)",
         "town": "Springfield",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "no_show",
       "stage_label": "No-show",
@@ -2521,7 +2636,10 @@
         "id": "fx-cardio",
         "name": "Pioneer Valley Heart Associates (fictional)",
         "town": "Springfield",
-        "fictional": true
+        "fictional": true,
+        "address": "",
+        "zip5": "",
+        "org_pac_id": ""
       },
       "stage": "no_show",
       "task_status": "in-progress",
@@ -2532,25 +2650,29 @@
           "stage": "sent",
           "at": "2026-09-22",
           "actor": "pcp",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "accepted",
           "at": "2026-09-24",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "scheduled",
           "at": "2026-09-26",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         },
         {
           "stage": "no_show",
           "at": "2026-10-15",
           "actor": "specialist",
-          "note": ""
+          "note": "",
+          "source": null
         }
       ],
       "appointment": {
@@ -2591,30 +2713,38 @@
         "at": "2026-09-22",
         "stage": "sent",
         "actor": "pcp",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-09-24",
         "stage": "accepted",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-09-26",
         "stage": "scheduled",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       },
       {
         "kind": "event",
         "at": "2026-10-15",
         "stage": "no_show",
         "actor": "specialist",
-        "note": ""
+        "note": "",
+        "source": null
       }
     ],
+    "log_update_actions": [
+      "scheduled"
+    ],
+    "can_close": false,
     "place_context": {
       "town": "Greenfield",
       "county": "Franklin",

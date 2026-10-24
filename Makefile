@@ -3,7 +3,7 @@ VENV := .venv
 PY := $(VENV)/bin/python
 export DEMO_TODAY ?= 2026-10-24
 
-.PHONY: setup data mocks dev dev-api dev-web test check-copy build-web
+.PHONY: setup data mocks dev dev-api dev-web test check-copy build-web e2e
 
 setup:
 	test -x $(PY) || $(PY_BOOT) -m venv $(VENV)
@@ -17,6 +17,10 @@ data:
 # Regenerate frontend/src/mock/*.json from data/synthetic/referrals.json.
 mocks:
 	$(PY) scripts/build_mocks.py
+
+# MVP acceptance tests M1–M5 through the UI (needs `make dev` running; uses installed Chrome).
+e2e:
+	cd frontend && node e2e/acceptance.mjs
 
 dev:
 	$(MAKE) -j2 dev-api dev-web
