@@ -12,3 +12,4 @@ frontend/tsconfig.tsbuildinfo
 data/*.db
 data/*.db-*
 .env
+.vscode/
