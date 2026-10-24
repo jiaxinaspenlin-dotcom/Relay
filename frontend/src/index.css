@@ -9,15 +9,16 @@
 }
 
 @layer utilities {
-  .highlight-in { animation: highlight-in 1.6s ease-out; }
+  /* A referral that newly becomes stuck slides into its section. */
+  .slide-in { animation: slide-in 300ms ease-out; }
 }
 
-@keyframes highlight-in {
-  from { background-color: #FBEFD9; }
-  to { background-color: #FFFFFF; }
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .highlight-in { animation: none; }
-  * { transition-duration: 0s !important; }
+  .slide-in { animation: none; }
+  * { transition-duration: 0s !important; animation-duration: 0s !important; }
 }

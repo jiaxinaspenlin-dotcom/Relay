@@ -42,7 +42,7 @@ function Row({ card, flags, fresh, onAction }: { card: Card; flags: StuckFlag[];
   return (
     <li
       data-testid={`row-${card.id}`}
-      className={`group relative grid grid-cols-1 items-center gap-4 border-b border-line px-6 py-5 last:border-b-0 hover:bg-paper/70 min-[860px]:grid-cols-[1fr_1.5fr_160px] ${fresh ? "highlight-in" : ""}`}
+      className={`group relative grid grid-cols-1 items-center gap-4 border-b border-line px-6 py-5 last:border-b-0 hover:bg-paper/70 min-[860px]:grid-cols-[1fr_1.5fr_160px] ${fresh ? "slide-in" : ""}`}
     >
       {/* The whole row opens referral detail; the action button sits above this link. */}
       <Link to={`/referrals/${card.id}`} aria-label={copy.dashboard.rowLabel(card.patient.name)} className="absolute inset-0 rounded-none focus-visible:outline-offset-[-2px]" />
@@ -95,7 +95,8 @@ function Section({ title, rows, fresh, onAction, testid }: {
 export default function Dashboard() {
   const q = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard, ...LIVE });
   const [drawer, setDrawer] = useState<DrawerState>(null);
-  // The one motion moment: a referral that newly crosses its limit slides in with a highlight.
+  // Motion: a referral that newly becomes stuck (between refreshes, e.g. after an office update)
+  // slides into its section. Nothing slides on the first load; bars grow on load instead.
   const seen = useRef<Set<string> | null>(null);
   const [fresh, setFresh] = useState<Set<string>>(new Set());
   useEffect(() => {

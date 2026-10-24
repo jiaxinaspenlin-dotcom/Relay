@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { StepperItem, StuckFlag } from "../api";
 import { copy } from "../copy";
 import { FAILURE_RULES, shortDate } from "../format";
@@ -16,6 +17,18 @@ export function primaryFlag(flags: StuckFlag[]): StuckFlag | undefined {
   return flags.find((f) => STAGE_RULES.has(f.rule)) ?? flags[0];
 }
 
+/** Grows from 0 to `target` once after mount, and again whenever the status key changes
+ * (CSS transition, 300ms ease-out; reduced motion skips it). */
+function useGrow(target: number, key: string): number {
+  const [w, setW] = useState(0);
+  useEffect(() => {
+    setW(0);
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => setW(target)));
+    return () => cancelAnimationFrame(id);
+  }, [target, key]);
+  return w;
+}
+
 export function RouteTrack({ steps, flags = [], labels = false }: { steps: StepperItem[]; flags?: StuckFlag[]; labels?: boolean }) {
   const n = steps.length;
   const current = steps.reduce((acc, s, i) => (s.at ? i : acc), -1);
@@ -25,7 +38,7 @@ export function RouteTrack({ steps, flags = [], labels = false }: { steps: Stepp
   const center = (i: number) => col * i + col / 2;
   const ratio = flag ? (flag.threshold > 0 ? Math.min(flag.days / flag.threshold, 2) : 1) : 0;
   const barStart = center(Math.max(current, 0));
-  const barWidth = Math.min(ratio * col, 100 - barStart);
+  const barWidth = useGrow(Math.min(ratio * col, 100 - barStart), flag ? `${flag.rule}:${current}` : "none");
   const tone = failure ? { ring: "border-rust", fill: "bg-rust-tint", edge: "border-rust", solid: "bg-rust" }
                        : { ring: "border-amber", fill: "bg-amber-tint", edge: "border-amber", solid: "bg-amber" };
   const doneLineEnd = current > 0 ? center(current) : center(0);

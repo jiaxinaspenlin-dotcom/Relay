@@ -40,9 +40,10 @@ ones first, so that nothing falls through.
    to scheduled. All are computed from the (synthetic) data and labeled as such.
 4. THE SYSTEM SHALL show a persistent banner: "Synthetic patients and referrals. Specialist responses
    and delivery are simulated."
-5. THE SYSTEM SHALL use the real date by default. Settings → "Demo mode" (off by default) adds a
-   forward offset (+1 day, +7 days, back to today); while on, a banner reads "Demo mode: simulated
-   date". Only `config.real_today()` reads the real clock.
+5. THE SYSTEM SHALL always use the real date; there is no demo or simulated clock. Only
+   `config.real_today()` / `config.real_now()` read the real clock. Sample data dates are day
+   offsets from load time (scripts/seed_referrals.py). Time-based stuck rules are verified in
+   pytest with an injected test clock. Settings offers "Load sample data" and "Remove sample data".
 6. THE SYSTEM SHALL persist data in SQLite, start empty ("No referrals yet", "Add a referral",
    "Load sample data"), and let the coordinator add a patient (name, Massachusetts town from
    towns.csv, coverage, optional date of birth). Sample records carry a "Sample" tag.
@@ -148,6 +149,18 @@ for likely barriers. It is never a judgment about the patient.
 7. Production delivery is Mass HIway Direct messaging; the office link is for offices not yet on
    Mass HIway. Sending offers Copy text, Open in email, and Print (fax-ready), each recorded as a
    Communication.
+
+## R14 — Sign-in (MUST)
+1. Users (name, email, role coordinator | clinician, practice) are stored in SQLite with argon2
+   password hashes; sessions use an HttpOnly, SameSite=Lax cookie; Sign out is in the rail.
+2. Coordinators land on the Dashboard; clinicians land on the Inbox, can view the Dashboard, and
+   only clinicians can Acknowledge and close. Office pages stay token-only, with no account.
+3. Every event, communication and closure records the acting user. The timeline shows the name
+   ("Sent by Sam Ortiz", "Closed by Dr. Avery Lin", "Office link", "AI call by Sam Ortiz"); FHIR
+   Provenance agents and the Composition attester reference that user.
+4. Sample accounts (Sam Ortiz, coordinator; Dr. Avery Lin, clinician) exist only while sample data
+   is loaded; the sign-in page offers them only then. The AI call endpoints require a signed-in
+   coordinator. Relay makes no HIPAA claim (README).
 
 ## R13 — AI call assistant (SHOULD)
 1. FOR referrals stuck at Sent or Received THE SYSTEM SHALL offer "Call office" with an AI voice

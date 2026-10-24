@@ -45,14 +45,14 @@ function RailLink({ to, icon: Icon, label, count, end }: { to: string; icon: Luc
   );
 }
 
-function SignOut({ name }: { name?: string }) {
+function SignOut({ compact = false }: { compact?: boolean }) {
   const qc = useQueryClient();
   const out = useMutation({ mutationFn: api.signOut, onSuccess: () => { qc.clear(); window.location.assign("/sign-in"); } });
   return (
     <button type="button" onClick={() => out.mutate()} aria-label={copy.nav.signOut}
-      className="flex min-h-[40px] w-full items-center gap-3 rounded-control px-3 text-white/[.82] hover:bg-white/[.08]">
+      className={`flex min-h-[40px] items-center gap-3 rounded-control px-3 text-white/[.82] hover:bg-white/[.08] ${compact ? "" : "w-full"}`}>
       <LogOut size={18} strokeWidth={1.8} aria-hidden="true" />
-      <span className="max-[859px]:sr-only">{copy.nav.signOut}{name ? "" : ""}</span>
+      <span className={compact ? "sr-only" : ""}>{copy.nav.signOut}</span>
     </button>
   );
 }
@@ -76,6 +76,7 @@ function Shell() {
             <RailLink to="/" end icon={LayoutGrid} label={copy.nav.dashboard} count={d.data?.summary.stuck} />
             <RailLink to="/inbox" icon={Inbox} label={copy.nav.inbox} count={d.data?.summary.unread_plans} />
             <RailLink to="/settings" icon={SlidersHorizontal} label={copy.nav.settings} />
+            <span className="min-[860px]:hidden"><SignOut compact /></span>
           </nav>
         </div>
         <div className="mt-auto hidden px-4 pb-7 min-[860px]:block">
@@ -85,7 +86,6 @@ function Shell() {
           </div>
           <SignOut />
         </div>
-        <div className="px-4 pb-3 min-[860px]:hidden"><SignOut /></div>
         </div>
       </aside>
       <div className="relative min-w-0 flex-1 overflow-x-hidden bg-paper">

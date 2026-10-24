@@ -33,9 +33,17 @@ ChevronLeft (back links), Stethoscope (dashboard background). Stroke 1.8 at 18px
 Solid hemlock. "Relay" wordmark in white, 20px bold, with a glyph: filled dot, short line, ring
 dot. Nav items: icon + label, white at 82% opacity; active item has a white 16% background and
 full white text; hover white 8%. White pill badges with hemlock text: Dashboard = referrals
-needing attention, Inbox = unread plans. Practice name at the bottom, 13px, white at 75%.
-No drawing in the rail. The rail stretches to the page height; its contents stay pinned.
-Under 860px wide it becomes a top bar with icons only.
+needing attention, Inbox = unread plans. At the bottom: the signed-in user's name (white, 600),
+the practice name (13px, white at 75%), and Sign out (LogOut icon). No drawing in the rail. The
+rail stretches to the page height; its contents stay pinned. Under 860px wide it becomes a top
+bar with icons only, Sign out included.
+
+## Sign-in page
+Split layout. Left half solid hemlock with the white wordmark and the large lucide Stethoscope in
+white at about 10% opacity, tilted -24deg. Right half white: "Sign in to Relay", email, password,
+a filled "Sign in" button, and, only while sample data is loaded, outlined "Sign in as
+coordinator (sample)" and "Sign in as clinician (sample)". A brand-new install shows "Set up
+Relay" (first coordinator account) and "Load sample data" instead. Under 860px, only the white half.
 
 ## Dashboard
 Headline "{n} referrals need attention" (28px bold), "{n} open" muted below, filled hemlock
@@ -88,7 +96,8 @@ template sections, then "Acknowledge and close".
 
 ## Writing, motion, quality
 Short sentences. Dates as "Oct 15". Empty states give direction ("No referrals need
-attention."). Errors say what happened and what to do. Motion only when Demo mode advances the
-clock: waiting bars grow (300ms ease-out) and a newly stuck row highlights. Respect reduced motion.
+attention."). Errors say what happened and what to do. There is no demo clock. Motion: waiting
+bars grow once on page load (300ms ease-out) and again when a referral's status changes; a
+referral that newly becomes stuck slides into its section. Reduced motion turns both off.
 Visible 2px hemlock focus rings, 40px minimum targets, WCAG AA contrast, works at 390px.
 Screenshots of every screen at 1440px and 390px live in docs/screenshots/.
