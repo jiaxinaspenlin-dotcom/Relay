@@ -39,10 +39,10 @@ export function AddPatient({ onAdded, onCancel }: { onAdded: (p: PatientBrief) =
       </Field>
       <Field label={t.town} hint={town && !validTown ? t.badTown : t.townHelp}>
         <input className={inputCls} list="ma-towns" value={town} onChange={(e) => setTown(e.target.value)} required autoComplete="off" />
-        <datalist id="ma-towns">
-          {towns.data?.towns.map((x) => <option key={x} value={x} />)}
-        </datalist>
       </Field>
+      <datalist id="ma-towns">
+        {towns.data?.towns.map((x) => <option key={x} value={x} />)}
+      </datalist>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t.coverage}>
           <select className={inputCls} value={coverage} onChange={(e) => setCoverage(e.target.value)}>

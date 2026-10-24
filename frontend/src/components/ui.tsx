@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { cloneElement, useId, type ButtonHTMLAttributes, type ReactElement, type ReactNode } from "react";
 import { copy } from "../copy";
 
 // Quiet primitives from .kiro/steering/design.md: white surfaces, one hemlock accent,
@@ -49,13 +49,17 @@ export function Chip({ children, tone = "amber" }: { children: ReactNode; tone?:
 export const inputCls =
   "mt-1 block min-h-[40px] w-full rounded-control border border-line bg-surface px-3 py-2 text-body text-ink focus:border-hemlock focus:outline-none";
 
-export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+// Explicit label/for pairing. A <label> that wraps a <select> folds the selected option's text
+// into the accessible name ("Specialty Cardiology"), so the control gets its own id instead.
+export function Field({ label, children, hint }: { label: string; children: ReactElement<{ id?: string; "aria-describedby"?: string }>; hint?: string }) {
+  const id = useId();
+  const hintId = `${id}-hint`;
   return (
-    <label className="block text-body text-ink">
-      <span className="font-semibold">{label}</span>
-      {children}
-      {hint && <span className="mt-1 block text-caption text-muted">{hint}</span>}
-    </label>
+    <div className="block text-body text-ink">
+      <label htmlFor={id} className="font-semibold">{label}</label>
+      {cloneElement(children, { id, ...(hint ? { "aria-describedby": hintId } : {}) })}
+      {hint && <span id={hintId} className="mt-1 block text-caption text-muted">{hint}</span>}
+    </div>
   );
 }
 
