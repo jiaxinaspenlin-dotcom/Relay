@@ -20,6 +20,16 @@ assignment, simulated specialist and plan back, PCP close, FHIR export, syntheti
 
 ---
 
+## MVP — thin end-to-end path (before any polish)
+Deferred until all five pass: patient view, map, LLM, readmissions drawer, Specialist office
+(simulated portal).
+- [ ] M1 Dashboard on the real API: Needs attention (R-102, R-104 messages), pipeline, counts
+- [ ] M2 New referral (North Adams live patient → Cardiology → real practices → Send) shows as Sent
+- [ ] M3 Log update (R2.5) + Demo clock (R1.5): accepted (phone) then +7 days → "Accepted 7 days ago — no appointment yet"
+- [ ] M4 Template follow-up with [F#] citations → edit → Send → Communication on the timeline
+- [ ] M5 Log "plan received" → PCP inbox beside reason → Acknowledge & close → FHIR bundle (test_fhir.py)
+- Guards: no page imports `src/mock/`; no backend real-clock calls outside config.py.
+
 ## Block 1 — Data (0:00–1:00)
 - [x] 1.1 Scaffold the repo per structure.md: FastAPI, Vite React TS + Tailwind, Makefile (`setup`,
   `data`, `dev`, `test`, `check-copy`), with the copy guard in `make test`. Set `DEMO_TODAY` in config.
@@ -79,7 +89,7 @@ assignment, simulated specialist and plan back, PCP close, FHIR export, syntheti
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.7_
 - [ ] 4.5 (SHOULD) Mini-map
   - _Requirements: 3.6_
-- [ ] 4.6 Specialist office (simulated) with template-shaped plan form
+- [ ] 4.6 (DEFERRED until MVP passes) Specialist office (simulated portal) with template-shaped plan form
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 - [ ] 4.7 PCP inbox with acknowledge & close
   - _Requirements: 8.1, 8.2, 8.3_

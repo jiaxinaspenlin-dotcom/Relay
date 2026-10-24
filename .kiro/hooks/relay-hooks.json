@@ -6,7 +6,7 @@
       "description": "Block clinical-decision, travel-time, coverage, and person-scoring language in copy and templates.",
       "trigger": "PostFileSave",
       "matcher": "(frontend/src/copy\\.ts|backend/app/drafting/templates\\.py|docs/PITCH\\.md)$",
-      "action": { "type": "command", "command": "python scripts/check_copy.py" },
+      "action": { "type": "command", "command": ".venv/bin/python scripts/check_copy.py" },
       "timeout": 30
     },
     {
@@ -14,7 +14,7 @@
       "description": "State transitions, stuck rules, distance, and ranking are the product's core; re-test on every change.",
       "trigger": "PostFileSave",
       "matcher": "backend/app/(loop|finder)/.*\\.py$",
-      "action": { "type": "command", "command": "pytest -q backend/tests/test_loop.py backend/tests/test_finder.py" },
+      "action": { "type": "command", "command": ".venv/bin/pytest -q backend/tests/test_loop.py backend/tests/test_finder.py" },
       "timeout": 90
     },
     {
@@ -22,7 +22,7 @@
       "description": "Any change to drafting re-runs citation/number/copy verification, including adversarial cases.",
       "trigger": "PostFileSave",
       "matcher": "backend/app/drafting/.*\\.py$",
-      "action": { "type": "command", "command": "pytest -q backend/tests/test_verify.py" },
+      "action": { "type": "command", "command": ".venv/bin/pytest -q backend/tests/test_verify.py" },
       "timeout": 90
     },
     {
@@ -30,7 +30,7 @@
       "description": "Re-validate referral FHIR bundles when export or models change.",
       "trigger": "PostFileSave",
       "matcher": "backend/app/(export/fhir\\.py|models\\.py)$",
-      "action": { "type": "command", "command": "pytest -q backend/tests/test_fhir.py" },
+      "action": { "type": "command", "command": ".venv/bin/pytest -q backend/tests/test_fhir.py" },
       "timeout": 90
     },
     {

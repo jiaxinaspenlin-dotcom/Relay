@@ -40,6 +40,9 @@ ones first, so that nothing falls through.
    to scheduled. All are computed from the (synthetic) data and labeled as such.
 4. THE SYSTEM SHALL show a persistent banner: "Synthetic patients and referrals. Specialist responses
    and delivery are simulated."
+5. THE SYSTEM SHALL show a header "Demo clock — simulates time passing" with the current demo date
+   and controls +1 day, +7 days, and reset. It changes the in-memory demo date only (base:
+   `DEMO_TODAY` in config). No backend code SHALL read the real clock.
 
 ## R2 — Loop states and stuck rules (MUST)
 1. THE SYSTEM SHALL model each referral as a FHIR-shaped `ServiceRequest` + `Task`, with the stages and
@@ -50,6 +53,10 @@ ones first, so that nothing falls through.
    after N days (**challenge failure 2**).
 4. Rule thresholds SHALL be practice settings, shown in the UI as "Practice setting", and never
    presented as clinical standards.
+5. **Log update (primary real-world input path).** THE SYSTEM SHALL let the coordinator log what the
+   specialist office reported: accepted, declined, scheduled (+ appointment date), seen, no-show, or
+   plan received (care-update-shaped form, R7.2), with source (phone, fax, portal, other) and a
+   note. Each update SHALL go through the design.md §3 transitions and be dated by the demo clock.
 
 ## R3 — New referral with specialist finder (MUST)
 **User story:** As a PCP and coordinator, we want to see which practices offer the needed specialty,
@@ -115,13 +122,15 @@ for likely barriers. It is never a judgment about the patient.
    "what this can't tell you" note.
 3. Context SHALL never appear in messages to specialists or patients.
 
-## R7 — Specialist office (simulated) and plan back (MUST)
-1. THE SYSTEM SHALL provide a "Specialist office (simulated)" view where a demo operator can accept or
-   decline the referral, set an appointment date, mark the visit seen or no-show, and return a plan.
+## R7 — Plan back (MUST) and Specialist office (simulated portal) (DEFERRED)
+1. (DEFERRED until the MVP passes) THE SYSTEM SHALL provide a "Specialist office (simulated portal)"
+   view where a demo operator can accept or decline the referral, set an appointment date, mark the
+   visit seen or no-show, and return a plan. Until then, R2.5 "Log update" is the input path.
 2. The returned plan SHALL use sections shaped by the CMS care-update template: Patient, From,
    Reason/Conditions, Visit date, Assessment, Plan, Actions for the PCP (optional), Questions/contact.
    ACCESS-specific fields (track, OAP measures) are omitted and the omission is noted.
-3. Assessment and Plan SHALL be written by the (simulated) specialist. Relay never drafts them.
+3. Assessment and Plan SHALL be written by the specialist (entered as reported, or simulated).
+   Relay never drafts them.
 4. Every simulated action SHALL be labeled "Simulated response".
 
 ## R8 — PCP inbox and loop closure (MUST)

@@ -18,11 +18,15 @@ class _Model(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+UpdateSource = Literal["phone", "fax", "portal", "other"]
+
+
 class Event(_Model):
     stage: str
     at: date
     actor: Actor
     note: str = ""
+    source: Optional[UpdateSource] = None  # how the update reached the practice (Log update)
 
 
 class Appointment(_Model):
@@ -39,11 +43,14 @@ class Barrier(_Model):
 
 
 class Communication(_Model):
+    id: str = ""
     sent: date
     recipient: Literal["specialist", "patient", "pcp"]
     text: str
     sent_by: str
     ai_drafted: bool = False
+    rule: str = ""  # stuck rule the draft addressed, if any
+    edited: bool = False  # True when the sender changed the drafted text
 
 
 class Plan(_Model):
@@ -87,6 +94,10 @@ class Performer(_Model):
     name: str
     town: str
     fictional: bool = True
+    # Set for real practices chosen in the finder (CMS directory).
+    address: str = ""
+    zip5: str = ""
+    org_pac_id: str = ""
 
 
 class Referral(_Model):

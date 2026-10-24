@@ -92,6 +92,7 @@ def transition(
     actor: Actor,
     by: str = "",
     note: str = "",
+    source: Optional[str] = None,
     appointment_start: Optional[date] = None,
     plan: Optional[Plan] = None,
     closure_reason: Optional[str] = None,
@@ -146,5 +147,5 @@ def transition(
 
     new.stage = to
     new.task_status, new.business_status = STAGES[to]
-    new.events.append(make_event(to, at, actor, note))
+    new.events.append(make_event(to, at, actor, note, source))
     return new

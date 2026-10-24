@@ -16,6 +16,10 @@ from app.loop.stuck import BARRIER_LABELS, needs_attention, stuck_flags
 from app.loop.timeline import timeline
 from app.models import Referral
 
+# Log update actions (R2.5) -> loop stage.
+LOG_ACTIONS = {"accepted": "accepted", "declined": "declined", "scheduled": "scheduled",
+               "seen": "seen", "no_show": "no_show", "plan_received": "plan_returned"}
+
 # The LoopStepper's main path (design.md §9).
 STEPPER = ["sent", "accepted", "scheduled", "seen", "plan_returned", "closed"]
 
@@ -82,6 +86,27 @@ def referral_detail_view(ref: Referral, referrals: list[Referral], patients: dic
         "referral": ref.model_dump(mode="json", by_alias=True),
         "allowed_next": [{"stage": s, "label": STAGE_LABELS[s]} for s in allowed_next(ref)],
         "timeline": [{**t, "at": t["at"].isoformat()} for t in timeline(ref)],
+        "log_update_actions": [a for a, stage in LOG_ACTIONS.items() if stage in allowed_next(ref)],
+        "can_close": "closed" in allowed_next(ref),
         "place_context": place_context(ref.patient_town),
         "packet": None,  # built in Block 3 (drafting/facts.py)
+    }
+
+
+def inbox_view(referrals: list[Referral], patients: dict[str, dict], today: date) -> dict:
+    """Returned plans awaiting PCP acknowledgement, oldest first."""
+    rerouted = {r.replaces for r in referrals if r.replaces}
+    rows = [r for r in referrals if r.stage == "plan_returned" and r.plan is not None]
+    rows.sort(key=lambda r: (r.plan.returned_on, r.id))
+    return {
+        "synthetic": True,
+        "as_of": today.isoformat(),
+        "items": [{
+            "card": referral_card(r, patients, today, rerouted),
+            "reason_text": r.reason_text,
+            "reason_condition": r.reason_condition.model_dump(mode="json"),
+            "priority": r.priority,
+            "plan": r.plan.model_dump(mode="json", by_alias=True),
+            "timeline": [{**t, "at": t["at"].isoformat()} for t in timeline(r)],
+        } for r in rows],
     }

@@ -17,7 +17,7 @@
              FastAPI  /api/{dashboard, referrals, finder, specialist, inbox, export}
                          ▼
    React: Dashboard · Referral detail · New referral (finder + map)
-          · Specialist office (simulated) · PCP inbox · Patient status*
+          · Specialist office (simulated portal, deferred) · PCP inbox · Patient status*
 ```
 
 Everything runs locally. The app reads only committed snapshots. `DEMO_TODAY=2026-10-24` fixes the clock.
@@ -188,7 +188,7 @@ Plan back → Closed) is the signature element, repeated on every card and page.
    place-context panel (source chips and "can't tell you" lines), follow-up drawer
    (template / AI-verified, edit, Send), Download FHIR.
 3. **New referral:** form → specialty → practice cards + mini-map → choose → packet preview → Send.
-4. **Specialist office (simulated):** incoming referrals for the chosen practice. Accept / Decline /
+4. **Specialist office (simulated portal) — deferred until the MVP passes:** incoming referrals for the chosen practice. Accept / Decline /
    Schedule / Seen / No-show / Return plan (template-shaped form, pre-filled synthetic text available
    for the demo).
 5. **PCP inbox:** returned plans beside the original reason and timeline. "Acknowledge & close".
@@ -204,7 +204,7 @@ Plan back → Closed) is the signature element, repeated on every card and page.
    and Send. Logged as a Communication.
 4. **1:20** New referral, live: patient in North Adams → cardiology. Finder lists real MA practices
    by distance, with Medicare assignment and nearest hospital (CMS rating where matched). Mini-map. Choose → Send.
-5. **1:50** R-104 in Specialist office (simulated) → Return plan. PCP inbox → plan beside the original
+5. **1:50** R-104 → Log update "plan received (fax)". PCP inbox → plan beside the original
    reason → Acknowledge & close. Dashboard: stuck count drops, closed count rises.
 6. **2:25** Download FHIR → ServiceRequest, Task (status + businessStatus), Appointment, Composition.
 7. **2:45** `.kiro/`: the copy guard catching "35 minutes away" during the build (from KIRO.md).
